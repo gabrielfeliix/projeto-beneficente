@@ -22,6 +22,7 @@ export function AuthStatus() {
     return (
       <div className="flex items-center gap-3">
         <Link href="/login"><Button size="sm" variant="outline">Login</Button></Link>
+        <Link href="/cadastro"><Button size="sm" variant="secondary">Cadastrar-se</Button></Link>
       </div>
     );
   }
