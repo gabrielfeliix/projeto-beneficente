@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { AuthStatus } from "@/components/auth-status";
 import { Heart } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -28,14 +28,15 @@ export default function RootLayout({
             
             <nav className="hidden md:flex gap-6 font-bold">
               <Link href="/" className="hover:underline decoration-2 underline-offset-4">Explorar</Link>
+              <Link href="/vagas" className="hover:underline decoration-2 underline-offset-4">Vagas</Link>
+              <Link href="/feed" className="hover:underline decoration-2 underline-offset-4">Feed</Link>
+              <Link href="/perfil" className="hover:underline decoration-2 underline-offset-4">Perfil</Link>
+              <Link href="/notificacoes" className="hover:underline decoration-2 underline-offset-4">Notificações</Link>
               <Link href="/dashboard" className="hover:underline decoration-2 underline-offset-4">Minhas Campanhas</Link>
             </nav>
 
             <div className="flex gap-4">
-              <Link href="/campaigns/new">
-                <Button variant="secondary" className="hidden sm:inline-flex border-2 border-border">Criar Campanha</Button>
-              </Link>
-              <Button variant="outline" className="bg-white">Login</Button>
+              <AuthStatus />
             </div>
           </div>
         </header>

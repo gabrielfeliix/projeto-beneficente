@@ -1,4 +1,4 @@
-import { Campaign, User, UpdateRecord, Review } from '@/domain/entities';
+import { Application, Campaign, FeedPost, Institution, JobPosting, Notification, Volunteer, User, UpdateRecord, Review } from '@/domain/entities';
 
 export const mockUsers: User[] = [
   {
@@ -17,6 +17,164 @@ export const mockUsers: User[] = [
     city: 'Parnamirim',
     neighborhood: 'Nova Parnamirim',
     avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200&h=200',
+  }
+];
+
+export const mockVolunteers: Volunteer[] = [
+  {
+    id: 'vol-1',
+    profileType: 'volunteer',
+    name: 'Ana Beatriz',
+    email: 'ana.beatriz@email.com',
+    avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200&h=200',
+    city: 'Natal',
+    neighborhood: 'Ponta Negra',
+    description: 'Voluntária com experiência em educação infantil e projetos sociais.',
+    phone: '(84) 98888-7777',
+    cpf: '123.456.789-00',
+    birthDate: '1990-05-14',
+    address: 'Rua das Palmeiras, 250',
+    profession: 'Pedagoga',
+    availability: 'Fins de semana e manhãs',
+    interests: ['Educação', 'Meio Ambiente', 'Cultura'],
+    skills: ['Mediação de conflitos', 'Organização de eventos', 'Ensino de leitura'],
+    emergencyContact: 'João Beatriz - (84) 99999-0000',
+    acceptedTerms: true,
+  }
+];
+
+export const mockInstitutions: Institution[] = [
+  {
+    id: 'inst-1',
+    profileType: 'institution',
+    name: 'Instituto Água Viva',
+    email: 'contato@aguaviva.org',
+    city: 'Natal',
+    neighborhood: 'Lagoa Nova',
+    description: 'Apoiar educação, saúde e inclusão social por meio de ações comunitárias.',
+    phone: '(84) 99999-1111',
+    avatarUrl: 'https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&q=80&w=200&h=200',
+    cnpj: '12.345.678/0001-90',
+    legalRepresentative: {
+      name: 'Carlos Pereira',
+      cpf: '111.222.333-44',
+      rg: '1234567-8',
+      phone: '(84) 98877-6666',
+    },
+    headquartersAddress: 'Av. Coronel Estevam, 123',
+    mission: 'Promover qualidade de vida e desenvolvimento social para famílias em situação de vulnerabilidade.',
+    objectives: 'Fortalecer projetos de capacitação, saúde preventiva e cultura comunitária.',
+    serviceAreas: ['Educação', 'Saúde', 'Ação social'],
+    publicServed: 'Crianças, jovens e famílias em situação de vulnerabilidade.',
+    bankDetails: 'Banco do Brasil | Agência 1234 | Conta 56789-0',
+    registeredDocuments: {
+      socialStatute: 'statute.pdf',
+      directorElectionAct: 'election-act.pdf',
+      cnpjCard: 'cnpj-card.pdf',
+    },
+  }
+];
+
+export const mockJobPostings: JobPosting[] = [
+  {
+    id: 'job-1',
+    institutionId: 'inst-1',
+    title: 'Facilitador de Oficinas de Leitura',
+    description: 'Procura-se voluntário para conduzir oficinas de leitura semanais para crianças de 7 a 12 anos.',
+    category: 'Educação',
+    city: 'Natal',
+    neighborhood: 'Lagoa Nova',
+    modality: 'Presencial',
+    causes: 'Educação infantil, desenvolvimento do hábito de leitura, inclusão social.',
+    postedAt: new Date(Date.now() - 4 * 86400000).toISOString(),
+    startDate: new Date(Date.now() + 4 * 86400000).toISOString(),
+    endDate: new Date(Date.now() + 40 * 86400000).toISOString(),
+    requirementsEssential: ['Disponibilidade aos sábados', 'Experiência com crianças', 'Boa comunicação'],
+    requirementsOptional: ['Formação em pedagogia', 'Experiência em projetos sociais'],
+    contactName: 'Mariana Silva',
+    contactEmail: 'mariana@aguaviva.org',
+    contactPhone: '(84) 98888-1111',
+    status: 'open',
+  },
+  {
+    id: 'job-2',
+    institutionId: 'inst-1',
+    title: 'Voluntário para Plantio e Limpeza',
+    description: 'Apoie ações de limpeza e plantio em áreas verdes comunitárias.',
+    category: 'Meio Ambiente',
+    city: 'Natal',
+    neighborhood: 'Redinha',
+    modality: 'Presencial',
+    causes: 'Recuperação ambiental, educação ambiental e mobilização comunitária.',
+    postedAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+    startDate: new Date(Date.now() + 7 * 86400000).toISOString(),
+    endDate: new Date(Date.now() + 21 * 86400000).toISOString(),
+    requirementsEssential: ['Disposição para trabalho físico', 'Responsabilidade', 'Compromisso com o grupo'],
+    requirementsOptional: ['Experiência em campanhas ambientais'],
+    contactName: 'Mariana Silva',
+    contactEmail: 'mariana@aguaviva.org',
+    contactPhone: '(84) 98888-1111',
+    status: 'open',
+  }
+];
+
+export const mockApplications: Application[] = [
+  {
+    id: 'app-1',
+    jobId: 'job-1',
+    volunteerId: 'vol-1',
+    institutionId: 'inst-1',
+    jobTitle: 'Facilitador de Oficinas de Leitura',
+    institutionName: 'Instituto Água Viva',
+    volunteerName: 'Ana Beatriz',
+    message: 'Tenho experiência com crianças e adoro projetos de leitura comunitária. Estou disponível aos sábados.',
+    status: 'pending',
+    submittedAt: new Date(Date.now() - 1 * 86400000).toISOString(),
+  }
+];
+
+export const mockFeedPosts: FeedPost[] = [
+  {
+    id: 'post-1',
+    authorId: 'vol-1',
+    authorName: 'Ana Beatriz',
+    authorType: 'volunteer',
+    content: 'Hoje participei do projeto de leitura e vi o brilho nos olhos das crianças. É gratificante compartilhar esse momento.',
+    createdAt: new Date(Date.now() - 6 * 3600000).toISOString(),
+    likes: 32,
+    comments: 8,
+  },
+  {
+    id: 'post-2',
+    authorId: 'inst-1',
+    authorName: 'Instituto Água Viva',
+    authorType: 'institution',
+    content: 'Nossa equipe está organizando a próxima arrecadação de roupas para famílias em vulnerabilidade. Participe!',
+    imageUrl: '/images/campaign_winter.png',
+    createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+    likes: 56,
+    comments: 14,
+  }
+];
+
+export const mockNotifications: Notification[] = [
+  {
+    id: 'notif-1',
+    userId: 'vol-1',
+    title: 'Nova vaga publicada',
+    message: 'Uma nova oportunidade de voluntariado em Educação foi publicada no seu perfil.',
+    channel: 'app',
+    createdAt: new Date(Date.now() - 3 * 3600000).toISOString(),
+    read: false,
+  },
+  {
+    id: 'notif-2',
+    userId: 'inst-1',
+    title: 'Candidatura recebida',
+    message: 'Uma nova candidatura foi enviada para a vaga de Facilitador de Oficinas de Leitura.',
+    channel: 'email',
+    createdAt: new Date(Date.now() - 8 * 3600000).toISOString(),
+    read: false,
   }
 ];
 

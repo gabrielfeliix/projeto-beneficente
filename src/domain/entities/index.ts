@@ -34,6 +34,99 @@ export interface User {
   instagram?: string;
 }
 
+export type ProfileType = 'volunteer' | 'institution';
+
+export interface Volunteer extends User {
+  profileType: 'volunteer';
+  cpf: string;
+  birthDate: string;
+  address: string;
+  profession?: string;
+  availability?: string;
+  interests?: string[];
+  skills?: string[];
+  emergencyContact?: string;
+  acceptedTerms: boolean;
+}
+
+export interface Institution extends User {
+  profileType: 'institution';
+  cnpj: string;
+  legalRepresentative: {
+    name: string;
+    cpf: string;
+    rg: string;
+    phone: string;
+  };
+  headquartersAddress: string;
+  mission: string;
+  objectives: string;
+  serviceAreas: string[];
+  publicServed: string;
+  bankDetails: string;
+  registeredDocuments: {
+    socialStatute?: string;
+    directorElectionAct?: string;
+    cnpjCard?: string;
+  };
+}
+
+export interface JobPosting {
+  id: string;
+  institutionId: string;
+  title: string;
+  description: string;
+  category: Category;
+  city: string;
+  neighborhood: string;
+  modality: string;
+  causes: string;
+  postedAt: string;
+  startDate: string;
+  endDate: string;
+  requirementsEssential: string[];
+  requirementsOptional: string[];
+  contactName: string;
+  contactEmail: string;
+  contactPhone: string;
+  status: 'open' | 'closed';
+}
+
+export interface Application {
+  id: string;
+  jobId: string;
+  volunteerId: string;
+  institutionId: string;
+  jobTitle: string;
+  institutionName: string;
+  volunteerName: string;
+  message: string;
+  status: 'pending' | 'selected' | 'rejected';
+  submittedAt: string;
+}
+
+export interface FeedPost {
+  id: string;
+  authorId: string;
+  authorName: string;
+  authorType: ProfileType;
+  content: string;
+  imageUrl?: string;
+  createdAt: string;
+  likes: number;
+  comments: number;
+}
+
+export interface Notification {
+  id: string;
+  userId: string;
+  title: string;
+  message: string;
+  channel: 'app' | 'email' | 'whatsapp';
+  createdAt: string;
+  read: boolean;
+}
+
 export interface Campaign {
   id: string;
   organizerId: string;

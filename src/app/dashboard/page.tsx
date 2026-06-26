@@ -2,7 +2,7 @@ import { getCampaigns } from "@/actions/campaigns";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Settings, Eye, MessageSquare, BarChart } from "lucide-react";
+import { Plus, Settings, Eye, MessageSquare, BarChart, Megaphone, Sparkles } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -55,9 +55,33 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      <h2 className="font-display text-3xl font-black uppercase mb-6">Minhas Campanhas</h2>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <h2 className="font-display text-3xl font-black uppercase">Minhas Campanhas</h2>
+          <Link href="/campaigns/new">
+            <Button size="lg" className="uppercase tracking-wider"><Plus className="mr-2" /> Nova Campanha</Button>
+          </Link>
+        </div>
+
+        <Card className="border-4 bg-white">
+          <CardContent className="p-6 space-y-4">
+            <div className="flex items-center gap-2 font-black uppercase"><Sparkles className="w-5 h-5" /> Ferramentas da ONG</div>
+            <div className="grid gap-4 md:grid-cols-3">
+              <Link href="/campaigns/new" className="block">
+                <Button variant="secondary" className="w-full justify-start"><Plus className="mr-2" /> Nova campanha</Button>
+              </Link>
+              <Link href="/campaigns/camp-1" className="block">
+                <Button variant="outline" className="w-full justify-start"><Megaphone className="mr-2" /> Nova atualização</Button>
+              </Link>
+              <Link href="/campaigns/camp-1" className="block">
+                <Button variant="ghost" className="w-full justify-start"><Settings className="mr-2" /> Configurações</Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
       
-      <div className="grid grid-cols-1 gap-6">
+      <div className="grid grid-cols-1 gap-6 mt-8">
         {myCampaigns.map(campaign => (
           <Card key={campaign.id} className="flex flex-col sm:flex-row overflow-hidden hover:bg-gray-50">
             <div className="w-full sm:w-64 h-48 sm:h-auto relative border-b-2 sm:border-b-0 sm:border-r-2 border-border shrink-0">
@@ -82,12 +106,16 @@ export default async function DashboardPage() {
                 <Link href={`/campaigns/${campaign.id}`}>
                   <Button variant="outline" className="bg-white">Ver Página</Button>
                 </Link>
-                <Button variant="secondary" className="border-2 border-border">
-                  <Plus className="w-4 h-4 mr-2" /> Nova Atualização
-                </Button>
-                <Button variant="ghost" size="icon">
-                  <Settings className="w-5 h-5" />
-                </Button>
+                <Link href={`/campaigns/${campaign.id}`}>
+                  <Button variant="secondary" className="border-2 border-border">
+                    <Plus className="w-4 h-4 mr-2" /> Nova Atualização
+                  </Button>
+                </Link>
+                <Link href={`/campaigns/${campaign.id}`}>
+                  <Button variant="ghost" size="icon">
+                    <Settings className="w-5 h-5" />
+                  </Button>
+                </Link>
               </div>
             </div>
           </Card>
