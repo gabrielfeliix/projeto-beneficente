@@ -1,3 +1,5 @@
+import { supabase } from './supabase';
+
 export type StoredProfile = {
   id: string;
   profileType: 'volunteer' | 'institution';
@@ -6,25 +8,36 @@ export type StoredProfile = {
   avatarUrl?: string;
 };
 
-const STORAGE_KEY = 'mutirao_user_profile';
+// Since we are moving to Supabase, we don't use localStorage for auth anymore.
+// We will export helper functions to get the current profile from Supabase.
 
-export function loadStoredProfile(): StoredProfile | null {
+export async function getCurrentProfile(): Promise<StoredProfile | null> {
   if (typeof window === 'undefined') return null;
+
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw) as StoredProfile;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('id, profile_type, name, email, avatar_url')
+      .eq('id', user.id)
+      .single();
+
+    if (error || !profile) return null;
+
+    return {
+      id: profile.id,
+      profileType: profile.profile_type,
+      name: profile.name,
+      email: profile.email,
+      avatarUrl: profile.avatar_url,
+    };
   } catch {
     return null;
   }
 }
 
-export function saveStoredProfile(profile: StoredProfile) {
-  if (typeof window === 'undefined') return;
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
-}
-
-export function clearStoredProfile() {
-  if (typeof window === 'undefined') return;
-  window.localStorage.removeItem(STORAGE_KEY);
+export async function signOut() {
+  await supabase.auth.signOut();
 }

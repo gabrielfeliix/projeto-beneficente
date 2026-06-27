@@ -2,21 +2,29 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { clearStoredProfile, loadStoredProfile, StoredProfile } from '@/lib/auth';
+import { getCurrentProfile, signOut, StoredProfile } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 
 export function AuthStatus() {
   const [profile, setProfile] = useState<StoredProfile | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setProfile(loadStoredProfile());
+    getCurrentProfile().then((p) => {
+      setProfile(p);
+      setLoading(false);
+    });
   }, []);
 
-  const handleLogout = () => {
-    clearStoredProfile();
+  const handleLogout = async () => {
+    await signOut();
     setProfile(null);
     window.location.href = '/';
   };
+
+  if (loading) {
+    return <div className="text-sm">Carregando...</div>;
+  }
 
   if (!profile) {
     return (

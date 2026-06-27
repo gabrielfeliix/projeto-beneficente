@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Campaign, UpdateRecord, User } from '@/domain/entities';
 import { appendCampaignUpdate, addCampaignNotification, loadCampaignData, updateCampaignSettings, type CampaignUpdateType } from '@/lib/campaign-storage';
+import { getCurrentProfile } from '@/lib/auth';
 import { MapPin, Target, Share2, Heart, Calendar, Megaphone, Sparkles, Star, Camera, MessageSquare, Settings, PlusCircle } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -26,6 +27,7 @@ export function CampaignPageClient({ campaign, initialUpdates, organizer }: Camp
     imageUrl: '',
     updateType: 'urgency' as CampaignUpdateType,
   });
+  const [isOwner, setIsOwner] = useState(false);
   const [settingsForm, setSettingsForm] = useState({
     title: campaign.title,
     description: campaign.description,
@@ -39,35 +41,42 @@ export function CampaignPageClient({ campaign, initialUpdates, organizer }: Camp
   });
 
   useEffect(() => {
-    const persisted = loadCampaignData(campaign.id);
-    const persistedSettings = persisted.settings as Partial<Campaign>;
+    getCurrentProfile().then((profile) => {
+      if (profile && profile.id === campaign.organizerId) {
+        setIsOwner(true);
+      }
+    });
 
-    if (persistedSettings && Object.keys(persistedSettings).length > 0) {
-      setActiveCampaign((current) => ({ ...current, ...persistedSettings }));
-      setSettingsForm((current) => ({
-        ...current,
-        title: persistedSettings.title ?? current.title,
-        description: persistedSettings.description ?? current.description,
-        mainNeed: persistedSettings.mainNeed ?? current.mainNeed,
-        financialGoal: persistedSettings.financialGoal?.toString() ?? current.financialGoal,
-        contact: persistedSettings.contact ?? current.contact,
-        pixKey: persistedSettings.pixKey ?? current.pixKey,
-        endDate: persistedSettings.endDate ?? current.endDate,
-        neighborhood: persistedSettings.neighborhood ?? current.neighborhood,
-        city: persistedSettings.city ?? current.city,
-      }));
-    }
+    loadCampaignData(campaign.id).then((persisted) => {
+      const persistedSettings = persisted.settings as Partial<Campaign>;
 
-    if (persisted.updates?.length) {
-      setUpdates((current) => {
-        const merged = [...persisted.updates, ...current];
-        const unique = merged.filter((item, index, array) => index === array.findIndex((candidate) => candidate.id === item.id));
-        return unique.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-      });
-    }
-  }, [campaign.id]);
+      if (persistedSettings && Object.keys(persistedSettings).length > 0) {
+        setActiveCampaign((current) => ({ ...current, ...persistedSettings }));
+        setSettingsForm((current) => ({
+          ...current,
+          title: persistedSettings.title ?? current.title,
+          description: persistedSettings.description ?? current.description,
+          mainNeed: persistedSettings.mainNeed ?? current.mainNeed,
+          financialGoal: persistedSettings.financialGoal?.toString() ?? current.financialGoal,
+          contact: persistedSettings.contact ?? current.contact,
+          pixKey: persistedSettings.pixKey ?? current.pixKey,
+          endDate: persistedSettings.endDate ?? current.endDate,
+          neighborhood: persistedSettings.neighborhood ?? current.neighborhood,
+          city: persistedSettings.city ?? current.city,
+        }));
+      }
 
-  const handleUpdateSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+      if (persisted.updates?.length) {
+        setUpdates((current) => {
+          const merged = [...persisted.updates, ...current];
+          const unique = merged.filter((item, index, array) => index === array.findIndex((candidate) => candidate.id === item.id));
+          return unique.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        });
+      }
+    });
+  }, [campaign.id, campaign.organizerId]);
+
+  const handleUpdateSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!updateForm.content.trim() && !updateForm.imageUrl.trim()) {
@@ -88,8 +97,8 @@ export function CampaignPageClient({ campaign, initialUpdates, organizer }: Camp
       updateType: updateForm.updateType,
     };
 
-    appendCampaignUpdate(campaign.id, newUpdate);
-    addCampaignNotification(campaign.id, {
+    await appendCampaignUpdate(campaign.id, newUpdate);
+    await addCampaignNotification(campaign.id, {
       id: `notif-${Date.now()}`,
       title: 'Nova atualização',
       message: content,
@@ -103,7 +112,7 @@ export function CampaignPageClient({ campaign, initialUpdates, organizer }: Camp
     setStatusMessage('Atualização publicada com sucesso.');
   };
 
-  const handleSettingsSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSettingsSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const payload = {
@@ -118,7 +127,7 @@ export function CampaignPageClient({ campaign, initialUpdates, organizer }: Camp
       city: settingsForm.city,
     };
 
-    updateCampaignSettings(campaign.id, payload);
+    await updateCampaignSettings(campaign.id, payload);
     setActiveCampaign((current) => ({ ...current, ...payload }));
     setStatusMessage('Dados da campanha atualizados.');
   };
@@ -145,13 +154,14 @@ export function CampaignPageClient({ campaign, initialUpdates, organizer }: Camp
 
         <div className="w-full aspect-video relative brutalist-card bg-primary overflow-hidden group">
           <Image
-            src={activeCampaign.coverImage}
+            src={activeCampaign.coverImage || '/images/campaign_library.png'}
             alt={activeCampaign.title}
             fill
             className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
         </div>
 
+        {isOwner && (
         <Card className="border-4 bg-secondary">
           <CardContent className="p-6 space-y-4">
             <div className="flex items-center gap-2 font-black uppercase"><Sparkles className="w-5 h-5" /> Gestão rápida</div>
@@ -209,6 +219,7 @@ export function CampaignPageClient({ campaign, initialUpdates, organizer }: Camp
             </div>
           </CardContent>
         </Card>
+        )}
 
         <div className="space-y-4">
           <h2 className="font-display text-3xl font-black uppercase border-b-4 border-border inline-block pb-1">Nossa Luta</h2>
@@ -235,7 +246,7 @@ export function CampaignPageClient({ campaign, initialUpdates, organizer }: Camp
                 <div className="flex items-center gap-2 font-black uppercase"><Camera className="w-5 h-5" /> Galeria</div>
                 <p className="text-sm font-medium text-gray-600">Fotos e vídeos da campanha ajudam a contar a história e reforçar a confiança.</p>
                 <div className="relative aspect-video w-full border-2 border-border overflow-hidden">
-                  <Image src={activeCampaign.coverImage} alt="Capa da campanha" fill className="object-cover" />
+                  <Image src={activeCampaign.coverImage || '/images/campaign_library.png'} alt="Capa da campanha" fill className="object-cover" />
                 </div>
               </CardContent>
             </Card>

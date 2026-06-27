@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
@@ -5,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { CheckCircle2 } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 interface VoluntarioForm {
   nomeCompleto: string;
@@ -19,6 +21,7 @@ interface VoluntarioForm {
   habilidades: string;
   contatoEmergencia: string;
   aceitaTermos: boolean;
+  senha?: string;
 }
 
 interface InstituicaoForm {
@@ -40,6 +43,7 @@ interface InstituicaoForm {
   representanteTelefone: string;
   dadosBancarios: string;
   aceitaTermos: boolean;
+  senha?: string;
 }
 
 const STORAGE_KEY_VOL = 'cadastro_voluntario';
@@ -50,7 +54,7 @@ export default function CadastroPage() {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
 
-  const [voluntario, setVoluntario] = useState<VoluntarioForm>({
+  const [voluntario, setVoluntario] = useState<VoluntarioForm & { senha?: string }>({
     nomeCompleto: '',
     cpf: '',
     dataNascimento: '',
@@ -63,9 +67,10 @@ export default function CadastroPage() {
     habilidades: '',
     contatoEmergencia: '',
     aceitaTermos: false,
+    senha: '',
   });
 
-  const [instituicao, setInstituicao] = useState<InstituicaoForm>({
+  const [instituicao, setInstituicao] = useState<InstituicaoForm & { senha?: string }>({
     nomeInstituicao: '',
     cnpj: '',
     emailInstitucional: '',
@@ -84,6 +89,7 @@ export default function CadastroPage() {
     representanteTelefone: '',
     dadosBancarios: '',
     aceitaTermos: false,
+    senha: '',
   });
 
   const handleVoluntarioChange = (field: keyof VoluntarioForm, value: string | boolean) => {
@@ -156,19 +162,69 @@ export default function CadastroPage() {
     return true;
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setError('');
     
-    if (mode === 'voluntario') {
-      if (!validateVoluntario()) return;
-      localStorage.setItem(STORAGE_KEY_VOL, JSON.stringify(voluntario));
-    } else {
-      if (!validateInstituicao()) return;
-      localStorage.setItem(STORAGE_KEY_INST, JSON.stringify(instituicao));
-    }
+    try {
+      if (mode === 'voluntario') {
+        if (!validateVoluntario()) return;
+        if (!voluntario.senha || voluntario.senha.length < 6) {
+          setError('A senha deve ter pelo menos 6 caracteres');
+          return;
+        }
+        
+        const { data, error: signUpError } = await supabase.auth.signUp({
+          email: voluntario.email.trim(),
+          password: voluntario.senha,
+        });
+        
+        if (signUpError) throw signUpError;
+        if (data.user) {
+          const { error: profileError } = await supabase.from('profiles').insert({
+            id: data.user.id,
+            profile_type: 'volunteer',
+            name: voluntario.nomeCompleto,
+            email: voluntario.email.trim(),
+            city: 'Desconhecida', // Pode extrair do endereço depois
+            neighborhood: 'Desconhecido',
+            description: voluntario.habilidades,
+          });
+          if (profileError) throw profileError;
+        }
 
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 5000);
+      } else {
+        if (!validateInstituicao()) return;
+        if (!instituicao.senha || instituicao.senha.length < 6) {
+          setError('A senha deve ter pelo menos 6 caracteres');
+          return;
+        }
+
+        const { data, error: signUpError } = await supabase.auth.signUp({
+          email: instituicao.emailInstitucional.trim(),
+          password: instituicao.senha,
+        });
+
+        if (signUpError) throw signUpError;
+        if (data.user) {
+          const { error: profileError } = await supabase.from('profiles').insert({
+            id: data.user.id,
+            profile_type: 'institution',
+            name: instituicao.nomeInstituicao,
+            email: instituicao.emailInstitucional.trim(),
+            city: 'Desconhecida',
+            neighborhood: 'Desconhecido',
+            description: instituicao.missaoObjetivos,
+          });
+          if (profileError) throw profileError;
+        }
+      }
+
+      setSubmitted(true);
+      setTimeout(() => setSubmitted(false), 5000);
+    } catch (err: any) {
+      setError(err.message || 'Erro ao realizar cadastro');
+    }
   };
 
   return (
@@ -253,6 +309,16 @@ export default function CadastroPage() {
                     value={voluntario.email}
                     onChange={(e) => handleVoluntarioChange('email', e.target.value)}
                     placeholder="maria@email.com"
+                    className="mt-2"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold uppercase text-sm text-gray-700">Senha *</label>
+                  <Input
+                    type="password"
+                    value={voluntario.senha}
+                    onChange={(e) => handleVoluntarioChange('senha', e.target.value)}
+                    placeholder="******"
                     className="mt-2"
                   />
                 </div>
@@ -366,6 +432,16 @@ export default function CadastroPage() {
                     value={instituicao.emailInstitucional}
                     onChange={(e) => handleInstituicaoChange('emailInstitucional', e.target.value)}
                     placeholder="contato@instituicao.org"
+                    className="mt-2"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold uppercase text-sm text-gray-700">Senha *</label>
+                  <Input
+                    type="password"
+                    value={instituicao.senha}
+                    onChange={(e) => handleInstituicaoChange('senha', e.target.value)}
+                    placeholder="******"
                     className="mt-2"
                   />
                 </div>

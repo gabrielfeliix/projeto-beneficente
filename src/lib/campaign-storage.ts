@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Campaign, UpdateRecord } from '@/domain/entities';
+import { supabase } from '@/lib/supabase';
 
 export type CampaignUpdateType = 'purchase' | 'milestone' | 'urgency' | 'completion';
 
@@ -15,52 +17,76 @@ export interface PersistedCampaignData {
   }>;
 }
 
-const STORAGE_KEY = 'mutirao_campaign_data_v1';
+export async function loadCampaignData(campaignId: string): Promise<PersistedCampaignData> {
+  const { data: campaign } = await supabase.from('campaigns').select('*').eq('id', campaignId).single();
+  const { data: updates } = await supabase.from('updates').select('*').eq('campaign_id', campaignId).order('created_at', { ascending: false });
 
-function readStore(): Record<string, PersistedCampaignData> {
-  if (typeof window === 'undefined') {
-    return {};
+  return {
+    settings: campaign ? {
+      title: campaign.title,
+      description: campaign.description,
+      category: campaign.category,
+      city: campaign.city,
+      neighborhood: campaign.neighborhood,
+      helpTypes: campaign.help_types,
+      mainNeed: campaign.main_need,
+      financialGoal: campaign.financial_goal,
+      financialRaised: campaign.financial_raised,
+      coverImage: campaign.cover_image,
+      gallery: campaign.gallery,
+      contact: campaign.contact,
+      tags: campaign.tags,
+      status: campaign.status,
+    } : {},
+    updates: updates ? updates.map((u: any) => ({
+      id: u.id,
+      campaignId: u.campaign_id,
+      content: u.content,
+      imageUrl: u.image_url,
+      likes: u.likes,
+      shares: u.shares,
+      createdAt: u.created_at,
+    })) : [],
+    notifications: [],
+  };
+}
+
+export async function appendCampaignUpdate(campaignId: string, update: UpdateRecord & { updateType?: CampaignUpdateType }) {
+  await supabase.from('updates').insert({
+    campaign_id: campaignId,
+    content: update.content,
+    image_url: update.imageUrl,
+    likes: update.likes,
+    shares: update.shares,
+    created_at: update.createdAt,
+  });
+}
+
+export async function updateCampaignSettings(campaignId: string, settings: Partial<Campaign>) {
+  const payload: any = {};
+  if (settings.title) payload.title = settings.title;
+  if (settings.description) payload.description = settings.description;
+  if (settings.mainNeed) payload.main_need = settings.mainNeed;
+  if (settings.financialGoal) payload.financial_goal = settings.financialGoal;
+  if (settings.contact) payload.contact = settings.contact;
+  if (settings.neighborhood) payload.neighborhood = settings.neighborhood;
+  if (settings.city) payload.city = settings.city;
+  payload.updated_at = new Date().toISOString();
+
+  await supabase.from('campaigns').update(payload).eq('id', campaignId);
+}
+
+export async function addCampaignNotification(campaignId: string, notification: PersistedCampaignData['notifications'][number]) {
+  // Simplificado para o escopo atual, inserindo para o dono da campanha
+  const { data: campaign } = await supabase.from('campaigns').select('organizer_id').eq('id', campaignId).single();
+  if (campaign) {
+    await supabase.from('notifications').insert({
+      user_id: campaign.organizer_id,
+      title: notification.title,
+      message: notification.message,
+      channel: notification.channel,
+      read: notification.read,
+      created_at: notification.createdAt,
+    });
   }
-
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : {};
-  } catch {
-    return {};
-  }
-}
-
-function writeStore(store: Record<string, PersistedCampaignData>) {
-  if (typeof window === 'undefined') {
-    return;
-  }
-
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
-}
-
-export function loadCampaignData(campaignId: string): PersistedCampaignData {
-  const store = readStore();
-  return store[campaignId] || { updates: [], settings: {}, notifications: [] };
-}
-
-export function saveCampaignData(campaignId: string, data: PersistedCampaignData) {
-  const store = readStore();
-  store[campaignId] = data;
-  writeStore(store);
-}
-
-export function appendCampaignUpdate(campaignId: string, update: UpdateRecord & { updateType?: CampaignUpdateType }) {
-  const data = loadCampaignData(campaignId);
-  const nextUpdates = [update, ...data.updates];
-  saveCampaignData(campaignId, { ...data, updates: nextUpdates });
-}
-
-export function updateCampaignSettings(campaignId: string, settings: Partial<Campaign>) {
-  const data = loadCampaignData(campaignId);
-  saveCampaignData(campaignId, { ...data, settings: { ...data.settings, ...settings } });
-}
-
-export function addCampaignNotification(campaignId: string, notification: PersistedCampaignData['notifications'][number]) {
-  const data = loadCampaignData(campaignId);
-  saveCampaignData(campaignId, { ...data, notifications: [notification, ...data.notifications] });
 }

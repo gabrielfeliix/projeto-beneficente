@@ -5,45 +5,40 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { saveStoredProfile } from '@/lib/auth';
-
-const sampleUsers = [
-  {
-    id: 'vol-1',
-    profileType: 'volunteer' as const,
-    name: 'Ana Beatriz',
-    email: 'ana.beatriz@email.com',
-  },
-  {
-    id: 'inst-1',
-    profileType: 'institution' as const,
-    name: 'Instituto Água Viva',
-    email: 'contato@aguaviva.org',
-  },
-];
+import { supabase } from '@/lib/supabase';
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleLogin = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const user = sampleUsers.find((user) => user.email === email.trim().toLowerCase());
-    if (!user) {
-      setError('Usuário não encontrado. Use o e-mail de demonstração.');
+    setLoading(true);
+    setError('');
+
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+
+    if (signInError) {
+      setError(signInError.message);
+      setLoading(false);
       return;
     }
 
-    saveStoredProfile(user);
     router.push('/dashboard');
+    router.refresh();
   };
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
       <div className="mb-10 text-center">
         <h1 className="font-display text-5xl font-black uppercase tracking-tighter">Login</h1>
-        <p className="text-gray-600 font-bold mt-3">Entre com o e-mail de demonstração para acessar seu painel.</p>
+        <p className="text-gray-600 font-bold mt-3">Entre na sua conta para acessar seu painel.</p>
       </div>
 
       <form onSubmit={handleLogin} className="space-y-6 bg-white border-4 border-border p-8 shadow-brutalist-lg">
@@ -52,8 +47,19 @@ export default function LoginPage() {
           <Input
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            placeholder="ana.beatriz@email.com"
+            placeholder="seu@email.com"
             type="email"
+            required
+            className="mt-2"
+          />
+        </div>
+        <div>
+          <label className="font-bold uppercase tracking-wide text-sm">Senha</label>
+          <Input
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            placeholder="******"
+            type="password"
             required
             className="mt-2"
           />
@@ -62,16 +68,14 @@ export default function LoginPage() {
         {error && <div className="text-sm font-bold text-red-600">{error}</div>}
 
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <Button type="submit" size="lg" className="uppercase tracking-wider">Entrar</Button>
+          <Button type="submit" size="lg" disabled={loading} className="uppercase tracking-wider">
+            {loading ? 'Entrando...' : 'Entrar'}
+          </Button>
           <div className="text-sm text-gray-600">
-            Use <strong>ana.beatriz@email.com</strong> para voluntário ou <strong>contato@aguaviva.org</strong> para ONG.
+            Não tem uma conta? <Link href="/cadastro" className="font-bold underline">Cadastre-se</Link>
           </div>
         </div>
       </form>
-
-      <div className="mt-10 text-center text-sm text-gray-600">
-        <p>Não há autenticação real ainda. Este login simula acesso para o fluxo de ONG/voluntário.</p>
-      </div>
     </div>
   );
 }
