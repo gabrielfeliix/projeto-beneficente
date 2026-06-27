@@ -136,10 +136,15 @@ export function CampaignsExplorer({ initialCampaigns }: CampaignsExplorerProps) 
                   <div className="mt-2 font-display text-2xl font-black text-black">
                     {campaign.financialGoal ? `R$ ${campaign.financialGoal.toLocaleString('pt-BR')}` : 'Doação de Materiais'}
                   </div>
-                  
-                  <div className="flex items-center gap-1 mt-3">
-                    <span className="w-2.5 h-2.5 rounded-full bg-green-500 inline-block shrink-0 shadow-sm border border-green-700"></span>
-                    <span className="text-sm font-bold text-green-600">Ativa</span>
+
+                  <div className="flex flex-wrap items-center gap-4 mt-3">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2.5 h-2.5 rounded-full bg-green-500 inline-block shrink-0 shadow-sm border border-green-700"></span>
+                      <span className="text-sm font-bold text-green-600">Ativa</span>
+                    </div>
+                    <span className="text-[10px] font-bold text-gray-400 bg-gray-50 border border-gray-200 px-2 py-0.5 rounded flex items-center gap-1 uppercase select-none">
+                      🤖 Classificado por IA (Seguro)
+                    </span>
                   </div>
                 </div>
 

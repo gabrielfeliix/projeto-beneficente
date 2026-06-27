@@ -74,7 +74,7 @@ export default async function Home() {
           <div className="flex-1 w-full max-w-md lg:max-w-none hidden sm:block">
             <div className="border-4 border-black p-4 bg-secondary shadow-[8px_8px_0_0_#000] rotate-2 hover:rotate-0 transition-transform duration-300">
               <Image
-                src="/images/hero_community.png"
+                src="https://images.unsplash.com/photo-1578351614282-13edb30b42c0?auto=format&fit=crop&q=80&w=800"
                 alt="Comunidade voluntária do RN"
                 width={800} height={500}
                 className="border-2 border-black w-full h-auto object-cover aspect-video"
@@ -102,14 +102,15 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* MARQUEE */}
-      {recentUpdates.length > 0 && (
-        <Marquee speed={30} className="border-b-2 border-black bg-black text-primary py-3">
-          {recentUpdates.map((update) => (
-            <div key={update.id} className="flex items-center gap-4 font-bold text-sm sm:text-base px-8 border-r-2 border-primary/30 last:border-0">
-              <Megaphone className="text-primary fill-primary shrink-0 w-4 h-4" />
+      {/* ACTIVE CAMPAIGNS MARQUEE */}
+      {campaigns.length > 0 && (
+        <Marquee speed={40} className="border-b-4 border-black bg-black text-primary py-3 select-none">
+          {campaigns.map((campaign) => (
+            <div key={campaign.id} className="flex items-center gap-4 font-bold text-sm sm:text-base px-8 border-r-4 border-primary/20 last:border-0 whitespace-nowrap">
+              <span className="w-2.5 h-2.5 rounded-full bg-green-500 shrink-0 border border-green-700 shadow-sm animate-pulse"></span>
               <span>
-                <span className="text-accent underline decoration-2">{update.campaign.title}</span>: {update.content.substring(0, 55)}...
+                CAMPANHA ATIVA: <span className="text-secondary underline decoration-2">{campaign.title}</span> em {campaign.city} 
+                {campaign.financialGoal ? ` — Meta: R$ ${campaign.financialGoal.toLocaleString('pt-BR')}` : ''}
               </span>
             </div>
           ))}
@@ -208,7 +209,7 @@ export default async function Home() {
                 <div className="border-2 border-white/20 bg-white/5 hover:bg-white/10 hover:border-primary p-5 sm:p-6 transition-all duration-200 h-full flex flex-col gap-3">
                   <div className="flex items-start justify-between gap-2">
                     <h3 className="font-black uppercase text-base sm:text-lg leading-tight line-clamp-2">{job.title}</h3>
-                    <Badge className="shrink-0 border border-white/30 bg-white/10 text-xs font-bold">{job.category}</Badge>
+                    <Badge className="shrink-0 border border-black bg-primary text-black text-xs font-black uppercase">{job.category}</Badge>
                   </div>
                   <p className="text-gray-400 text-sm font-medium line-clamp-2">{job.description}</p>
                   <div className="mt-auto flex items-center justify-between text-xs font-bold text-gray-500">

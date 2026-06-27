@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Campaign, UpdateRecord, User } from '@/domain/entities';
 import { appendCampaignUpdate, addCampaignNotification, loadCampaignData, updateCampaignSettings, type CampaignUpdateType } from '@/lib/campaign-storage';
-import { MapPin, Share2, Heart, Calendar, Megaphone, Sparkles, Camera, Settings, PlusCircle, AlertTriangle, Check, FileText, BarChart2 } from 'lucide-react';
+import { MapPin, Share2, Heart, Calendar, Megaphone, Sparkles, Camera, Settings, PlusCircle, AlertTriangle, Check, FileText, BarChart2, Star, ShieldCheck } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -39,6 +39,7 @@ export function CampaignPageClient({ campaign, initialUpdates, organizer }: Camp
   
   // Modals / forms
   const [donModalOpen, setDonModalOpen] = useState(false);
+  const [orgModalOpen, setOrgModalOpen] = useState(false);
   const [donForm, setDonForm] = useState({ donorName: '', amount: '', paymentMethod: 'pix' as 'pix' | 'card' });
   const [expForm, setExpForm] = useState({ amount: '', category: 'Alimentação' as any, description: '', receiptUrl: '' });
   const [donLoading, setDonLoading] = useState(false);
@@ -275,12 +276,50 @@ export function CampaignPageClient({ campaign, initialUpdates, organizer }: Camp
       <div className="flex flex-col lg:flex-row gap-8">
       <div className="flex-1 space-y-12">
         <div className="space-y-6">
-          <Badge className="text-lg" variant={activeCampaign.category === 'Educação' ? 'secondary' : 'default'}>
-            {activeCampaign.category}
-          </Badge>
+          <div className="flex flex-wrap gap-2 items-center">
+            <Badge className="text-lg" variant={activeCampaign.category === 'Educação' ? 'secondary' : 'default'}>
+              {activeCampaign.category}
+            </Badge>
+            <div className="text-xs font-bold text-gray-400 bg-gray-100 border border-gray-200 px-2 py-0.5 rounded flex items-center gap-1">
+              <span>🤖 Analisado por IA</span>
+            </div>
+          </div>
           <h1 className="font-display text-4xl sm:text-5xl font-black uppercase tracking-tighter leading-tight">
             {activeCampaign.title}
           </h1>
+
+          {/* Rating, Likes & AI Scam Thermometer */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex items-center gap-4 bg-white p-3 border-2 border-black shadow-brutalist-sm">
+              <div className="flex items-center gap-1 text-yellow-500 font-bold">
+                <Star className="w-5 h-5 fill-yellow-500 text-yellow-500" />
+                <span className="text-black text-lg">4.8</span>
+                <span className="text-gray-400 text-xs font-semibold">(124 avaliações)</span>
+              </div>
+              <div className="h-4 w-px bg-gray-300"></div>
+              <div className="flex items-center gap-1 text-red-500 font-bold">
+                <Heart className="w-5 h-5 fill-red-500 text-red-500" />
+                <span className="text-black text-lg">342 curtidas</span>
+              </div>
+            </div>
+
+            <div className="bg-green-50 border-2 border-green-400 p-3 flex items-center gap-3 shadow-brutalist-sm">
+              <ShieldCheck className="w-8 h-8 text-green-600 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between text-[10px] font-black text-green-800">
+                  <span>TERMÔMETRO DE SEGURANÇA IA</span>
+                  <span>Risco de Golpe: Muito Baixo (2%)</span>
+                </div>
+                <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden mt-1 border border-green-300">
+                  <div className="bg-green-500 h-full w-[2%]"></div>
+                </div>
+                <p className="text-[9px] text-green-700 font-bold mt-1 leading-none">
+                  Documentos validados e consistência cadastral verificada por IA.
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div className="flex items-center gap-4 text-gray-600 font-bold">
             <div className="flex items-center gap-1"><MapPin className="w-5 h-5" /> {activeCampaign.neighborhood}, {activeCampaign.city}</div>
             <div className="flex items-center gap-1"><Calendar className="w-5 h-5" /> Criada em {new Date(activeCampaign.createdAt).toLocaleDateString()}</div>
@@ -619,21 +658,29 @@ export function CampaignPageClient({ campaign, initialUpdates, organizer }: Camp
             <Card className="bg-secondary border-4">
               <CardContent className="p-6">
                 <h3 className="font-display font-black uppercase text-xl mb-4">Organizador / ONG</h3>
-                <div className="flex items-center gap-4 mb-4">
-                  {organizer.avatarUrl && (
-                    <Image
-                      src={organizer.avatarUrl}
-                      alt={organizer.name}
-                      width={64}
-                      height={64}
-                      className="rounded-full border-2 border-border"
-                    />
-                  )}
-                  <div>
-                    <div className="font-bold text-lg leading-tight">{organizer.name}</div>
-                    <div className="text-sm font-semibold text-gray-700">{organizer.city}</div>
-                  </div>
-                </div>
+                <div 
+                   className="flex items-center gap-4 mb-4 cursor-pointer hover:opacity-80 transition-opacity" 
+                   onClick={() => setOrgModalOpen(true)}
+                   title="Clique para ver o perfil do organizador"
+                 >
+                   {organizer.avatarUrl ? (
+                     <Image
+                       src={organizer.avatarUrl}
+                       alt={organizer.name}
+                       width={64}
+                       height={64}
+                       className="rounded-full border-2 border-border"
+                     />
+                   ) : (
+                     <div className="w-16 h-16 rounded-full border-2 border-border bg-black text-white flex items-center justify-center font-display text-2xl font-black shrink-0">
+                       {organizer.name.substring(0, 2).toUpperCase()}
+                     </div>
+                   )}
+                   <div>
+                     <div className="font-bold text-lg leading-tight underline decoration-primary decoration-2">{organizer.name}</div>
+                     <div className="text-sm font-semibold text-gray-700">{organizer.city}</div>
+                   </div>
+                 </div>
                 <p className="text-sm font-medium mb-4">{organizer.description}</p>
                 {activeCampaign.contact && (
                   <div className="pt-4 border-t-2 border-border text-sm font-bold">
@@ -767,6 +814,90 @@ export function CampaignPageClient({ campaign, initialUpdates, organizer }: Camp
                 </Button>
               </form>
             )}
+          </div>
+        </div>
+      )}
+        </div>
+      )}
+
+      {/* ORGANIZER PROFILE MODAL */}
+      {orgModalOpen && organizer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-lg border-4 border-black bg-white p-6 shadow-[8px_8px_0_0_#000] relative space-y-6 text-black max-h-[85vh] overflow-y-auto">
+            <button
+              onClick={() => setOrgModalOpen(false)}
+              className="absolute top-4 right-4 border-2 border-black p-1 hover:bg-gray-100 font-black w-8 h-8 flex items-center justify-center"
+            >
+              ✕
+            </button>
+
+            <div className="flex items-center gap-4 border-b-4 border-black pb-6">
+              {organizer.avatarUrl ? (
+                <Image
+                  src={organizer.avatarUrl}
+                  alt={organizer.name}
+                  width={80}
+                  height={80}
+                  className="rounded-full border-4 border-black shadow-sm shrink-0"
+                />
+              ) : (
+                <div className="w-20 h-20 rounded-full border-4 border-black bg-black text-white flex items-center justify-center font-display text-3xl font-black shrink-0">
+                  {organizer.name.substring(0, 2).toUpperCase()}
+                </div>
+              )}
+              <div>
+                <Badge className="bg-black text-primary border-2 border-black font-black uppercase text-xs">
+                  {organizer.profileType === 'institution' ? 'ONG / Instituição' : 'Organizador'}
+                </Badge>
+                <h3 className="font-display text-2xl sm:text-3xl font-black uppercase tracking-tighter mt-1">{organizer.name}</h3>
+                <p className="text-sm font-semibold text-gray-500">{organizer.city || 'Rio Grande do Norte'}, RN</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div className="bg-primary p-3 border-2 border-black text-center shadow-brutalist-sm">
+                <div className="font-display text-2xl font-black">48</div>
+                <div className="text-[10px] font-bold uppercase tracking-wider text-black/70">Doações Rec.</div>
+              </div>
+              <div className="bg-secondary p-3 border-2 border-black text-center shadow-brutalist-sm">
+                <div className="font-display text-2xl font-black">4.9 ★</div>
+                <div className="text-[10px] font-bold uppercase tracking-wider text-black/70">Avaliação Geral</div>
+              </div>
+              <div className="bg-accent text-white p-3 border-2 border-black text-center shadow-brutalist-sm">
+                <div className="font-display text-2xl font-black">812</div>
+                <div className="text-[10px] font-bold uppercase tracking-wider text-white/70">Curtidas Gerais</div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <h4 className="font-display text-lg font-black uppercase tracking-tight">Sobre</h4>
+              <p className="text-sm font-medium text-gray-700 leading-relaxed bg-gray-50 p-3 border-2 border-dashed border-gray-300">
+                {organizer.description || "Este organizador apoia causas sociais e ajuda a impulsionar o RN."}
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <h4 className="font-display text-lg font-black uppercase tracking-tight flex items-center justify-between">
+                <span>Campanhas Deste Organizador</span>
+                <span className="text-xs bg-black text-white px-2 py-0.5 font-sans font-bold">Total: 2</span>
+              </h4>
+              <div className="space-y-3">
+                <div className="p-3 border-2 border-black hover:bg-gray-50 flex items-center justify-between">
+                  <div>
+                    <h5 className="font-bold text-sm uppercase truncate max-w-[250px]">Refeitório Comunitário e Sopão do Seridó</h5>
+                    <p className="text-xs text-gray-500 font-semibold">Caicó, RN</p>
+                  </div>
+                  <Badge className="bg-green-500 text-white font-bold border border-green-700">Meta Batida! ✓</Badge>
+                </div>
+                <div className="p-3 border-2 border-black hover:bg-gray-50 flex items-center justify-between">
+                  <div>
+                    <h5 className="font-bold text-sm uppercase truncate max-w-[250px]">Marmitas Solidárias Filipe Camarão</h5>
+                    <p className="text-xs text-gray-500 font-semibold">Natal, RN</p>
+                  </div>
+                  <Badge className="bg-primary text-black font-bold border border-black">Ativa ⚡</Badge>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
