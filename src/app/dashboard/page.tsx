@@ -806,7 +806,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* LADO DIREITO: ATALHOS */}
+        {/* LADO DIREITO: ATALHOS & MÉTRICAS DE IMPACTO E MAPA */}
         <aside className="space-y-6">
           <Card className="border-4 bg-white p-6 shadow-brutalist">
             <h2 className="font-display text-xl font-black uppercase mb-4 flex items-center gap-2">
@@ -828,6 +828,76 @@ export default function DashboardPage() {
                   👤 Configurar Perfil
                 </Button>
               </Link>
+            </div>
+          </Card>
+
+          {/* Métricas de Impacto e Causas */}
+          <Card className="border-4 bg-white p-6 shadow-brutalist text-black space-y-4">
+            <h2 className="font-display text-xl font-black uppercase flex items-center gap-2">
+              📊 Impacto Social & Causas
+            </h2>
+            
+            <div className="space-y-3 text-sm">
+              <div>
+                <span className="font-black text-gray-500 uppercase text-[10px]">Causas Apoiadas</span>
+                <div className="flex flex-wrap gap-1 mt-1">
+                  <Badge className="bg-primary text-black border border-black font-black text-[10px]">Alimentação</Badge>
+                  <Badge className="bg-primary text-black border border-black font-black text-[10px]">Educação</Badge>
+                  <Badge className="bg-accent text-white border border-black font-black text-[10px]">Sertão Sem Sede</Badge>
+                </div>
+              </div>
+              
+              <div className="border-t-2 border-dashed border-gray-100 pt-3">
+                <span className="font-black text-gray-500 uppercase text-[10px] block">Métricas Acumuladas</span>
+                <div className="grid grid-cols-2 gap-2 mt-1">
+                  <div className="bg-gray-50 border-2 border-black p-2 text-center">
+                    <span className="text-xs font-bold text-gray-400 block uppercase">Refeições</span>
+                    <span className="text-lg font-black text-black">1.250</span>
+                  </div>
+                  <div className="bg-gray-50 border-2 border-black p-2 text-center">
+                    <span className="text-xs font-bold text-gray-400 block uppercase">Crianças</span>
+                    <span className="text-lg font-black text-black">180+</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* Mapa do Voluntariado no RN */}
+          <Card className="border-4 bg-white p-6 shadow-brutalist text-black space-y-3">
+            <h2 className="font-display text-xl font-black uppercase flex items-center gap-2">
+              📍 Concentração de Voluntários (RN)
+            </h2>
+            <p className="text-xs font-bold text-gray-500 leading-snug">Distribuição geográfica dos candidatos e voluntários da sua instituição.</p>
+            
+            {/* Visual simulation of RN map region markers */}
+            <div className="border-2 border-black bg-sky-50 h-44 relative overflow-hidden flex flex-col justify-between p-3">
+              {/* Map grid decoration */}
+              <div className="absolute inset-0 grid grid-cols-6 grid-rows-6 opacity-20 pointer-events-none">
+                {Array.from({ length: 36 }).map((_, i) => (
+                  <div key={i} className="border border-dashed border-black" />
+                ))}
+              </div>
+              
+              {/* Map pins simulation */}
+              <div className="absolute left-8 top-16 flex flex-col items-center">
+                <Badge className="bg-black text-white text-[9px] font-black border border-black">Caicó (8)</Badge>
+                <div className="w-2.5 h-2.5 bg-accent border-2 border-black rounded-full animate-ping mt-1" />
+              </div>
+
+              <div className="absolute right-12 top-8 flex flex-col items-center">
+                <Badge className="bg-black text-white text-[9px] font-black border border-black">Natal (34)</Badge>
+                <div className="w-2.5 h-2.5 bg-primary border-2 border-black rounded-full animate-pulse mt-1" />
+              </div>
+
+              <div className="absolute right-8 top-28 flex flex-col items-center">
+                <Badge className="bg-black text-white text-[9px] font-black border border-black">Parnamirim (15)</Badge>
+                <div className="w-2.5 h-2.5 bg-primary border-2 border-black rounded-full mt-1" />
+              </div>
+              
+              <div className="mt-auto z-10 text-[9px] font-black text-gray-500 uppercase bg-white/80 p-1 border border-black rounded-none self-start">
+                Região de Atuação: Rio Grande do Norte
+              </div>
             </div>
           </Card>
         </aside>

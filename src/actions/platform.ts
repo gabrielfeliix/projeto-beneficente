@@ -8,6 +8,7 @@ import {
   JobPosting,
   Notification,
   Volunteer,
+  Company,
 } from '@/domain/entities';
 import {
   mockApplications,
@@ -21,7 +22,7 @@ import { supabase, isSupabaseConfigured, isUUID } from '@/lib/supabase';
 
 // Mapeamentos específicos do banco de dados (snake_case) para as Entidades do Domínio (camelCase)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function mapDBProfile(db: any): Volunteer | Institution | null {
+function mapDBProfile(db: any): Volunteer | Institution | Company | null {
   if (!db) return null;
   
   const baseUser = {
@@ -60,6 +61,18 @@ function mapDBProfile(db: any): Volunteer | Institution | null {
       phone: db.phone || '',
       acceptedTerms: db.accepted_terms || false,
     } as any;
+  } else if (db.profile_type === 'company') {
+    return {
+      ...baseUser,
+      profileType: 'company',
+      cnpj: db.cnpj || '',
+      representativeName: db.representative_name || '',
+      address: db.address || '',
+      phone: db.phone || '',
+      subscriptionPlan: db.subscription_plan || 'none',
+      subscriptionStatus: db.subscription_status || 'inactive',
+      acceptedTerms: db.accepted_terms || false,
+    } as Company;
   } else {
     return {
       ...baseUser,
@@ -314,7 +327,7 @@ export async function getNotifications(userId: string): Promise<Notification[]> 
   return mockNotifications.filter((notification) => notification.userId === userId);
 }
 
-export async function getProfile(userId: string): Promise<Volunteer | Institution | null> {
+export async function getProfile(userId: string): Promise<Volunteer | Institution | Company | null> {
   if (isSupabaseConfigured && supabase && isUUID(userId)) {
     const { data, error } = await supabase
       .from('profiles')
@@ -362,4 +375,194 @@ export async function updateApplicationStatus(
     return true;
   }
   return false;
+}
+
+export async function updateProfile(
+  userId: string,
+  profileData: {
+    name: string;
+    phone: string;
+    city: string;
+    neighborhood: string;
+    description?: string;
+    mission?: string;
+  }
+): Promise<boolean> {
+  if (isSupabaseConfigured && supabase && isUUID(userId)) {
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        name: profileData.name,
+        phone: profileData.phone,
+        city: profileData.city,
+        neighborhood: profileData.neighborhood,
+        description: profileData.description,
+        mission: profileData.mission,
+      })
+      .eq('id', userId);
+
+    if (error) {
+      console.error('Error in updateProfile:', error.message);
+      return false;
+    }
+    return true;
+  }
+
+  // Fallback offline simulation
+  await delay(200);
+  const volIndex = mockVolunteers.findIndex(v => v.id === userId);
+  if (volIndex !== -1) {
+    mockVolunteers[volIndex] = {
+      ...mockVolunteers[volIndex],
+      name: profileData.name,
+      phone: profileData.phone,
+      city: profileData.city,
+      neighborhood: profileData.neighborhood,
+      description: profileData.description,
+    };
+    return true;
+  }
+
+  const instIndex = mockInstitutions.findIndex(i => i.id === userId);
+  if (instIndex !== -1) {
+    mockInstitutions[instIndex] = {
+      ...mockInstitutions[instIndex],
+      name: profileData.name,
+      phone: profileData.phone,
+      city: profileData.city,
+      neighborhood: profileData.neighborhood,
+      mission: profileData.mission || '',
+    };
+    return true;
+  }
+
+  return false;
+}
+
+export async function submitApplication(applicationData: {
+  jobId: string;
+  volunteerId: string;
+  message: string;
+}): Promise<{ success: boolean; error?: string }> {
+  if (isSupabaseConfigured && supabase) {
+    if (!isUUID(applicationData.jobId) || !isUUID(applicationData.volunteerId)) {
+      return { success: false, error: 'ID da vaga ou voluntário inválido.' };
+    }
+
+    try {
+      const { data: job, error: jobErr } = await supabase
+        .from('job_postings')
+        .select('institution_id, title')
+        .eq('id', applicationData.jobId)
+        .single();
+
+      if (jobErr || !job) {
+        return { success: false, error: 'Vaga não encontrada.' };
+      }
+
+      const { data: inst, error: instErr } = await supabase
+        .from('profiles')
+        .select('name')
+        .eq('id', job.institution_id)
+        .single();
+
+      if (instErr || !inst) {
+        return { success: false, error: 'Instituição responsável não encontrada.' };
+      }
+
+      const { data: vol, error: volErr } = await supabase
+        .from('profiles')
+        .select('name')
+        .eq('id', applicationData.volunteerId)
+        .single();
+
+      if (volErr || !vol) {
+        return { success: false, error: 'Perfil do voluntário não encontrado.' };
+      }
+
+      const { error: appErr } = await supabase
+        .from('applications')
+        .insert({
+          job_id: applicationData.jobId,
+          volunteer_id: applicationData.volunteerId,
+          institution_id: job.institution_id,
+          job_title: job.title,
+          institution_name: inst.name,
+          volunteer_name: vol.name,
+          message: applicationData.message || 'Tenho interesse em contribuir com esta vaga.',
+          status: 'pending',
+        });
+
+      if (appErr) {
+        if (appErr.code === '23505') {
+          return { success: false, error: 'Você já enviou uma candidatura para esta vaga.' };
+        }
+        return { success: false, error: appErr.message };
+      }
+
+      return { success: true };
+    } catch (err: any) {
+      console.error('Exception in submitApplication:', err);
+      return { success: false, error: err.message || 'Erro inesperado ao processar candidatura.' };
+    }
+  }
+
+  // Fallback offline simulation
+  await delay(300);
+  const matchedJob = mockJobPostings.find(j => j.id === applicationData.jobId);
+  const matchedVol = mockVolunteers.find(v => v.id === applicationData.volunteerId);
+  if (!matchedJob || !matchedVol) {
+    return { success: false, error: 'Vaga ou voluntário não encontrado no modo de demonstração.' };
+  }
+
+  const alreadyApplied = mockApplications.some(
+    app => app.jobId === applicationData.jobId && app.volunteerId === applicationData.volunteerId
+  );
+  if (alreadyApplied) {
+    return { success: false, error: 'Você já enviou uma candidatura para esta vaga.' };
+  }
+
+  const newApp: Application = {
+    id: `app-mock-${Date.now()}`,
+    jobId: applicationData.jobId,
+    volunteerId: applicationData.volunteerId,
+    institutionId: matchedJob.institutionId,
+    jobTitle: matchedJob.title,
+    institutionName: mockInstitutions.find(i => i.id === matchedJob.institutionId)?.name || 'Instituição Fallback',
+    volunteerName: matchedVol.name,
+    message: applicationData.message || 'Tenho interesse em contribuir com esta vaga.',
+    status: 'pending',
+    submittedAt: new Date().toISOString(),
+  };
+
+  mockApplications.push(newApp);
+  return { success: true };
+}
+
+export async function checkUniqueField(
+  field: 'cpf' | 'cnpj' | 'email',
+  value: string
+): Promise<{ exists: boolean; error?: string }> {
+  if (isSupabaseConfigured && supabase) {
+    const cleanValue = value.replace(/\D/g, '').trim();
+    const queryValue = field === 'email' ? value.trim().toLowerCase() : cleanValue;
+
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq(field, queryValue)
+        .maybeSingle();
+
+      if (error) {
+        console.error(`Error checking unique field ${field}:`, error.message);
+        return { exists: false, error: error.message };
+      }
+
+      return { exists: !!data };
+    } catch (err: any) {
+      return { exists: false, error: err.message };
+    }
+  }
+  return { exists: false };
 }

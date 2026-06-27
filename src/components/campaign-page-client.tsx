@@ -46,6 +46,21 @@ export function CampaignPageClient({ campaign, initialUpdates, organizer }: Camp
   const [donSuccess, setDonSuccess] = useState(false);
   const [expSuccess, setExpSuccess] = useState(false);
 
+  const [copiedPix, setCopiedPix] = useState(false);
+
+  const getPixCopyAndPaste = () => {
+    const key = activeCampaign.pixKey || "contato@mutirao.org.br";
+    const amount = Number(donForm.amount) || 10;
+    const formattedAmount = amount.toFixed(2);
+    return `00020101021226580014br.gov.bcb.pix0124${key}5204000053039865405${formattedAmount}5802BR5915Mutirao Ong RN6005Natal62070503***6304`;
+  };
+
+  const handleCopyPix = () => {
+    navigator.clipboard.writeText(getPixCopyAndPaste());
+    setCopiedPix(true);
+    setTimeout(() => setCopiedPix(false), 2000);
+  };
+
   useEffect(() => {
     const loaded = loadStoredProfile();
     setProfile(loaded);
@@ -708,13 +723,29 @@ export function CampaignPageClient({ campaign, initialUpdates, organizer }: Camp
 
                 {donForm.paymentMethod === 'pix' ? (
                   <div className="bg-gray-50 border-2 border-dashed border-black p-4 text-center space-y-3">
-                    <p className="text-xs font-bold text-gray-600">Escaneie o QR Code ou use o Pix Copia e Cola:</p>
-                    <div className="w-32 h-32 bg-gray-200 border-2 border-black mx-auto flex items-center justify-center font-bold text-xs uppercase">
-                      QR CODE MOCK
+                    <p className="text-xs font-black text-gray-600 uppercase">Escaneie o QR Code ou use o Pix Copia e Cola:</p>
+                    
+                    <div className="relative w-44 h-44 mx-auto border-4 border-black bg-white flex items-center justify-center p-2 shadow-[2px_2px_0_0_#000]">
+                      <img 
+                        src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(getPixCopyAndPaste())}`}
+                        alt="QR Code Pix Dinâmico"
+                        className="w-full h-full object-contain"
+                      />
                     </div>
-                    <code className="block text-[10px] bg-white p-2 border border-black truncate">
-                      {activeCampaign.pixKey || "mutirao-pix-chave-chave-exemplo-rn"}
-                    </code>
+                    
+                    <div className="space-y-2">
+                      <code className="block text-[10px] bg-white p-2 border-2 border-black truncate font-bold text-gray-800">
+                        {getPixCopyAndPaste()}
+                      </code>
+                      
+                      <Button
+                        type="button"
+                        onClick={handleCopyPix}
+                        className="w-full h-9 text-xs font-black uppercase bg-black text-white hover:bg-gray-800 border-2 border-black cursor-pointer"
+                      >
+                        {copiedPix ? "Código Copiado! ✓" : "Copiar Pix Copia e Cola"}
+                      </Button>
+                    </div>
                   </div>
                 ) : (
                   <div className="bg-gray-50 border-2 border-black p-4 space-y-2 text-left">

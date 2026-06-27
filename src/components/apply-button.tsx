@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { loadStoredProfile } from "@/lib/auth";
-import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { submitApplication } from "@/actions/platform";
 import { UserCheck, ShieldCheck, LogIn, CheckCircle, AlertCircle } from "lucide-react";
 
 interface ApplyButtonProps {
@@ -102,28 +102,16 @@ export function ApplyButton({ jobId, jobTitle }: ApplyButtonProps) {
     setLoading(true); setError("");
 
     try {
-      if (isSupabaseConfigured && supabase) {
-        // Busca dados da vaga para preencher campos desnormalizados
-        const { data: job } = await supabase.from("job_postings").select("institution_id, title").eq("id", jobId).single();
-        const { data: inst } = job ? await supabase.from("profiles").select("name").eq("id", job.institution_id).single() : { data: null };
+      const res = await submitApplication({
+        jobId,
+        volunteerId: profile.id,
+        message,
+      });
 
-        const { error: appErr } = await supabase.from("applications").insert({
-          job_id: jobId,
-          volunteer_id: profile.id,
-          institution_id: job?.institution_id,
-          job_title: job?.title || jobTitle,
-          institution_name: inst?.name || "Instituição",
-          volunteer_name: profile.name,
-          message: message || "Tenho interesse em contribuir com esta vaga.",
-          status: "pending",
-        });
-
-        if (appErr) {
-          if (appErr.code === "23505") throw new Error("Você já enviou uma candidatura para esta vaga.");
-          throw appErr;
-        }
+      if (!res.success) {
+        throw new Error(res.error || "Erro ao enviar candidatura.");
       }
-      // Modo offline: apenas simula
+
       setSubmitted(true);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Erro ao enviar candidatura.");

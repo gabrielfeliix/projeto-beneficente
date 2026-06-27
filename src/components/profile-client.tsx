@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Pencil, Check, Loader2, Save, X } from 'lucide-react';
 import { loadStoredProfile, saveStoredProfile } from '@/lib/auth';
-import { getProfile } from '@/actions/platform';
+import { getProfile, updateProfile } from '@/actions/platform';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
 export function ProfileClient() {
@@ -63,20 +63,21 @@ export function ProfileClient() {
     setSuccessMsg('');
 
     try {
-      // 1. Update DB if configured
-      if (isSupabaseConfigured && supabase && profile?.id) {
-        const { error } = await supabase
-          .from('profiles')
-          .update({
-            name,
-            phone,
-            city,
-            neighborhood,
-            description: profile.profileType === 'volunteer' ? description : undefined,
-            mission: profile.profileType !== 'volunteer' ? description : undefined,
-          })
-          .eq('id', profile.id);
-        if (error) throw error;
+      const isVolunteer = profile.profileType === 'volunteer';
+      const isDonor = profile.profileType === 'donor';
+
+      // 1. Update DB via Server Action
+      const success = await updateProfile(profile.id, {
+        name,
+        phone,
+        city,
+        neighborhood,
+        description: (isVolunteer || isDonor) ? description : undefined,
+        mission: (!isVolunteer && !isDonor) ? description : undefined,
+      });
+
+      if (!success) {
+        throw new Error('Não foi possível salvar os dados no banco de dados.');
       }
 
       // 2. Update local cookie

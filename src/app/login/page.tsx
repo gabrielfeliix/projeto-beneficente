@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { saveStoredProfile } from "@/lib/auth";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { checkUniqueField, getProfile } from "@/actions/platform";
 import {
   validateCPF, validateCNPJ, validatePhone, validateEmail, validatePassword,
   formatCPF, formatCNPJ, formatPhone, formatCEP, buscarCEP,
@@ -103,6 +104,7 @@ function AuthForm() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  const [forgotMode, setForgotMode] = useState(false);
 
   // Step 1 fields
   const [signupName, setSignupName] = useState("");
@@ -192,7 +194,7 @@ function AuthForm() {
         const { data, error: err } = await supabase.auth.signInWithPassword({ email: loginEmail, password: loginPassword });
         if (err) throw err;
         if (data.user) {
-          const { data: profile } = await supabase.from("profiles").select("*").eq("id", data.user.id).maybeSingle();
+          const profile = await getProfile(data.user.id);
           if (!profile) {
             setUserId(data.user.id);
             setSignupName(data.user.email?.split("@")[0] || "");
@@ -203,12 +205,12 @@ function AuthForm() {
           }
           saveStoredProfile({
             id: profile.id,
-            profileType: profile.profile_type as any,
-            role: profile.profile_type as any,
+            profileType: profile.profileType as any,
+            role: profile.profileType as any,
             name: profile.name,
             email: profile.email,
-            avatarUrl: profile.avatar_url,
-            approvalStatus: profile.approval_status,
+            avatarUrl: profile.avatarUrl,
+            approvalStatus: (profile as any).approvalStatus,
           });
         }
       } else {
@@ -224,6 +226,29 @@ function AuthForm() {
     } finally { setLoading(false); }
   };
 
+  /* ── FORGOT PASSWORD ── */
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(""); setSuccess(""); setLoading(true);
+    try {
+      if (!loginEmail.trim() || !validateEmail(loginEmail)) {
+        throw new Error("Por favor, insira um e-mail válido.");
+      }
+
+      if (isSupabaseConfigured && supabase) {
+        const { error: err } = await supabase.auth.resetPasswordForEmail(loginEmail, {
+          redirectTo: `${window.location.origin}/redefinir-senha`,
+        });
+        if (err) throw err;
+        setSuccess("Link de redefinição enviado! Verifique sua caixa de entrada.");
+      } else {
+        setSuccess("Modo Offline: Link de redefinição enviado com sucesso (simulado).");
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Erro ao enviar e-mail de recuperação.");
+    } finally { setLoading(false); }
+  };
+
   /* ── SIGNUP STEP 1 ── */
   const handleSignupStep1 = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -235,6 +260,13 @@ function AuthForm() {
       if (!validateEmail(signupEmail)) throw new Error("E-mail inválido.");
       const pwResult = validatePassword(signupPassword);
       if (!pwResult.valid) throw new Error(`Senha fraca: ${pwResult.message}`);
+
+      if (isSupabaseConfigured) {
+        const emailCheck = await checkUniqueField("email", signupEmail);
+        if (emailCheck.exists) {
+          throw new Error("Este e-mail já está cadastrado. Faça login ou utilize outro e-mail.");
+        }
+      }
 
       if (isSupabaseConfigured && supabase) {
         const { data, error: err } = await supabase.auth.signUp({
@@ -267,6 +299,14 @@ function AuthForm() {
     try {
       if (profileType === "donor" || profileType === "volunteer") {
         if (!validateCPF(cpf)) throw new Error("CPF inválido. Verifique o número informado.");
+        
+        if (isSupabaseConfigured) {
+          const cpfCheck = await checkUniqueField("cpf", cpf);
+          if (cpfCheck.exists) {
+            throw new Error("Este CPF já está cadastrado em nosso sistema.");
+          }
+        }
+
         if (!birthDate) throw new Error("Data de nascimento é obrigatória.");
         if (!cep) throw new Error("CEP é obrigatório.");
         const cleanCep = cep.replace(/\D/g, "");
@@ -306,6 +346,14 @@ function AuthForm() {
       } else {
         // Institution or Company
         if (!validateCNPJ(cnpj)) throw new Error("CNPJ inválido. Verifique o número informado.");
+        
+        if (isSupabaseConfigured) {
+          const cnpjCheck = await checkUniqueField("cnpj", cnpj);
+          if (cnpjCheck.exists) {
+            throw new Error("Este CNPJ já está cadastrado em nosso sistema.");
+          }
+        }
+
         if (!instRepName.trim()) throw new Error("Nome do representante legal é obrigatório.");
         if (instRepCpf && !validateCPF(instRepCpf)) throw new Error("CPF do representante inválido.");
         if (instPhone && !validatePhone(instPhone)) throw new Error("Telefone inválido.");
@@ -673,38 +721,65 @@ function AuthForm() {
         )}
 
         {tab === "login" ? (
-          <form onSubmit={handleLogin} className="space-y-5">
-            <div>
-              <label className="font-bold uppercase text-sm text-gray-700 block mb-1">E-mail</label>
-              <Input type="email" value={loginEmail} onChange={e => setLoginEmail(e.target.value)}
-                placeholder="seu@email.com" required className="h-12 border-2 border-black" />
-            </div>
-            <div>
-              <label className="font-bold uppercase text-sm text-gray-700 block mb-1">Senha</label>
-              <div className="relative">
-                <Input type={showPass ? "text" : "password"} value={loginPassword}
-                  onChange={e => setLoginPassword(e.target.value)}
-                  placeholder="Sua senha" required className="h-12 border-2 border-black pr-12" />
-                <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-3 top-3.5 text-gray-500">
-                  {showPass ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
+          forgotMode ? (
+            <form onSubmit={handleForgotPassword} className="space-y-5">
+              <div>
+                <label className="font-bold uppercase text-sm text-gray-700 block mb-1">E-mail de Recuperação</label>
+                <Input type="email" value={loginEmail} onChange={e => setLoginEmail(e.target.value)}
+                  placeholder="seu@email.com" required className="h-12 border-2 border-black" />
               </div>
-            </div>
-
-            {!isSupabaseConfigured && (
-              <div className="bg-yellow-50 border-2 border-yellow-400 p-4 text-xs font-bold space-y-1.5">
-                <p className="uppercase text-yellow-700 text-sm">💡 Modo Demonstração</p>
-                <p>Voluntário: <code className="bg-yellow-100 px-1">ana.beatriz@email.com</code> / <code className="bg-yellow-100 px-1">demo123</code></p>
-                <p>ONG: <code className="bg-yellow-100 px-1">contato@aguaviva.org</code> / <code className="bg-yellow-100 px-1">demo123</code></p>
-                <p>Pessoa Física: <code className="bg-yellow-100 px-1">pedro.doador@email.com</code> / <code className="bg-yellow-100 px-1">demo123</code></p>
+              
+              <div className="flex flex-col gap-2">
+                <Button type="submit" size="lg" disabled={loading}
+                  className="w-full h-14 uppercase font-black text-lg bg-black text-white hover:bg-gray-800">
+                  {loading ? <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Enviando...</> : "Enviar E-mail de Recuperação"}
+                </Button>
+                <Button type="button" variant="outline" onClick={() => { setForgotMode(false); setError(""); setSuccess(""); }}
+                  className="w-full h-11 font-black uppercase text-xs border-2 border-black">
+                  Voltar para o Login
+                </Button>
               </div>
-            )}
+            </form>
+          ) : (
+            <form onSubmit={handleLogin} className="space-y-5">
+              <div>
+                <label className="font-bold uppercase text-sm text-gray-700 block mb-1">E-mail</label>
+                <Input type="email" value={loginEmail} onChange={e => setLoginEmail(e.target.value)}
+                  placeholder="seu@email.com" required className="h-12 border-2 border-black" />
+              </div>
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="font-bold uppercase text-sm text-gray-700">Senha</label>
+                  <button type="button" onClick={() => { setForgotMode(true); setError(""); setSuccess(""); }}
+                    className="text-xs font-bold uppercase underline hover:text-primary">
+                    Esqueci minha senha
+                  </button>
+                </div>
+                <div className="relative">
+                  <Input type={showPass ? "text" : "password"} value={loginPassword}
+                    onChange={e => setLoginPassword(e.target.value)}
+                    placeholder="Sua senha" required className="h-12 border-2 border-black pr-12" />
+                  <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-3 top-3.5 text-gray-500">
+                    {showPass ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
 
-            <Button type="submit" size="lg" disabled={loading}
-              className="w-full h-14 uppercase font-black text-lg bg-black text-white hover:bg-gray-800">
-              {loading ? <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Entrando...</> : "Entrar na Plataforma"}
-            </Button>
-          </form>
+              {!isSupabaseConfigured && (
+                <div className="bg-yellow-50 border-2 border-yellow-400 p-4 text-xs font-bold space-y-1.5">
+                  <p className="uppercase text-yellow-700 text-sm">💡 Modo Demonstração</p>
+                  <p>Voluntário: <code className="bg-yellow-100 px-1">ana.beatriz@email.com</code> / <code className="bg-yellow-100 px-1">demo123</code></p>
+                  <p>ONG: <code className="bg-yellow-100 px-1">contato@aguaviva.org</code> / <code className="bg-yellow-100 px-1">demo123</code></p>
+                  <p>Pessoa Física: <code className="bg-yellow-100 px-1">pedro.doador@email.com</code> / <code className="bg-yellow-100 px-1">demo123</code></p>
+                </div>
+              )}
+
+              <Button type="submit" size="lg" disabled={loading}
+                className="w-full h-14 uppercase font-black text-lg bg-black text-white hover:bg-gray-800">
+                {loading ? <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Entrando...</> : "Entrar na Plataforma"}
+              </Button>
+            </form>
+          )
         ) : (
           <form onSubmit={handleSignupStep1} className="space-y-5">
             {/* Tipo */}

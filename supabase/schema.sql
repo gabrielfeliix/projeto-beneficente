@@ -46,8 +46,8 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- Habilitar RLS (Row Level Security) na tabela profiles
-ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+-- Habilitar RLS (Row Level Security) na tabela profiles (DESABILITADO PARA SEED/UPLOAD)
+-- ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
 -- Limpar políticas antigas se já existirem
 DROP POLICY IF EXISTS "Qualquer um pode ler perfis" ON public.profiles;
@@ -92,7 +92,7 @@ CREATE TABLE IF NOT EXISTS public.campaigns (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
-ALTER TABLE public.campaigns ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.campaigns ENABLE ROW LEVEL SECURITY;
 
 -- Limpar políticas antigas se já existirem
 DROP POLICY IF EXISTS "Qualquer um pode ler campanhas" ON public.campaigns;
@@ -126,7 +126,7 @@ CREATE TABLE IF NOT EXISTS public.updates (
     shares INTEGER DEFAULT 0
 );
 
-ALTER TABLE public.updates ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.updates ENABLE ROW LEVEL SECURITY;
 
 -- Limpar políticas antigas se já existirem
 DROP POLICY IF EXISTS "Qualquer um pode ler atualizações" ON public.updates;
@@ -171,7 +171,7 @@ CREATE TABLE IF NOT EXISTS public.job_postings (
     skills_tags TEXT[] DEFAULT '{}'
 );
 
-ALTER TABLE public.job_postings ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.job_postings ENABLE ROW LEVEL SECURITY;
 
 -- Limpar políticas antigas se já existirem
 DROP POLICY IF EXISTS "Qualquer um pode ler vagas" ON public.job_postings;
@@ -205,7 +205,7 @@ CREATE TABLE IF NOT EXISTS public.applications (
     feedback_notes TEXT
 );
 
-ALTER TABLE public.applications ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.applications ENABLE ROW LEVEL SECURITY;
 
 -- Limpar políticas antigas se já existirem
 DROP POLICY IF EXISTS "Voluntários podem ver suas candidaturas" ON public.applications;
@@ -241,7 +241,7 @@ CREATE TABLE IF NOT EXISTS public.certificates (
     verification_code TEXT UNIQUE NOT NULL
 );
 
-ALTER TABLE public.certificates ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.certificates ENABLE ROW LEVEL SECURITY;
 
 -- Limpar políticas antigas se já existirem
 DROP POLICY IF EXISTS "Qualquer um pode ler certificados" ON public.certificates;
@@ -272,7 +272,7 @@ CREATE TABLE IF NOT EXISTS public.feed_posts (
     comments INTEGER DEFAULT 0
 );
 
-ALTER TABLE public.feed_posts ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.feed_posts ENABLE ROW LEVEL SECURITY;
 
 -- Limpar políticas antigas se já existirem
 DROP POLICY IF EXISTS "Qualquer um pode ler o feed" ON public.feed_posts;
@@ -297,7 +297,7 @@ CREATE TABLE IF NOT EXISTS public.notifications (
     read BOOLEAN DEFAULT FALSE
 );
 
-ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 
 -- Limpar políticas antigas se já existirem
 DROP POLICY IF EXISTS "Usuários podem ver suas próprias notificações" ON public.notifications;
@@ -350,7 +350,7 @@ CREATE TABLE IF NOT EXISTS public.donations (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
-ALTER TABLE public.donations ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.donations ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Qualquer um pode ver doações completadas" ON public.donations;
 DROP POLICY IF EXISTS "Doadores podem ver suas próprias doações" ON public.donations;
@@ -376,7 +376,7 @@ CREATE TABLE IF NOT EXISTS public.expenses (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
-ALTER TABLE public.expenses ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.expenses ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Qualquer um pode ver despesas" ON public.expenses;
 DROP POLICY IF EXISTS "Organizadores podem adicionar despesas" ON public.expenses;
