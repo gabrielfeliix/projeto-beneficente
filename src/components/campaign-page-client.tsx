@@ -73,7 +73,8 @@ export function CampaignPageClient({ campaign, initialUpdates, organizer }: Camp
     loadAccountability();
   }, [campaign.id, activeCampaign.financialRaised]);
 
-  const canManage = profile && profile.profileType === 'institution' && (profile.id === activeCampaign.organizerId || profile.id === 'inst-1');
+  // MOCK: Forçado para true no front-end para visualização completa de todas as opções de gestão de campanha
+  const canManage = true;
   const [updateForm, setUpdateForm] = useState({
     content: '',
     imageUrl: '',
