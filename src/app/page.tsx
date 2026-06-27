@@ -35,7 +35,7 @@ export default async function Home() {
           <div className="flex-1 space-y-6 sm:space-y-8">
             <div>
               <Badge className="mb-4 bg-black text-primary border-2 border-black font-black uppercase text-xs sm:text-sm">
-                🌟 Plataforma #1 de Voluntariado no RN
+                🌟 Plataforma de Voluntariado no RN
               </Badge>
               <h1 className="font-display text-5xl sm:text-7xl lg:text-8xl font-black uppercase leading-[0.9] tracking-tighter">
                 Eles lutam <br />
@@ -107,7 +107,7 @@ export default async function Home() {
             <div key={campaign.id} className="flex items-center gap-4 font-bold text-sm sm:text-base px-8 border-r-4 border-primary/20 last:border-0 whitespace-nowrap">
               <span className="w-2.5 h-2.5 rounded-full bg-green-500 shrink-0 border border-green-700 shadow-sm animate-pulse"></span>
               <span>
-                CAMPANHA ATIVA: <span className="text-secondary underline decoration-2">{campaign.title}</span> em {campaign.city} 
+                CAMPANHA ATIVA: <span className="text-secondary underline decoration-2">{campaign.title}</span> em {campaign.city}
                 {campaign.financialGoal ? ` — Meta: R$ ${campaign.financialGoal.toLocaleString('pt-BR')}` : ''}
               </span>
             </div>

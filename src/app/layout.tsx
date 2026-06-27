@@ -32,7 +32,7 @@ export default function RootLayout({
           <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <img src="/logo-provi.png" alt="PROVI Logo" className="w-9 h-9 object-contain shrink-0" />
+                <img src="/logo-provi.png" alt="PROVI Logo" className="w-12 h-12 object-contain shrink-0" />
                 <span className="font-display text-2xl font-black uppercase tracking-tighter">PROVI</span>
               </div>
               <p className="text-gray-400 font-bold text-sm leading-relaxed">
