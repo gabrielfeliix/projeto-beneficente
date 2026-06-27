@@ -18,9 +18,6 @@ export default function NewCampaignPage() {
     const profile = loadStoredProfile();
     if (!profile) {
       router.push("/login");
-    } else if (profile.profileType !== "institution") {
-      alert("Acesso restrito. Apenas instituições/ONGs podem criar campanhas.");
-      router.push("/dashboard");
     } else {
       setIsAllowed(true);
     }

@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 
-// Credenciais do Supabase reais fornecidas pelo usuário
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://looiynayvxnmpqdtnqld.supabase.co";
+const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://looiynayvxnmpqdtnqld.supabase.co";
+const supabaseUrl = rawUrl.endsWith("/") ? rawUrl.slice(0, -1) : rawUrl;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "sb_publishable_y1HLC-x1pqr8d6iSPc6dBg_N5znh3yy";
 
 export const isSupabaseConfigured = !!(
