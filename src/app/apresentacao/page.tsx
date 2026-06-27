@@ -344,15 +344,16 @@ export default function PresentationPage() {
           <div
             key={slide.type}
             ref={el => { slideContainers.current[index] = el; }}
-            className="absolute inset-0 w-full h-full overflow-y-auto overflow-x-hidden no-scrollbar transition-opacity duration-500 bg-[#fdfdfd]"
+            className="absolute inset-0 w-full h-full overflow-y-auto overflow-x-hidden no-scrollbar transition-opacity duration-500"
             style={{
               opacity: index === currentSlide ? 1 : 0,
               pointerEvents: index === currentSlide ? 'auto' : 'none',
-              scrollBehavior: 'auto'
+              scrollBehavior: 'auto',
+              backgroundColor: slide.type === 'home' ? '#ffe17c' : '#fdfdfd'
             }}
           >
             {/* STICKY NAVBAR AS REQUESTED */}
-            {slide.type !== 'qrcode' && (
+            {slide.type !== 'qrcode' && slide.type !== 'home' && (
               <header className="sticky top-0 z-50 w-full border-b-4 border-black bg-[#ffe17c] shadow-[0_4px_0_0_#000] shrink-0">
                 <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
                   <div className="flex items-center gap-2">
@@ -382,65 +383,17 @@ export default function PresentationPage() {
               </header>
             )}
 
-            {/* --- SLIDE 1: HOME PAGE CONTENT --- */}
+            {/* --- SLIDE 1: HOME PAGE CONTENT (BRAND ONLY) --- */}
             {slide.type === 'home' && (
-              <div className="p-6 space-y-12">
-                {/* Hero Section */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center py-6">
-                  <div className="space-y-6">
-                    <Badge className="bg-black text-primary border-2 border-black font-black uppercase text-xs">🌟 Conectando Causas no RN</Badge>
-                    <h3 className="font-display text-5xl sm:text-6xl font-black uppercase tracking-tighter leading-none text-black">
-                      Eles lutam todos os dias. <br />
-                      <span className="bg-primary px-2 inline-block -rotate-1 border-2 border-black mt-2">Você é a força.</span>
-                    </h3>
-                    <p className="text-gray-700 font-bold text-sm">
-                      A PROVI conecta voluntários dispostos a ajudar e ONGs que prestam contas com transparência auditada por Inteligência Artificial no Rio Grande do Norte.
-                    </p>
-                  </div>
-                  <div className="border-4 border-black p-4 bg-secondary shadow-brutalist rotate-2">
-                    {/* Fixed to Local asset hero_community.png */}
-                    <img src="/images/hero_community.png" alt="Voluntários" className="border-2 border-black object-cover w-full h-48 aspect-video" />
-                    <div className="mt-4 flex justify-between font-black text-sm uppercase">
-                      <span>Ação Viva — Natal, RN</span>
-                      <Badge className="border-2 border-black bg-accent text-white">Ativa ✓</Badge>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Stats Panel */}
-                <div className="grid grid-cols-2 md:grid-cols-4 border-4 border-black bg-white text-center shadow-brutalist">
-                  <div className="border-r-2 md:border-r-4 border-black p-4 bg-[#ffe17c]"><div className="font-display text-3xl font-black">851+</div><div className="text-xs font-black uppercase text-black/70">Voluntários</div></div>
-                  <div className="border-r-4 border-black p-4 bg-secondary"><div className="font-display text-3xl font-black">34+</div><div className="text-xs font-black uppercase text-black/70">ONGs Parceiras</div></div>
-                  <div className="border-r-2 md:border-r-4 border-black p-4 bg-accent text-white"><div className="font-display text-3xl font-black">96+</div><div className="text-xs font-black uppercase text-white/70">Vagas Abertas</div></div>
-                  <div className="p-4 bg-black text-white"><div className="font-display text-3xl font-black">2652+</div><div className="text-xs font-black uppercase text-white/70">Vidas Impactadas</div></div>
-                </div>
-
-                {/* Sliding Marquee */}
-                <div className="bg-black text-[#ffe17c] py-3 border-4 border-black text-sm font-black uppercase flex items-center justify-around gap-8 overflow-hidden select-none">
-                  <span>⚡ CAMPANHA EM DESTAQUE: Marmitas Solidárias Filipe Camarão</span>
-                  <span>•</span>
-                  <span>⚡ VAGAS QUALIFICADAS: Facilitador de Oficinas de Leitura</span>
-                </div>
-
-                {/* Featured Campaigns List */}
-                <div className="space-y-6">
-                  <h4 className="font-display text-2xl font-black uppercase text-black border-b-4 border-black pb-2">Campanhas em Destaque</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {displayCampaigns.map(camp => (
-                      <div key={camp.id} className="border-4 border-black p-4 bg-white shadow-brutalist hover:-translate-y-1 transition-transform">
-                        <div className="aspect-video relative overflow-hidden border-2 border-black">
-                          <img src={camp.coverImage} alt={camp.title} className="object-cover w-full h-full" />
-                          <Badge className="absolute top-2 right-2 border-2 border-black bg-primary text-black font-black uppercase text-xs">{camp.category}</Badge>
-                        </div>
-                        <h5 className="font-display text-xl font-black uppercase mt-3 leading-tight truncate">{camp.title}</h5>
-                        <p className="text-xs text-gray-500 font-bold mt-1"><MapPin className="w-3.5 h-3.5 inline mr-1" /> {camp.city}, {camp.neighborhood}</p>
-                        <div className="mt-4 w-full bg-gray-200 border-2 border-black h-3 overflow-hidden">
-                          <div className="bg-primary h-full" style={{ width: `${(camp.financialRaised / camp.financialGoal) * 100}%` }}></div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+              <div className="flex flex-col items-center justify-center h-full min-h-[60vh] text-center space-y-6">
+                <img 
+                  src="/logo-provi.png" 
+                  alt="PROVI Logo" 
+                  className="w-48 h-48 object-contain"
+                />
+                <h1 className="font-display text-6xl sm:text-7xl font-black uppercase tracking-tighter text-black leading-none mt-2">
+                  PROVI
+                </h1>
               </div>
             )}
 
