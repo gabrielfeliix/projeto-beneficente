@@ -114,6 +114,11 @@ const SLIDES = [
     title: 'Gestão e Certificação de Impacto',
     subtitle: 'Painel completo do voluntário mostrando candidaturas e certificados ESG.',
     type: 'dashboard',
+  },
+  {
+    title: 'Experimente a Plataforma',
+    subtitle: 'Acesse o portal ao vivo e conecte-se com causas do RN.',
+    type: 'qrcode',
   }
 ];
 
@@ -347,33 +352,35 @@ export default function PresentationPage() {
             }}
           >
             {/* STICKY NAVBAR AS REQUESTED */}
-            <header className="sticky top-0 z-50 w-full border-b-4 border-black bg-[#ffe17c] shadow-[0_4px_0_0_#000] shrink-0">
-              <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
-                <div className="flex items-center gap-2">
-                  <img src="/logo-provi.png" alt="PROVI" className="w-10 h-10 object-contain" />
-                  <span className="font-display text-2xl font-black uppercase tracking-tighter">PROVI</span>
-                </div>
-                <nav className="hidden md:flex items-center gap-6 font-black uppercase text-xs tracking-wider">
-                  <span className="hover:underline">Explorar</span>
-                  <span className="hover:underline">Vagas</span>
-                  <span className="hover:underline">Feed</span>
-                  <span className="hover:underline">Painel</span>
-                  <span className="hover:underline">Notificações</span>
-                </nav>
-                <div className="flex items-center gap-3">
-                  <div className="text-right">
-                    <div className="font-black text-sm uppercase text-black leading-none">TESTE TESTE</div>
-                    <div className="text-[10px] font-bold text-gray-500 uppercase mt-0.5">Voluntário</div>
+            {slide.type !== 'qrcode' && (
+              <header className="sticky top-0 z-50 w-full border-b-4 border-black bg-[#ffe17c] shadow-[0_4px_0_0_#000] shrink-0">
+                <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
+                  <div className="flex items-center gap-2">
+                    <img src="/logo-provi.png" alt="PROVI" className="w-10 h-10 object-contain" />
+                    <span className="font-display text-2xl font-black uppercase tracking-tighter">PROVI</span>
                   </div>
-                  <Button className="h-8 px-3 border-2 border-black bg-white hover:bg-black hover:text-white text-xs font-black uppercase shadow-brutalist-sm flex items-center gap-1.5">
-                    <User className="w-3.5 h-3.5" /> Perfil
-                  </Button>
-                  <Button className="h-8 w-8 p-0 border-2 border-black bg-white text-black hover:bg-black hover:text-white text-xs font-black shadow-brutalist-sm flex items-center justify-center">
-                    <LogOut className="w-4 h-4" />
-                  </Button>
+                  <nav className="hidden md:flex items-center gap-6 font-black uppercase text-xs tracking-wider">
+                    <span className="hover:underline">Explorar</span>
+                    <span className="hover:underline">Vagas</span>
+                    <span className="hover:underline">Feed</span>
+                    <span className="hover:underline">Painel</span>
+                    <span className="hover:underline">Notificações</span>
+                  </nav>
+                  <div className="flex items-center gap-3">
+                    <div className="text-right">
+                      <div className="font-black text-sm uppercase text-black leading-none">TESTE TESTE</div>
+                      <div className="text-[10px] font-bold text-gray-500 uppercase mt-0.5">Voluntário</div>
+                    </div>
+                    <Button className="h-8 px-3 border-2 border-black bg-white hover:bg-black hover:text-white text-xs font-black uppercase shadow-brutalist-sm flex items-center gap-1.5">
+                      <User className="w-3.5 h-3.5" /> Perfil
+                    </Button>
+                    <Button className="h-8 w-8 p-0 border-2 border-black bg-white text-black hover:bg-black hover:text-white text-xs font-black shadow-brutalist-sm flex items-center justify-center">
+                      <LogOut className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </header>
+              </header>
+            )}
 
             {/* --- SLIDE 1: HOME PAGE CONTENT --- */}
             {slide.type === 'home' && (
@@ -827,6 +834,30 @@ export default function PresentationPage() {
                         <Button className="w-full text-left justify-start font-black uppercase text-xs h-10 border border-black" variant="outline">👤 Meu Perfil Público</Button>
                       </div>
                     </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* --- SLIDE 6: QR CODE / CONCLUSION --- */}
+            {slide.type === 'qrcode' && (
+              <div className="p-6 flex flex-col items-center justify-center min-h-[60vh] text-center space-y-8 bg-white text-black">
+                <div className="space-y-3">
+                  <Badge className="bg-[#ffe17c] text-black border-2 border-black font-black uppercase text-xs rounded-none">Acesse Agora</Badge>
+                  <h3 className="font-display text-4xl sm:text-5xl font-black uppercase tracking-tight">Experimente a Plataforma</h3>
+                  <p className="text-sm font-bold text-gray-500 max-w-md mx-auto leading-relaxed">
+                    Escaneie com a câmera do seu celular para testar a experiência real da PROVI em produção na Vercel!
+                  </p>
+                </div>
+                
+                <div className="border-8 border-black p-6 bg-white shadow-brutalist flex flex-col items-center rotate-1 hover:rotate-0 transition-transform duration-300">
+                  <img 
+                    src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https://projeto-beneficente-five.vercel.app/" 
+                    alt="QR Code PROVI" 
+                    className="w-64 h-64 border-4 border-black object-contain"
+                  />
+                  <div className="font-display font-black text-lg uppercase mt-4 bg-[#ffe17c] px-4 py-1.5 border-2 border-black">
+                    projeto-beneficente-five.vercel.app
                   </div>
                 </div>
               </div>
