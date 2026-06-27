@@ -58,6 +58,7 @@ function mapDBProfileToUser(db: any): User {
     description: db.description || undefined,
     phone: db.phone || undefined,
     instagram: db.instagram || undefined,
+    profileType: db.profile_type || undefined,
   };
 }
 

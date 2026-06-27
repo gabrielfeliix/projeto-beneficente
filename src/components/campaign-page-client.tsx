@@ -817,8 +817,6 @@ export function CampaignPageClient({ campaign, initialUpdates, organizer }: Camp
           </div>
         </div>
       )}
-        </div>
-      )}
 
       {/* ORGANIZER PROFILE MODAL */}
       {orgModalOpen && organizer && (

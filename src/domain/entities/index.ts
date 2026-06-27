@@ -32,6 +32,7 @@ export interface User {
   description?: string;
   phone?: string;
   instagram?: string;
+  profileType?: string;
 }
 
 export type ProfileType = 'donor' | 'volunteer' | 'institution' | 'fiscal' | 'admin' | 'company';
