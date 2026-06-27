@@ -328,15 +328,17 @@ export default function PresentationPage() {
         }
       `}} />
 
-      {/* TEXT OVERLAY AREA */}
-      <div className="text-center max-w-3xl mx-auto px-4 h-20 flex flex-col justify-center shrink-0">
-        <h2 className="font-display text-3xl sm:text-4xl font-black uppercase tracking-tight leading-none text-black">
-          {SLIDES[currentSlide].title}
-        </h2>
-        <p className="text-sm sm:text-base font-bold text-gray-500 mt-1.5">
-          {SLIDES[currentSlide].subtitle}
-        </p>
-      </div>
+      {/* TEXT OVERLAY AREA — hidden for qrcode and home slides */}
+      {SLIDES[currentSlide].type !== 'qrcode' && SLIDES[currentSlide].type !== 'home' && (
+        <div className="text-center max-w-3xl mx-auto px-4 h-20 flex flex-col justify-center shrink-0">
+          <h2 className="font-display text-3xl sm:text-4xl font-black uppercase tracking-tight leading-none text-black">
+            {SLIDES[currentSlide].title}
+          </h2>
+          <p className="text-sm sm:text-base font-bold text-gray-500 mt-1.5">
+            {SLIDES[currentSlide].subtitle}
+          </p>
+        </div>
+      )}
 
       {/* MAIN CONTAINER: LARGE SLIDE VIEWPORT */}
       <div className="w-full max-w-6xl h-[80vh] bg-[#fdfdfd] border-4 border-black shadow-[12px_12px_0_0_#000] flex flex-col relative transition-all duration-300 overflow-hidden">
