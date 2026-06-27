@@ -1,11 +1,22 @@
 import { getProfile } from '@/actions/platform';
+import { cookies } from 'next/headers';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Pencil } from 'lucide-react';
 
 export default async function PerfilPage() {
-  const profile = await getProfile('vol-1');
+  let profileId = null;
+  const cookieStore = await cookies();
+  const profileCookie = cookieStore.get('mutirao_user_profile')?.value;
+  if (profileCookie) {
+    try {
+      const stored = JSON.parse(decodeURIComponent(profileCookie));
+      if (stored && stored.id) profileId = stored.id;
+    } catch {}
+  }
+
+  const profile = profileId ? await getProfile(profileId) : null;
 
   if (!profile) {
     return (

@@ -76,7 +76,7 @@ export async function getCampaigns(): Promise<Campaign[]> {
   }
 
   // Fallback
-  await new Promise((resolve) => setTimeout(resolve, 800));
+
   return [...mockCampaigns].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
@@ -96,7 +96,7 @@ export async function getCampaignById(id: string): Promise<Campaign | null> {
   }
 
   // Fallback
-  await new Promise((resolve) => setTimeout(resolve, 500));
+
   const campaign = mockCampaigns.find(c => c.id === id);
   return campaign || null;
 }
@@ -117,7 +117,7 @@ export async function getCampaignUpdates(campaignId: string): Promise<UpdateReco
   }
 
   // Fallback
-  await new Promise((resolve) => setTimeout(resolve, 400));
+
   return mockUpdates
     .filter(u => u.campaignId === campaignId)
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -139,7 +139,7 @@ export async function getCampaignOrganizer(organizerId: string): Promise<User | 
   }
 
   // Fallback
-  await new Promise((resolve) => setTimeout(resolve, 300));
+
   return mockUsers.find(u => u.id === organizerId) || null;
 }
 
@@ -166,7 +166,7 @@ export async function getRecentUpdates(): Promise<(UpdateRecord & { campaign: Ca
   }
 
   // Fallback
-  await new Promise((resolve) => setTimeout(resolve, 600));
+
   const recent = [...mockUpdates].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   
   return recent.map(update => {

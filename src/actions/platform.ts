@@ -156,7 +156,7 @@ function mapDBNotification(db: any): Notification {
   };
 }
 
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const delay = (ms: number) => Promise.resolve();
 
 export async function getVolunteers(): Promise<Volunteer[]> {
   if (isSupabaseConfigured && supabase) {

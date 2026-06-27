@@ -42,7 +42,7 @@ export default function RootLayout({
             <div>
               <h3 className="font-black uppercase text-sm mb-4 tracking-widest text-primary">Navegação</h3>
               <ul className="space-y-2 text-sm font-bold text-gray-400">
-                <li><Link href="/" className="hover:text-white transition-colors">Explorar Campanhas</Link></li>
+                <li><Link href="/campaigns" className="hover:text-white transition-colors">Explorar Campanhas</Link></li>
                 <li><Link href="/vagas" className="hover:text-white transition-colors">Vagas de Voluntariado</Link></li>
                 <li><Link href="/feed" className="hover:text-white transition-colors">Feed da Comunidade</Link></li>
                 <li><Link href="/login" className="hover:text-white transition-colors">Entrar / Cadastrar</Link></li>

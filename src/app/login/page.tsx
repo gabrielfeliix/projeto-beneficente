@@ -365,7 +365,7 @@ function AuthForm() {
         {/* Type selector */}
         <div className="grid grid-cols-3 gap-3 mb-8">
           {([
-            { type: "donor", label: "Doador", icon: <Heart className="w-4 h-4" /> },
+            { type: "donor", label: "Pessoa Física", icon: <Heart className="w-4 h-4" /> },
             { type: "volunteer", label: "Voluntário", icon: <User className="w-4 h-4" /> },
             { type: "institution", label: "ONG", icon: <Building2 className="w-4 h-4" /> },
           ] as const).map(({ type, label, icon }) => (
@@ -491,7 +491,7 @@ function AuthForm() {
 
             <Button type="submit" disabled={loading} size="lg"
               className="w-full h-14 font-black uppercase text-lg bg-black text-white hover:bg-gray-800">
-              {loading ? <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Salvando...</> : `Criar minha conta de ${profileType === "donor" ? "doador" : "voluntário"}`}
+              {loading ? <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Salvando...</> : `Criar minha conta de ${profileType === "donor" ? "pessoa física" : "voluntário"}`}
             </Button>
           </form>
         )}
@@ -667,7 +667,7 @@ function AuthForm() {
                 <p className="uppercase text-yellow-700 text-sm">💡 Modo Demonstração</p>
                 <p>Voluntário: <code className="bg-yellow-100 px-1">ana.beatriz@email.com</code> / <code className="bg-yellow-100 px-1">demo123</code></p>
                 <p>ONG: <code className="bg-yellow-100 px-1">contato@aguaviva.org</code> / <code className="bg-yellow-100 px-1">demo123</code></p>
-                <p>Doador: <code className="bg-yellow-100 px-1">pedro.doador@email.com</code> / <code className="bg-yellow-100 px-1">demo123</code></p>
+                <p>Pessoa Física: <code className="bg-yellow-100 px-1">pedro.doador@email.com</code> / <code className="bg-yellow-100 px-1">demo123</code></p>
               </div>
             )}
 
@@ -683,7 +683,7 @@ function AuthForm() {
               <label className="font-bold uppercase text-sm text-gray-700 block mb-2">Sou um(a)</label>
               <div className="grid grid-cols-3 gap-2">
                 {([
-                  { type: "donor", label: "Doador", icon: <Heart className="w-4 h-4" /> },
+                  { type: "donor", label: "Pessoa Física", icon: <Heart className="w-4 h-4" /> },
                   { type: "volunteer", label: "Voluntário", icon: <User className="w-4 h-4" /> },
                   { type: "institution", label: "ONG", icon: <Building2 className="w-4 h-4" /> },
                 ] as const).map(({ type, label, icon }) => (
