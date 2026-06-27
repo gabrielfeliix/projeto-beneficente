@@ -158,6 +158,7 @@ function mapDBNotification(db: any): Notification {
   };
 }
 
+// Atrasos removidos para melhorar a responsividade (ação instantânea)
 const delay = (ms: number) => Promise.resolve();
 
 export async function getVolunteers(): Promise<Volunteer[]> {
