@@ -4,11 +4,11 @@ import Link from "next/link";
 import { NavBar } from "@/components/nav-bar";
 
 export const metadata: Metadata = {
-  title: "PROVE — Voluntariado e Impacto Social",
+  title: "PROVI — Voluntariado e Impacto Social",
   description: "A maior plataforma de conexão entre voluntários e ONGs do Rio Grande do Norte. Encontre vagas, apoie campanhas e faça a diferença.",
   keywords: ["voluntariado", "ONG", "impacto social", "Rio Grande do Norte", "Natal", "doação"],
   openGraph: {
-    title: "PROVE — Voluntariado e Impacto Social",
+    title: "PROVI — Voluntariado e Impacto Social",
     description: "Conectando voluntários com organizações sociais no RN.",
     type: "website",
   },
@@ -32,10 +32,8 @@ export default function RootLayout({
           <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <div className="bg-white text-black p-1 border-2 border-white flex items-center justify-center w-9 h-9 shrink-0">
-                  <img src="/logo-prove.png" alt="PROVE Logo" className="w-full h-full object-contain" />
-                </div>
-                <span className="font-display text-2xl font-black uppercase tracking-tighter">PROVE</span>
+                <img src="/logo-provi.png" alt="PROVI Logo" className="w-9 h-9 object-contain shrink-0" />
+                <span className="font-display text-2xl font-black uppercase tracking-tighter">PROVI</span>
               </div>
               <p className="text-gray-400 font-bold text-sm leading-relaxed">
                 A plataforma de voluntariado e impacto social do Rio Grande do Norte. Conectando pessoas e organizações para transformar comunidades.
@@ -61,7 +59,7 @@ export default function RootLayout({
           </div>
           <div className="max-w-7xl mx-auto border-t border-gray-800 mt-10 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-xs font-bold text-gray-600 uppercase tracking-widest">
-              © 2026 PROVE Plataforma. Todos os direitos reservados.
+              © 2026 PROVI Plataforma. Todos os direitos reservados.
             </p>
             <p className="text-xs font-bold text-gray-600">
               Feito com 💛 para o RN

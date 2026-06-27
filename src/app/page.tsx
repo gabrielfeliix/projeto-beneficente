@@ -74,7 +74,7 @@ export default async function Home() {
           <div className="flex-1 w-full max-w-md lg:max-w-none hidden sm:block">
             <div className="border-4 border-black p-4 bg-secondary shadow-[8px_8px_0_0_#000] rotate-2 hover:rotate-0 transition-transform duration-300">
               <Image
-                src="https://images.unsplash.com/photo-1578351614282-13edb30b42c0?auto=format&fit=crop&q=80&w=800"
+                src="https://images.unsplash.com/photo-1559027615-cd937c9be33a?auto=format&fit=crop&q=80&w=800"
                 alt="Comunidade voluntária do RN"
                 width={800} height={500}
                 className="border-2 border-black w-full h-auto object-cover aspect-video"
