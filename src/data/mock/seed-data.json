@@ -1,0 +1,414 @@
+{
+  "profiles": [
+    {
+      "id": "usr-corp-1",
+      "username": "@nordestao_oficial",
+      "nome_completo": "Supermercado Nordestão",
+      "profileType": "company",
+      "url_avatar": "https://images.unsplash.com/photo-1554774853-aae0a22c8aa4?auto=format&fit=crop&q=80&w=200&h=200",
+      "bio": "Supermercados Nordestão - Gerando impacto social e apoiando o desenvolvimento do RN. Plano ESG Ouro Ativo.",
+      "metricas": {
+        "seguidores": 5420,
+        "seguindo": 150
+      },
+      "subscriptionStatus": "active",
+      "subscriptionPlan": "mensal_ouro",
+      "cnpj": "08323491000102"
+    },
+    {
+      "id": "usr-creative-1",
+      "username": "@marina_artes",
+      "nome_completo": "Marina Vasconcelos",
+      "profileType": "volunteer",
+      "url_avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200&h=200",
+      "bio": "Artista plástica e arte-educadora. Acredito que a arte transforma vidas e cura corações. 🎨✨",
+      "metricas": {
+        "seguidores": 1280,
+        "seguindo": 432
+      }
+    },
+    {
+      "id": "usr-engaged-1",
+      "username": "@felipe_social",
+      "nome_completo": "Felipe Albuquerque",
+      "profileType": "donor",
+      "url_avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200&h=200",
+      "bio": "Doando tempo e recursos no RN. Ativista social em Natal, focado em combate à fome e desigualdade.",
+      "metricas": {
+        "seguidores": 2450,
+        "seguindo": 890
+      }
+    },
+    {
+      "id": "usr-brand-1",
+      "username": "@ong_aguaviva",
+      "nome_completo": "Instituto Água Viva RN",
+      "profileType": "institution",
+      "url_avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=200&h=200",
+      "bio": "ONG dedicada ao acesso à água e saneamento em comunidades do sertão do RN. 🏛️💧",
+      "metricas": {
+        "seguidores": 8930,
+        "seguindo": 120
+      }
+    },
+    {
+      "id": "usr-casual-1",
+      "username": "@pedro_rn",
+      "nome_completo": "Pedro Lima",
+      "profileType": "volunteer",
+      "url_avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=200&h=200",
+      "bio": "Apenas um cidadão querendo ajudar quando sobra um tempinho nos fins de semana.",
+      "metricas": {
+        "seguidores": 340,
+        "seguindo": 560
+      }
+    },
+    {
+      "id": "usr-corp-2",
+      "username": "@miramar_hotel",
+      "nome_completo": "Hotel Miramar Ponta Negra",
+      "profileType": "company",
+      "url_avatar": "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=200&h=200",
+      "bio": "Acolhimento e responsabilidade socioambiental. Apoiando abrigos do RN com nosso selo ESG Prata.",
+      "metricas": {
+        "seguidores": 3210,
+        "seguindo": 90
+      },
+      "subscriptionStatus": "active",
+      "subscriptionPlan": "mensal_prata",
+      "cnpj": "12456789000109"
+    },
+    {
+      "id": "usr-creative-2",
+      "username": "@thiago_click",
+      "nome_completo": "Thiago Martins",
+      "profileType": "volunteer",
+      "url_avatar": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=200&h=200",
+      "bio": "Fotógrafo profissional. Contando histórias reais de impacto social através de lentes.",
+      "metricas": {
+        "seguidores": 4500,
+        "seguindo": 870
+      }
+    },
+    {
+      "id": "usr-engaged-2",
+      "username": "@camila_eco",
+      "nome_completo": "Camila Nogueira",
+      "profileType": "volunteer",
+      "url_avatar": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=200&h=200",
+      "bio": "Bióloga. Atuando em mutirões de plantio urbano e limpeza de praias no RN. 🌳🌊",
+      "metricas": {
+        "seguidores": 1820,
+        "seguindo": 750
+      }
+    },
+    {
+      "id": "usr-brand-2",
+      "username": "@caofeliz_natal",
+      "nome_completo": "Abrigo Cão Feliz Natal",
+      "profileType": "institution",
+      "url_avatar": "https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=200&h=200",
+      "bio": "Resgatamos e reabilitamos animais em situação de rua em Natal e região metropolitana. 🐾❤️",
+      "metricas": {
+        "seguidores": 15400,
+        "seguindo": 200
+      }
+    },
+    {
+      "id": "usr-casual-2",
+      "username": "@clara_m",
+      "nome_completo": "Clara Medeiros",
+      "profileType": "donor",
+      "url_avatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200&h=200",
+      "bio": "Mãe, servidora pública. Apoiadora de causas voltadas à educação infantil.",
+      "metricas": {
+        "seguidores": 410,
+        "seguindo": 380
+      }
+    },
+    {
+      "id": "usr-corp-3",
+      "username": "@rn_cabo",
+      "nome_completo": "RN Cabos e Telecom",
+      "profileType": "company",
+      "url_avatar": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=200&h=200",
+      "bio": "Conectando o RN. Parceiro digital do terceiro setor. Assinante ESG Platina.",
+      "metricas": {
+        "seguidores": 6800,
+        "seguindo": 45
+      },
+      "subscriptionStatus": "active",
+      "subscriptionPlan": "mensal_platina",
+      "cnpj": "98765432000109"
+    },
+    {
+      "id": "usr-creative-3",
+      "username": "@duda_musica",
+      "nome_completo": "Maria Eduarda Dias",
+      "profileType": "volunteer",
+      "url_avatar": "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=200&h=200",
+      "bio": "Professora de música. Acreditando no poder do ritmo para incluir e integrar jovens. 🎵🎸",
+      "metricas": {
+        "seguidores": 920,
+        "seguindo": 550
+      }
+    },
+    {
+      "id": "usr-engaged-3",
+      "username": "@marcos_rural",
+      "nome_completo": "Marcos Silveira",
+      "profileType": "volunteer",
+      "url_avatar": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=200&h=200",
+      "bio": "Agrônomo voluntário em hortas comunitárias e agricultura familiar sustentável no RN.",
+      "metricas": {
+        "seguidores": 1150,
+        "seguindo": 940
+      }
+    },
+    {
+      "id": "usr-brand-3",
+      "username": "@maos_que_ajudam",
+      "nome_completo": "ONG Mãos que Ajudam Seridó",
+      "profileType": "institution",
+      "url_avatar": "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&q=80&w=200&h=200",
+      "bio": "Apoio a famílias sertanejas com cestas básicas, oficinas produtivas e reforço escolar. 🤝",
+      "metricas": {
+        "seguidores": 7430,
+        "seguindo": 80
+      }
+    },
+    {
+      "id": "usr-casual-3",
+      "username": "@lucas_rn",
+      "nome_completo": "Lucas Pinheiro",
+      "profileType": "donor",
+      "url_avatar": "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&q=80&w=200&h=200",
+      "bio": "Estudante da UFRN, doador pontual de roupas e organizador de trocas sustentáveis.",
+      "metricas": {
+        "seguidores": 610,
+        "seguindo": 720
+      }
+    }
+  ],
+  "posts": [
+    {
+      "id_post": "post-s-1",
+      "id_autor": "usr-brand-1",
+      "authorName": "Instituto Água Viva RN",
+      "authorUsername": "@ong_aguaviva",
+      "authorType": "institution",
+      "tipo_conteudo": "image",
+      "texto_conteudo": "💧 Mais um poço artesiano instalado com sucesso em uma comunidade rural do Seridó! Com as doações dos nossos parceiros B2B, garantimos água potável para 45 famílias nesta semana. Acesse nosso painel de transparência de despesas e confira os comprovantes e notas de gastos lançados em tempo real! #TransparênciaESG #MutirãoRN",
+      "url_midia": "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=800",
+      "data_publicacao": "há 20 min",
+      "metricas": {
+        "curtidas": 154,
+        "comentarios": 3,
+        "compartilhamentos": 18
+      },
+      "comentarios_mock": [
+        {
+          "author": "usr-corp-1",
+          "authorName": "Supermercado Nordestão",
+          "text": "Orgulho em fazer parte desse impacto positivo no sertão! Nossas arrecadações mensais estão gerando frutos reais. 💛"
+        },
+        {
+          "author": "usr-engaged-1",
+          "authorName": "Felipe Albuquerque",
+          "text": "Parabéns ao instituto! A transparência nas despesas realmente ajuda a confiar e doar ainda mais."
+        }
+      ]
+    },
+    {
+      "id_post": "post-s-2",
+      "id_autor": "usr-corp-1",
+      "authorName": "Supermercado Nordestão",
+      "authorUsername": "@nordestao_oficial",
+      "authorType": "company",
+      "tipo_conteudo": "text",
+      "texto_conteudo": "🏪 Parceria de impacto! Anunciamos hoje a renovação da nossa assinatura ESG Ouro no Mutirão RN. Com isso, apoiamos recorrentemente 5 ONGs e garantimos 400 refeições por mês no Sopão Solidário. O selo ESG já está ativo em nosso perfil e nos canais digitais. Faça como o Nordestão e apoie causas locais!",
+      "data_publicacao": "há 1 hora",
+      "metricas": {
+        "curtidas": 98,
+        "comentarios": 2,
+        "compartilhamentos": 5
+      },
+      "comentarios_mock": [
+        {
+          "author": "usr-brand-3",
+          "authorName": "ONG Mãos que Ajudam Seridó",
+          "text": "Obrigado, Nordestão! A constância das doações recorrentes é o que mantém nossas portas abertas todo mês. 🙏"
+        }
+      ]
+    },
+    {
+      "id_post": "post-s-3",
+      "id_autor": "usr-creative-1",
+      "authorName": "Marina Vasconcelos",
+      "authorUsername": "@marina_artes",
+      "authorType": "volunteer",
+      "tipo_conteudo": "image",
+      "texto_conteudo": "🎨 Registros da oficina de pintura e colagem com as crianças do abrigo. Ver cada sorriso expressando sua criatividade na tela me dá forças de continuar. O voluntariado não é sobre doar o que sobra, mas sobre doar amor e atenção! #Voluntariado #ArteEducação",
+      "url_midia": "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&q=80&w=800",
+      "data_publicacao": "há 3 horas",
+      "metricas": {
+        "curtidas": 210,
+        "comentarios": 4,
+        "compartilhamentos": 12
+      },
+      "comentarios_mock": [
+        {
+          "author": "usr-casual-1",
+          "authorName": "Pedro Lima",
+          "text": "Trabalho lindo, Marina! Quero muito me candidatar e ajudar na próxima oficina."
+        }
+      ]
+    },
+    {
+      "id_post": "post-s-4",
+      "id_autor": "usr-brand-2",
+      "authorName": "Abrigo Cão Feliz Natal",
+      "authorUsername": "@caofeliz_natal",
+      "authorType": "institution",
+      "tipo_conteudo": "image",
+      "texto_conteudo": "🐶 Hoje o dia foi de mutirão de vacinação e carinho nos nossos resgatados. Tivemos a visita de 12 voluntários que ajudaram a higienizar o espaço e passear com os cães. Agradecimento especial ao Hotel Miramar pela doação de ração e medicamentos. #ProteçãoAnimal #NatalRN",
+      "url_midia": "https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=800",
+      "data_publicacao": "há 5 horas",
+      "metricas": {
+        "curtidas": 340,
+        "comentarios": 5,
+        "compartilhamentos": 45
+      },
+      "comentarios_mock": [
+        {
+          "author": "usr-corp-2",
+          "authorName": "Hotel Miramar Ponta Negra",
+          "text": "É uma honra apoiar o Abrigo Cão Feliz! A causa animal é uma das nossas maiores prioridades ESG. 🐾"
+        }
+      ]
+    },
+    {
+      "id_post": "post-s-5",
+      "id_autor": "usr-engaged-1",
+      "authorName": "Felipe Albuquerque",
+      "authorUsername": "@felipe_social",
+      "authorType": "donor",
+      "tipo_conteudo": "text",
+      "texto_conteudo": "🍲 Utilizei o fluxo de Apoio Expresso no meu painel e destinei R$ 150 para o fundo geral do Mutirão! Muito prático doar diretamente por lá e ver o andamento transparente de todas as contas do estado. Convido todos a doarem R$ 10 ou R$ 20. Juntos fazemos a diferença!",
+      "data_publicacao": "há 8 horas",
+      "metricas": {
+        "curtidas": 75,
+        "comentarios": 1,
+        "compartilhamentos": 2
+      },
+      "comentarios_mock": []
+    },
+    {
+      "id_post": "post-s-6",
+      "id_autor": "usr-engaged-3",
+      "authorName": "Marcos Silveira",
+      "authorUsername": "@marcos_rural",
+      "authorType": "volunteer",
+      "tipo_conteudo": "image",
+      "texto_conteudo": "🌱 Nossa horta comunitária na Zona Norte de Natal está a todo vapor! Hoje colhemos 50kg de hortaliças sem agrotóxicos que alimentarão famílias cadastradas na associação. Obrigado aos voluntários pelo trabalho árduo na terra! #HortaComunitária #Sustentabilidade",
+      "url_midia": "https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&q=80&w=800",
+      "data_publicacao": "há 1 dia",
+      "metricas": {
+        "curtidas": 185,
+        "comentarios": 3,
+        "compartilhamentos": 14
+      },
+      "comentarios_mock": [
+        {
+          "author": "usr-casual-3",
+          "authorName": "Lucas Pinheiro",
+          "text": "Sensacional! Trabalho de base super importante."
+        }
+      ]
+    },
+    {
+      "id_post": "post-s-7",
+      "id_autor": "usr-corp-3",
+      "authorName": "RN Cabos e Telecom",
+      "authorUsername": "@rn_cabo",
+      "authorType": "company",
+      "tipo_conteudo": "text",
+      "texto_conteudo": "💻 Conectividade de impacto! Finalizamos hoje a instalação de internet de fibra óptica de alta velocidade e doação de 5 computadores recondicionados no centro comunitário de apoio escolar. A inclusão digital abre portas para o mercado corporativo!",
+      "data_publicacao": "há 1 dia",
+      "metricas": {
+        "curtidas": 125,
+        "comentarios": 2,
+        "compartilhamentos": 9
+      },
+      "comentarios_mock": [
+        {
+          "author": "usr-brand-3",
+          "authorName": "ONG Mãos que Ajudam Seridó",
+          "text": "Esses computadores farão toda a diferença nos cursos de programação e alfabetização digital para nossos jovens! Gratidão!"
+        }
+      ]
+    },
+    {
+      "id_post": "post-s-8",
+      "id_autor": "usr-creative-3",
+      "authorName": "Maria Eduarda Dias",
+      "authorUsername": "@duda_musica",
+      "authorType": "volunteer",
+      "tipo_conteudo": "image",
+      "texto_conteudo": "🎼 Nossa primeira apresentação de flauta doce e percussão com o grupo juvenil foi emocionante. A música conecta mentes e estrutura a disciplina social dos nossos jovens. Obrigado ao projeto pelo convite e acolhida! #MúsicaSocial #Inclusão",
+      "url_midia": "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=800",
+      "data_publicacao": "há 2 dias",
+      "metricas": {
+        "curtidas": 94,
+        "comentarios": 0,
+        "compartilhamentos": 3
+      },
+      "comentarios_mock": []
+    },
+    {
+      "id_post": "post-s-9",
+      "id_autor": "usr-brand-3",
+      "authorName": "ONG Mãos que Ajudam Seridó",
+      "authorUsername": "@maos_que_ajudam",
+      "authorType": "institution",
+      "tipo_conteudo": "image",
+      "texto_conteudo": "🥖 Oficina de panificação comunitária concluída! Hoje qualificamos 12 mães solo para a produção de pães caseiros e cookies saudáveis para geração de renda familiar imediata. Nosso objetivo é promover a emancipação econômica sustentável. #EmancipaçãoSocial #Seridó",
+      "url_midia": "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&q=80&w=800",
+      "data_publicacao": "há 2 dias",
+      "metricas": {
+        "curtidas": 150,
+        "comentarios": 2,
+        "compartilhamentos": 16
+      },
+      "comentarios_mock": [
+        {
+          "author": "usr-casual-2",
+          "authorName": "Clara Medeiros",
+          "text": "Projeto maravilhoso! Gostaria de doar insumos e farinha para a próxima turma. Como faço?"
+        }
+      ]
+    },
+    {
+      "id_post": "post-s-10",
+      "id_autor": "usr-corp-2",
+      "authorName": "Hotel Miramar Ponta Negra",
+      "authorUsername": "@miramar_hotel",
+      "authorType": "company",
+      "tipo_conteudo": "text",
+      "texto_conteudo": "🌊 Preservação das nossas belezas! Organizamos neste sábado uma caminhada ecológica e mutirão de limpeza na praia de Ponta Negra com nossos funcionários e hóspedes voluntários. Coletamos 120kg de resíduos plásticos da areia. Apoie o RN!",
+      "data_publicacao": "há 3 dias",
+      "metricas": {
+        "curtidas": 280,
+        "comentarios": 4,
+        "compartilhamentos": 20
+      },
+      "comentarios_mock": [
+        {
+          "author": "usr-engaged-2",
+          "authorName": "Camila Nogueira",
+          "text": "Ação fantástica! Estarei junto no próximo mutirão de limpeza com certeza."
+        }
+      ]
+    }
+  ]
+}

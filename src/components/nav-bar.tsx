@@ -39,7 +39,7 @@ export function NavBar() {
   };
 
   const navLinks = [
-    { href: "/campaigns", label: "Explorar", icon: <Compass className="w-4 h-4" />, show: true },
+    { href: "/feed", label: "Explorar", icon: <Compass className="w-4 h-4" />, show: true },
     { href: "/vagas", label: "Vagas", icon: <Briefcase className="w-4 h-4" />, show: !!profile },
     { href: "/feed", label: "Feed", icon: <Newspaper className="w-4 h-4" />, show: true },
     { href: "/dashboard", label: "Painel", icon: <LayoutDashboard className="w-4 h-4" />, show: !!profile },
