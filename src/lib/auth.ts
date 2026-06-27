@@ -13,7 +13,7 @@ export type StoredProfile = {
   subscriptionStatus?: string;
 };
 
-const STORAGE_KEY = "mutirao_user_profile";
+const STORAGE_KEY = "prove_user_profile";
 
 function setCookieAuth(value: string) {
   if (typeof document === "undefined") return;

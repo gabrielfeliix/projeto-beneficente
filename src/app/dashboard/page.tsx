@@ -463,14 +463,14 @@ export default function DashboardPage() {
           <aside className="border-4 border-black p-6 bg-white shadow-[6px_6px_0_0_#000] space-y-6">
             <div>
               <h3 className="font-display text-2xl font-black uppercase">Apoio Expresso</h3>
-              <p className="text-xs font-bold text-gray-500 mt-1">Doe qualquer valor diretamente para o fundo geral do Mutirão RN.</p>
+              <p className="text-xs font-bold text-gray-500 mt-1">Doe qualquer valor diretamente para o fundo geral da PROVE RN.</p>
             </div>
             
-            <form onSubmit={(e) => { e.preventDefault(); alert("Obrigado pela sua contribuição expressa no fundo geral do Mutirão!"); }} className="space-y-4">
+            <form onSubmit={(e) => { e.preventDefault(); alert("Obrigado pela sua contribuição expressa no fundo geral da PROVE!"); }} className="space-y-4">
               <div>
                 <label className="text-xs font-black uppercase block mb-1">Destinar Para</label>
                 <select className="w-full h-11 border-2 border-black bg-white px-2 font-bold text-sm font-sans">
-                  <option value="fundo_geral">Fundo Geral de Impacto (Mutirão)</option>
+                  <option value="fundo_geral">Fundo Geral de Impacto (PROVE)</option>
                   <option value="alimentacao">Fundo Setorial Alimentação</option>
                   <option value="saude">Fundo Setorial Saúde</option>
                 </select>

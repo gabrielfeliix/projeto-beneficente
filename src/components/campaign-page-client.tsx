@@ -12,6 +12,7 @@ import { appendCampaignUpdate, addCampaignNotification, loadCampaignData, update
 import { MapPin, Share2, Heart, Calendar, Megaphone, Sparkles, Camera, Settings, PlusCircle, AlertTriangle, Check, FileText, BarChart2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 import { loadStoredProfile } from '@/lib/auth';
 import { createDonation, createExpense, getCampaignDonations, getCampaignExpenses, getCampaignAccountability } from '@/actions/accountability';
@@ -24,6 +25,7 @@ type CampaignPageClientProps = {
 };
 
 export function CampaignPageClient({ campaign, initialUpdates, organizer }: CampaignPageClientProps) {
+  const router = useRouter();
   const [activeCampaign, setActiveCampaign] = useState(campaign);
   const [updates, setUpdates] = useState(initialUpdates);
   const [statusMessage, setStatusMessage] = useState('');
@@ -568,7 +570,14 @@ export function CampaignPageClient({ campaign, initialUpdates, organizer }: Camp
                 <Button
                   size="lg"
                   disabled={activeCampaign.status === 'completed'}
-                  onClick={() => { setDonModalOpen(true); setDonSuccess(false); }}
+                  onClick={() => {
+                    if (!profile) {
+                      router.push(`/login?redirect=/campaigns/${activeCampaign.id}`);
+                    } else {
+                      setDonModalOpen(true);
+                      setDonSuccess(false);
+                    }
+                  }}
                   className="w-full text-xl h-14 uppercase tracking-wider bg-black text-white hover:bg-gray-800 hover:text-white transition-transform active:scale-95"
                 >
                   <Heart className="mr-2" /> {activeCampaign.status === 'completed' ? 'Meta Atingida' : 'Doar na Vakinha'}

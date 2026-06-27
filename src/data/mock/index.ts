@@ -582,7 +582,7 @@ export const mockFeedPosts: FeedPost[] = [
     authorId: 'comp-1',
     authorName: 'Supermercado Nordestão',
     authorType: 'company',
-    content: '🏪 Temos o orgulho de apoiar o Mutirão com doações recorrentes mensais! O selo de impacto ESG Ouro já está ativo e exposto na nossa marca corporativa. Venha apoiar o desenvolvimento do RN também!',
+    content: '🏪 Temos o orgulho de apoiar a PROVE com doações recorrentes mensais! O selo de impacto ESG Ouro já está ativo e exposto na nossa marca corporativa. Venha apoiar o desenvolvimento do RN também!',
     createdAt: new Date(Date.now() - 12 * 3600000).toISOString(),
     likes: 210,
     comments: 42,

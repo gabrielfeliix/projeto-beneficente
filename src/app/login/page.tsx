@@ -218,7 +218,7 @@ function AuthForm() {
       }
       setSuccess("Login efetuado! Redirecionando...");
       const redirect = searchParams.get("redirect") || "/dashboard";
-      setTimeout(() => { router.push(redirect); router.refresh(); }, 800);
+      setTimeout(() => { window.location.href = redirect; }, 800);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Erro ao efetuar login.");
     } finally { setLoading(false); }
@@ -272,7 +272,7 @@ function AuthForm() {
         const cleanCep = cep.replace(/\D/g, "");
         if (cleanCep.length !== 8) throw new Error("CEP deve conter 8 dígitos.");
         if (cleanCep.substring(0, 2) !== "59") {
-          throw new Error("Localização inválida. O Mutirão atua exclusivamente no Rio Grande do Norte (CEPs iniciando em 59).");
+          throw new Error("Localização inválida. A PROVE atua exclusivamente no Rio Grande do Norte (CEPs iniciando em 59).");
         }
         if (!city) throw new Error("Cidade é obrigatória.");
         if (!addressNumber) throw new Error("Número do endereço é obrigatório.");
@@ -300,8 +300,8 @@ function AuthForm() {
           }
         }
         saveStoredProfile({ id: userId, profileType: profileType as any, role: profileType as any, name: signupName, email: signupEmail });
-        setSuccess("Conta criada com sucesso! Bem-vindo(a) ao Mutirão!");
-        setTimeout(() => { router.push("/dashboard"); router.refresh(); }, 1000);
+        setSuccess("Conta criada com sucesso! Bem-vindo(a) à PROVE!");
+        setTimeout(() => { window.location.href = "/dashboard"; }, 1000);
 
       } else {
         // Institution or Company
@@ -313,7 +313,7 @@ function AuthForm() {
         const cleanInstCep = instCep.replace(/\D/g, "");
         if (cleanInstCep.length !== 8) throw new Error("CEP deve conter 8 dígitos.");
         if (cleanInstCep.substring(0, 2) !== "59") {
-          throw new Error("Localização inválida. O Mutirão atua exclusivamente no Rio Grande do Norte (CEPs iniciando em 59).");
+          throw new Error("Localização inválida. A PROVE atua exclusivamente no Rio Grande do Norte (CEPs iniciando em 59).");
         }
         if (!instCity) throw new Error("Cidade é obrigatória.");
         if (!terms) throw new Error("Confirme os dados para continuar.");
@@ -355,7 +355,7 @@ function AuthForm() {
         } else {
           setSuccess("Empresa cadastrada com sucesso! Assinatura de impacto Ouro ativada com sucesso.");
         }
-        setTimeout(() => { router.push("/dashboard"); router.refresh(); }, 1500);
+        setTimeout(() => { window.location.href = "/dashboard"; }, 1500);
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Erro ao salvar perfil.");
@@ -506,7 +506,7 @@ function AuthForm() {
                 className="w-5 h-5 mt-0.5 accent-black border-2 border-black shrink-0" />
               <span className="text-sm font-bold">
                 Li e aceito os <span className="underline">Termos de Uso</span> e a{" "}
-                <span className="underline">Política de Privacidade</span> da plataforma Mutirão.
+                <span className="underline">Política de Privacidade</span> da plataforma PROVE.
                 Meus dados serão usados apenas para fins de voluntariado social.
               </span>
             </label>
@@ -617,7 +617,7 @@ function AuthForm() {
                 className="w-5 h-5 mt-0.5 accent-black border-2 border-black shrink-0" />
               <span className="text-sm font-bold">
                 Confirmo que os dados fornecidos são verídicos. Estou ciente que a conta será analisada
-                antes da aprovação e aceito os <span className="underline">Termos de Uso</span> da plataforma Mutirão.
+                antes da aprovação e aceito os <span className="underline">Termos de Uso</span> da plataforma PROVE.
               </span>
             </label>
 

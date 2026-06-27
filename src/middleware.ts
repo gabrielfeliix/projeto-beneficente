@@ -10,7 +10,7 @@ const PROTECTED_ROUTES = [
   '/vagas',
 ];
 
-const STORAGE_KEY = 'mutirao_user_profile';
+const STORAGE_KEY = 'prove_user_profile';
 
 interface StoredProfile {
   id: string;

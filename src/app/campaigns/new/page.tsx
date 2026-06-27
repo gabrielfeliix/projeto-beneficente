@@ -148,7 +148,7 @@ export default function NewCampaignPage() {
                   {acceptTerms && <CheckCircle2 className="w-4 h-4 text-black" />}
                 </div>
                 <input type="checkbox" className="hidden" checked={acceptTerms} onChange={(e) => setAcceptTerms(e.target.checked)} />
-                <span className="font-bold text-sm">Li e aceito os <a href="#" className="underline decoration-primary decoration-2 hover:bg-primary/20">Termos de Uso e Política de Transparência</a> da plataforma Mutirão.</span>
+                <span className="font-bold text-sm">Li e aceito os <a href="#" className="underline decoration-primary decoration-2 hover:bg-primary/20">Termos de Uso e Política de Transparência</a> da plataforma PROVE.</span>
               </label>
             </div>
           </CardContent>

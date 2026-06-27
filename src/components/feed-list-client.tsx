@@ -135,7 +135,7 @@ export function FeedListClient({ initialPosts }: FeedListClientProps) {
     const newPost: FeedPost = {
       id: 'post-user-' + Date.now(),
       authorId: profile?.id || 'anonymous',
-      authorName: profile?.name || 'Comunidade Mutirão',
+      authorName: profile?.name || 'Comunidade PROVE',
       authorType: profile?.profileType || 'volunteer',
       content: newContent,
       imageUrl: selectedImage || undefined,
@@ -206,7 +206,7 @@ export function FeedListClient({ initialPosts }: FeedListClientProps) {
                 value={newContent}
                 onChange={(e) => setNewContent(e.target.value)}
                 required
-                placeholder="Escreva sua legenda com hashtags de impacto... #MutirãoRN #Voluntariado"
+                placeholder="Escreva sua legenda com hashtags de impacto... #PROVERN #Voluntariado"
                 rows={4}
                 className="w-full border-2 border-black p-3 font-bold text-sm resize-none focus:outline-none focus:ring-2 focus:ring-black"
               />

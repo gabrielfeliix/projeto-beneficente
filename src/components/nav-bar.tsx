@@ -58,7 +58,7 @@ export function NavBar() {
           <div className="bg-black text-primary p-1.5 border-2 border-black group-hover:-translate-y-0.5 transition-transform">
             <span className="text-xl leading-none">💛</span>
           </div>
-          <span className="font-display text-2xl font-black uppercase tracking-tighter">Mutirão</span>
+          <span className="font-display text-2xl font-black uppercase tracking-tighter">PROVE</span>
         </Link>
 
         {/* DESKTOP NAV */}
