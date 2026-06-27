@@ -1,14 +1,5 @@
 -- SCRIPT DE SEEDING — PLATAFORMA PROVE (SQL EDITOR DO SUPABASE)
--- Execute este script para popular todas as tabelas com dados de teste realistas.
-
--- Limpa dados antigos para evitar violações de chave primária/estrangeira (OPCIONAL)
--- DELETE FROM public.expenses;
--- DELETE FROM public.donations;
--- DELETE FROM public.feed_posts;
--- DELETE FROM public.applications;
--- DELETE FROM public.job_postings;
--- DELETE FROM public.campaigns;
--- DELETE FROM public.profiles;
+-- Execute este script no SQL Editor do seu painel Supabase para popular todas as tabelas com dados fictícios realistas.
 
 -- ══════════════════════════════════════════════════════════════
 -- 1. POPULAR TABELA DE USUÁRIOS (auth.users e public.profiles)

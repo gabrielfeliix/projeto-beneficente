@@ -32,7 +32,9 @@ export default function RootLayout({
           <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <span className="text-2xl">💛</span>
+                <div className="bg-white text-black p-1 border-2 border-white flex items-center justify-center w-9 h-9 shrink-0">
+                  <img src="/logo-prove.png" alt="PROVE Logo" className="w-full h-full object-contain" />
+                </div>
                 <span className="font-display text-2xl font-black uppercase tracking-tighter">PROVE</span>
               </div>
               <p className="text-gray-400 font-bold text-sm leading-relaxed">

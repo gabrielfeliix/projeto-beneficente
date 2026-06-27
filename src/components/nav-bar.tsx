@@ -55,8 +55,8 @@ export function NavBar() {
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
         {/* LOGO */}
         <Link href="/" className="flex items-center gap-2 group" onClick={() => setMenuOpen(false)}>
-          <div className="bg-black text-primary p-1.5 border-2 border-black group-hover:-translate-y-0.5 transition-transform">
-            <span className="text-xl leading-none">💛</span>
+          <div className="bg-black text-primary p-1 border-2 border-black group-hover:-translate-y-0.5 transition-transform flex items-center justify-center w-9 h-9 shrink-0">
+            <img src="/logo-prove.png" alt="PROVE Logo" className="w-full h-full object-contain" />
           </div>
           <span className="font-display text-2xl font-black uppercase tracking-tighter">PROVE</span>
         </Link>
