@@ -34,7 +34,17 @@ export interface User {
   instagram?: string;
 }
 
-export type ProfileType = 'volunteer' | 'institution';
+export type ProfileType = 'donor' | 'volunteer' | 'institution' | 'fiscal' | 'admin';
+export type InstitutionStatus = 'pending_approval' | 'approved' | 'rejected';
+
+export interface Donor extends User {
+  profileType: 'donor';
+  cpf: string;
+  birthDate: string;
+  address: string;
+  phone: string;
+  acceptedTerms: boolean;
+}
 
 export interface Volunteer extends User {
   profileType: 'volunteer';
@@ -69,6 +79,8 @@ export interface Institution extends User {
     directorElectionAct?: string;
     cnpjCard?: string;
   };
+  approvalStatus?: InstitutionStatus;
+  approvalNotes?: string;
 }
 
 export interface JobPosting {

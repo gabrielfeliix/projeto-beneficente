@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { getCurrentProfile, signOut, StoredProfile } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Bell, LayoutDashboard, User, LogOut, Briefcase, Newspaper, Compass, Plus } from "lucide-react";
+import { Menu, X, Bell, LayoutDashboard, User, LogOut, Briefcase, Newspaper, Compass, Plus, Shield, Settings } from "lucide-react";
 
 export function NavBar() {
   const [profile, setProfile] = useState<StoredProfile | null>(null);
@@ -25,15 +25,29 @@ export function NavBar() {
     window.location.href = "/";
   };
 
+  const getRoleLabel = (role?: string) => {
+    if (!role) return "Voluntário";
+    switch (role) {
+      case "donor": return "Doador";
+      case "volunteer": return "Voluntário";
+      case "institution": return "ONG";
+      case "fiscal": return "Fiscal";
+      case "admin": return "Administrador";
+      default: return "Voluntário";
+    }
+  };
+
   const navLinks = [
-    { href: "/", label: "Explorar", icon: <Compass className="w-4 h-4" />, public: true },
-    { href: "/vagas", label: "Vagas", icon: <Briefcase className="w-4 h-4" />, public: true },
-    { href: "/feed", label: "Feed", icon: <Newspaper className="w-4 h-4" />, public: true },
-    { href: "/dashboard", label: "Painel", icon: <LayoutDashboard className="w-4 h-4" />, public: false },
-    { href: "/notificacoes", label: "Notificações", icon: <Bell className="w-4 h-4" />, public: false },
+    { href: "/", label: "Explorar", icon: <Compass className="w-4 h-4" />, show: true },
+    { href: "/vagas", label: "Vagas", icon: <Briefcase className="w-4 h-4" />, show: !!profile },
+    { href: "/feed", label: "Feed", icon: <Newspaper className="w-4 h-4" />, show: true },
+    { href: "/dashboard", label: "Painel", icon: <LayoutDashboard className="w-4 h-4" />, show: !!profile },
+    { href: "/fiscal", label: "Auditoria", icon: <Shield className="w-4 h-4" />, show: profile?.role === "fiscal" || profile?.role === "admin" },
+    { href: "/admin", label: "Gerenciar", icon: <Settings className="w-4 h-4" />, show: profile?.role === "admin" },
+    { href: "/notificacoes", label: "Notificações", icon: <Bell className="w-4 h-4" />, show: !!profile },
   ];
 
-  const visibleLinks = navLinks.filter(l => l.public || !!profile);
+  const visibleLinks = navLinks.filter(l => l.show);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b-4 border-black bg-primary shadow-[0_4px_0_0_#000]">
@@ -64,9 +78,9 @@ export function NavBar() {
             <div className="flex items-center gap-3">
               <div className="text-right leading-tight">
                 <div className="font-black text-sm uppercase truncate max-w-[140px]">{profile.name}</div>
-                <div className="text-xs font-bold text-black/60">{profile.profileType === "institution" ? "ONG" : "Voluntário"}</div>
+                <div className="text-xs font-bold text-black/60">{getRoleLabel(profile.role)}</div>
               </div>
-              {profile.profileType === "institution" ? (
+              {profile.role === "institution" ? (
                 <Link href="/campaigns/new">
                   <Button size="sm" className="font-black uppercase border-2 border-black bg-black text-primary hover:bg-gray-800">
                     <Plus className="w-3.5 h-3.5 mr-1" /> Campanha
@@ -120,7 +134,7 @@ export function NavBar() {
               {profile ? (
                 <div className="space-y-3">
                   <div className="font-black text-lg uppercase">{profile.name}</div>
-                  <div className="text-sm font-bold text-black/60">{profile.profileType === "institution" ? "ONG / Instituição" : "Voluntário(a)"}</div>
+                  <div className="text-sm font-bold text-black/60">{getRoleLabel(profile.role)}</div>
                   <button onClick={handleLogout}
                     className="flex items-center gap-2 font-black uppercase text-sm text-red-700 border-2 border-red-700 px-4 py-2 hover:bg-red-50 w-full justify-center transition-colors">
                     <LogOut className="w-4 h-4" /> Sair da Conta

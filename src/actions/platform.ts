@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use server';
 
 import {
@@ -49,6 +50,16 @@ function mapDBProfile(db: any): Volunteer | Institution | null {
       emergencyContact: db.emergency_contact || undefined,
       acceptedTerms: db.accepted_terms || false,
     } as Volunteer;
+  } else if (db.profile_type === 'donor') {
+    return {
+      ...baseUser,
+      profileType: 'donor',
+      cpf: db.cpf || '',
+      birthDate: db.birth_date || '',
+      address: db.address || '',
+      phone: db.phone || '',
+      acceptedTerms: db.accepted_terms || false,
+    } as any;
   } else {
     return {
       ...baseUser,
@@ -71,6 +82,8 @@ function mapDBProfile(db: any): Volunteer | Institution | null {
         directorElectionAct: db.director_election_act || undefined,
         cnpjCard: db.cnpj_card || undefined,
       },
+      approvalStatus: db.approval_status || 'approved',
+      approvalNotes: db.approval_notes || undefined,
     } as Institution;
   }
 }

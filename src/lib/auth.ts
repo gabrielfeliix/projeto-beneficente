@@ -1,11 +1,14 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabase } from "./supabase";
 
 export type StoredProfile = {
   id: string;
-  profileType: "volunteer" | "institution";
+  profileType: "donor" | "volunteer" | "institution" | "fiscal" | "admin";
+  role: "donor" | "volunteer" | "institution" | "fiscal" | "admin";
   name: string;
   email: string;
   avatarUrl?: string;
+  approvalStatus?: "pending_approval" | "approved" | "rejected";
 };
 
 const STORAGE_KEY = "mutirao_user_profile";
@@ -56,7 +59,7 @@ export async function getCurrentProfile(): Promise<StoredProfile | null> {
 
     const { data: profile, error } = await supabase
       .from("profiles")
-      .select("id, profile_type, name, email, avatar_url")
+      .select("id, profile_type, name, email, avatar_url, approval_status")
       .eq("id", user.id)
       .maybeSingle();
 
@@ -64,10 +67,12 @@ export async function getCurrentProfile(): Promise<StoredProfile | null> {
 
     const mapped: StoredProfile = {
       id: profile.id,
-      profileType: profile.profile_type as "volunteer" | "institution",
+      profileType: profile.profile_type as any,
+      role: profile.profile_type as any,
       name: profile.name,
       email: profile.email,
       avatarUrl: profile.avatar_url || undefined,
+      approvalStatus: profile.approval_status || undefined,
     };
 
     // Persiste localmente e define cookie de sessão
