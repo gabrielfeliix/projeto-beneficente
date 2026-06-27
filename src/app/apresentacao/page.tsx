@@ -1,34 +1,44 @@
 'use client';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { 
   MapPin, Heart, ShieldCheck, Megaphone, Check, Search, 
-  Filter, Award, User, LogOut, LayoutDashboard, Calendar, Share2
+  Filter, Award, User, LogOut, LayoutDashboard, Calendar, Share2,
+  FileText, CheckCircle, Sparkles, MessageSquare, AlertCircle, ArrowLeft
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { saveStoredProfile } from '@/lib/auth';
+import { getProfile, getJobs, getApplicationsForVolunteer } from '@/actions/platform';
+import { getCampaigns, getCampaignById, getCampaignUpdates } from '@/actions/campaigns';
+import { getCampaignExpenses } from '@/actions/accountability';
+import { getVolunteerCertificates } from '@/actions/certificates';
 
-// --- DATA MOCKS ---
 const MOCK_CAMPAIGNS = [
   {
-    id: '1',
-    title: 'Marmitas Solidárias Filipe Camarão',
+    id: '10000000-0000-0000-0000-000000000001',
+    title: 'MARMITAS SOLIDÁRIAS FILIPE CAMARÃO',
     category: 'Alimentação',
     city: 'Natal',
     neighborhood: 'Filipe Camarão',
-    coverImage: 'https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&q=80&w=800',
+    coverImage: '/images/hero_community.png',
     financialGoal: 5000,
     financialRaised: 3450,
     mainNeed: 'Arroz, feijão e carne para preparo',
     status: 'active',
   },
   {
-    id: '2',
+    id: '10000000-0000-0000-0000-000000000002',
     title: 'Refeitório Comunitário e Sopão do Seridó',
     category: 'Alimentação',
     city: 'Caicó',
     neighborhood: 'Centro',
-    coverImage: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&q=80&w=800',
+    coverImage: '/images/hero_community.png',
     financialGoal: 3000,
     financialRaised: 3000,
     mainNeed: 'Ingredientes para sopa e embalagens descartáveis',
@@ -59,7 +69,7 @@ const MOCK_UPDATES = [
   {
     id: 'u1',
     content: '🍲 Preparativos a todo vapor para o sopão deste sábado! Graças ao apoio de vocês, compramos todos os legumes e ingredientes fresquinhos no mercado local. Nossa cozinha comunitária em Caicó já está pronta para receber os voluntários.',
-    imageUrl: 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&q=80&w=800',
+    imageUrl: '/images/hero_community.png',
     likes: 24,
     shares: 5,
     date: 'Hoje'
@@ -67,7 +77,7 @@ const MOCK_UPDATES = [
   {
     id: 'u2',
     content: '❤️ Meta de arrecadação financeira atingida em 100%! Estamos imensamente gratos a cada doador que tornou isso possível. Com esse valor de R$ 3.000,00 garantiremos a manutenção do refeitório social e o sopão por mais 3 meses.',
-    imageUrl: 'https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&q=80&w=800',
+    imageUrl: '/images/hero_community.png',
     likes: 48,
     shares: 12,
     date: 'Ontem'
@@ -102,19 +112,91 @@ const SLIDES = [
   },
   {
     title: 'Gestão e Certificação de Impacto',
-    subtitle: 'Painel completo do organizador com emissão ágil de certificados ESG.',
+    subtitle: 'Painel completo do voluntário mostrando candidaturas e certificados ESG.',
     type: 'dashboard',
   }
 ];
 
 export default function PresentationPage() {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const scrollInterval = useRef<NodeJS.Timeout | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Dynamic DB states
+  const [campaigns, setCampaigns] = useState<any[]>([]);
+  const [selectedCampaign, setSelectedCampaign] = useState<any>(null);
+  const [campaignUpdates, setCampaignUpdates] = useState<any[]>([]);
+  const [campaignExpenses, setCampaignExpenses] = useState<any[]>([]);
+  const [jobs, setJobs] = useState<any[]>([]);
+  const [applications, setApplications] = useState<any[]>([]);
+  const [certificates, setCertificates] = useState<any[]>([]);
   
-  // Single ref holding array of slide viewport containers
+  const scrollInterval = useRef<NodeJS.Timeout | null>(null);
   const slideContainers = useRef<(HTMLDivElement | null)[]>([]);
 
-  // 1. Navigation Handlers
+  // 1. Programmatic Login and DB Fetching in Background
+  useEffect(() => {
+    const loadRealData = async () => {
+      try {
+        if (isSupabaseConfigured && supabase) {
+          // Sign in
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email: 'teste@gmail.com',
+            password: '12345678',
+          });
+
+          if (error) throw error;
+
+          if (data.user) {
+            const profile = await getProfile(data.user.id);
+            if (profile) {
+              const typeVal = profile.profileType as 'donor' | 'volunteer' | 'institution' | 'fiscal' | 'admin' | 'company';
+              saveStoredProfile({
+                id: profile.id,
+                profileType: typeVal,
+                role: typeVal,
+                name: profile.name,
+                email: profile.email || 'teste@gmail.com',
+              });
+
+              // Load volunteer specific details
+              const apps = await getApplicationsForVolunteer(profile.id);
+              setApplications(apps);
+
+              const certs = await getVolunteerCertificates(profile.id);
+              setCertificates(certs);
+            }
+          }
+        }
+
+        // Load generic platform data
+        const dbCampaigns = await getCampaigns();
+        setCampaigns(dbCampaigns);
+
+        const dbJobs = await getJobs();
+        setJobs(dbJobs);
+
+        // Load specific Marmitas campaign (10000000-0000-0000-0000-000000000001) details
+        const targetCampId = '10000000-0000-0000-0000-000000000001';
+        const detailCamp = await getCampaignById(targetCampId);
+        if (detailCamp) {
+          setSelectedCampaign(detailCamp);
+          const updates = await getCampaignUpdates(targetCampId);
+          setCampaignUpdates(updates);
+          const expenses = await getCampaignExpenses(targetCampId);
+          setCampaignExpenses(expenses);
+        }
+
+        setIsLoaded(true);
+      } catch (err) {
+        console.error('Erro ao carregar dados reais do banco:', err);
+        setIsLoaded(true); // Fallback to local mocks if DB fails
+      }
+    };
+
+    loadRealData();
+  }, []);
+
+  // 2. Navigation Handlers
   const handleNext = useCallback(() => {
     setCurrentSlide(prev => (prev < SLIDES.length - 1 ? prev + 1 : prev));
   }, []);
@@ -148,7 +230,7 @@ export default function PresentationPage() {
     }
   };
 
-  // 2. Reset scroll and start smooth auto-scroll on slide change
+  // Reset scroll and start smooth auto-scroll on slide change
   useEffect(() => {
     // Reset all scroll positions
     slideContainers.current.forEach((container, index) => {
@@ -184,11 +266,63 @@ export default function PresentationPage() {
     };
   }, [currentSlide]);
 
+  // Fallbacks if DB is empty or loading
+  const displayCampaigns = campaigns.length > 0 ? campaigns : MOCK_CAMPAIGNS;
+  const displayJobs = jobs.length > 0 ? jobs : MOCK_JOBS;
+  const displayUpdates = campaignUpdates.length > 0 ? campaignUpdates : MOCK_UPDATES;
+  const displayExpenses = campaignExpenses.length > 0 ? campaignExpenses : MOCK_EXPENSES;
+
+  const activeCamp = selectedCampaign || {
+    id: '10000000-0000-0000-0000-000000000001',
+    title: 'MARMITAS SOLIDÁRIAS FILIPE CAMARÃO',
+    description: 'Campanha mensal para produção e distribuição de 300 refeições para famílias desabrigadas da região oeste de Natal.',
+    category: 'Alimentação',
+    city: 'Natal',
+    neighborhood: 'Filipe Camarão',
+    coverImage: 'https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&q=80&w=800',
+    financialGoal: 5000,
+    financialRaised: 3450,
+    mainNeed: 'Arroz, feijão e carne para preparo',
+  };
+
+  const displayApps = applications.length > 0 ? applications : [
+    {
+      id: 'app-1',
+      jobId: 'job-1',
+      jobTitle: 'Facilitador de Oficinas de Leitura',
+      institutionName: 'Instituto Água Viva',
+      message: 'Gostaria muito de apoiar as crianças da comunidade com oficinas de leitura.',
+      status: 'selected',
+      submittedAt: new Date(Date.now() - 3 * 86400000).toISOString(),
+    }
+  ];
+
+  const displayCerts = certificates.length > 0 ? certificates : [
+    {
+      id: 'cert-1',
+      jobTitle: 'Auxiliar Administrativo de Doações',
+      institutionName: 'Associação Água Viva',
+      hoursDonated: 12,
+      issuedAt: new Date().toISOString(),
+      verificationCode: 'LUM-DEMO123',
+    }
+  ];
+
   return (
     <div 
       onClick={handleScreenClick}
       className="fixed inset-0 z-[9999] bg-[#fdfdfd] text-black select-none flex flex-col items-center justify-center py-6 px-4 font-sans cursor-pointer overflow-hidden"
     >
+      <style dangerouslySetInnerHTML={{__html: `
+        .no-scrollbar::-webkit-scrollbar {
+          display: none !important;
+        }
+        .no-scrollbar {
+          -ms-overflow-style: none !important;
+          scrollbar-width: none !important;
+        }
+      `}} />
+
       {/* TEXT OVERLAY AREA */}
       <div className="text-center max-w-3xl mx-auto px-4 h-20 flex flex-col justify-center shrink-0">
         <h2 className="font-display text-3xl sm:text-4xl font-black uppercase tracking-tight leading-none text-black">
@@ -200,42 +334,43 @@ export default function PresentationPage() {
       </div>
 
       {/* MAIN CONTAINER: LARGE SLIDE VIEWPORT */}
-      <div className="w-full max-w-6xl h-[80vh] bg-white border-4 border-black shadow-[12px_12px_0_0_#000] flex flex-col relative transition-all duration-300 overflow-hidden">
+      <div className="w-full max-w-6xl h-[80vh] bg-[#fdfdfd] border-4 border-black shadow-[12px_12px_0_0_#000] flex flex-col relative transition-all duration-300 overflow-hidden">
         {SLIDES.map((slide, index) => (
           <div
             key={slide.type}
             ref={el => { slideContainers.current[index] = el; }}
-            className="absolute inset-0 w-full h-full overflow-y-auto overflow-x-hidden transition-opacity duration-500 bg-[#fdfdfd]"
+            className="absolute inset-0 w-full h-full overflow-y-auto overflow-x-hidden no-scrollbar transition-opacity duration-500 bg-[#fdfdfd]"
             style={{
               opacity: index === currentSlide ? 1 : 0,
               pointerEvents: index === currentSlide ? 'auto' : 'none',
               scrollBehavior: 'auto'
             }}
           >
-            {/* STATIC NAV BAR INSIDE THE SLIDE VIEWPORT */}
-            <header className="sticky top-0 z-50 w-full border-b-4 border-black bg-primary shadow-[0_4px_0_0_#000] shrink-0">
+            {/* STICKY NAVBAR AS REQUESTED */}
+            <header className="sticky top-0 z-50 w-full border-b-4 border-black bg-[#ffe17c] shadow-[0_4px_0_0_#000] shrink-0">
               <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
                 <div className="flex items-center gap-2">
                   <img src="/logo-provi.png" alt="PROVI" className="w-10 h-10 object-contain" />
                   <span className="font-display text-2xl font-black uppercase tracking-tighter">PROVI</span>
                 </div>
-                <nav className="hidden md:flex items-center gap-4 font-black uppercase text-sm">
+                <nav className="hidden md:flex items-center gap-6 font-black uppercase text-xs tracking-wider">
                   <span className="hover:underline">Explorar</span>
-                  <span className="hover:underline">Feed</span>
                   <span className="hover:underline">Vagas</span>
+                  <span className="hover:underline">Feed</span>
+                  <span className="hover:underline">Painel</span>
+                  <span className="hover:underline">Notificações</span>
                 </nav>
                 <div className="flex items-center gap-3">
-                  {slide.type === 'dashboard' ? (
-                    <div className="flex items-center gap-2 border-2 border-black bg-secondary p-1 font-bold text-xs uppercase shadow-brutalist-sm">
-                      <LayoutDashboard className="w-4 h-4" />
-                      <span>teste@gmail.com</span>
-                    </div>
-                  ) : (
-                    <div className="flex gap-2">
-                      <Button className="h-8 border-2 border-black bg-white hover:bg-black hover:text-white text-xs font-black uppercase shadow-brutalist-sm">Entrar</Button>
-                      <Button className="h-8 border-2 border-black bg-black text-white hover:bg-white hover:text-black text-xs font-black uppercase shadow-brutalist-sm">Cadastrar</Button>
-                    </div>
-                  )}
+                  <div className="text-right">
+                    <div className="font-black text-sm uppercase text-black leading-none">TESTE TESTE</div>
+                    <div className="text-[10px] font-bold text-gray-500 uppercase mt-0.5">Voluntário</div>
+                  </div>
+                  <Button className="h-8 px-3 border-2 border-black bg-white hover:bg-black hover:text-white text-xs font-black uppercase shadow-brutalist-sm flex items-center gap-1.5">
+                    <User className="w-3.5 h-3.5" /> Perfil
+                  </Button>
+                  <Button className="h-8 w-8 p-0 border-2 border-black bg-white text-black hover:bg-black hover:text-white text-xs font-black shadow-brutalist-sm flex items-center justify-center">
+                    <LogOut className="w-4 h-4" />
+                  </Button>
                 </div>
               </div>
             </header>
@@ -256,7 +391,8 @@ export default function PresentationPage() {
                     </p>
                   </div>
                   <div className="border-4 border-black p-4 bg-secondary shadow-brutalist rotate-2">
-                    <img src="https://images.unsplash.com/photo-1559027615-cd937c9be33a?auto=format&fit=crop&q=80&w=800" alt="Voluntários" className="border-2 border-black object-cover w-full h-48 aspect-video" />
+                    {/* Fixed to Local asset hero_community.png */}
+                    <img src="/images/hero_community.png" alt="Voluntários" className="border-2 border-black object-cover w-full h-48 aspect-video" />
                     <div className="mt-4 flex justify-between font-black text-sm uppercase">
                       <span>Ação Viva — Natal, RN</span>
                       <Badge className="border-2 border-black bg-accent text-white">Ativa ✓</Badge>
@@ -266,15 +402,15 @@ export default function PresentationPage() {
 
                 {/* Stats Panel */}
                 <div className="grid grid-cols-2 md:grid-cols-4 border-4 border-black bg-white text-center shadow-brutalist">
-                  <div className="border-r-2 md:border-r-4 border-black p-4 bg-primary"><div className="font-display text-3xl font-black">851+</div><div className="text-xs font-black uppercase text-black/70">Voluntários</div></div>
+                  <div className="border-r-2 md:border-r-4 border-black p-4 bg-[#ffe17c]"><div className="font-display text-3xl font-black">851+</div><div className="text-xs font-black uppercase text-black/70">Voluntários</div></div>
                   <div className="border-r-4 border-black p-4 bg-secondary"><div className="font-display text-3xl font-black">34+</div><div className="text-xs font-black uppercase text-black/70">ONGs Parceiras</div></div>
                   <div className="border-r-2 md:border-r-4 border-black p-4 bg-accent text-white"><div className="font-display text-3xl font-black">96+</div><div className="text-xs font-black uppercase text-white/70">Vagas Abertas</div></div>
                   <div className="p-4 bg-black text-white"><div className="font-display text-3xl font-black">2652+</div><div className="text-xs font-black uppercase text-white/70">Vidas Impactadas</div></div>
                 </div>
 
                 {/* Sliding Marquee */}
-                <div className="bg-black text-primary py-3 border-4 border-black text-sm font-black uppercase flex items-center justify-around gap-8 overflow-hidden select-none">
-                  <span>⚡ CAMPANHA EM DESTAQUE: Refeitório Comunitário e Sopão do Seridó</span>
+                <div className="bg-black text-[#ffe17c] py-3 border-4 border-black text-sm font-black uppercase flex items-center justify-around gap-8 overflow-hidden select-none">
+                  <span>⚡ CAMPANHA EM DESTAQUE: Marmitas Solidárias Filipe Camarão</span>
                   <span>•</span>
                   <span>⚡ VAGAS QUALIFICADAS: Facilitador de Oficinas de Leitura</span>
                 </div>
@@ -283,7 +419,7 @@ export default function PresentationPage() {
                 <div className="space-y-6">
                   <h4 className="font-display text-2xl font-black uppercase text-black border-b-4 border-black pb-2">Campanhas em Destaque</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {MOCK_CAMPAIGNS.map(camp => (
+                    {displayCampaigns.map(camp => (
                       <div key={camp.id} className="border-4 border-black p-4 bg-white shadow-brutalist hover:-translate-y-1 transition-transform">
                         <div className="aspect-video relative overflow-hidden border-2 border-black">
                           <img src={camp.coverImage} alt={camp.title} className="object-cover w-full h-full" />
@@ -301,40 +437,66 @@ export default function PresentationPage() {
               </div>
             )}
 
-            {/* --- SLIDE 2: EXPLORER PAGE CONTENT --- */}
+            {/* --- SLIDE 2: EXPLORAR CAUSAS CONTENT (EXACTLY AS SCREENSHOT) --- */}
             {slide.type === 'explorer' && (
-              <div className="p-6 space-y-8">
+              <div className="p-6 space-y-8 bg-white text-black">
                 <div className="space-y-4">
-                  <h3 className="font-display text-4xl font-black uppercase">Explorar Campanhas</h3>
-                  <div className="flex gap-3">
-                    <div className="flex-1 border-4 border-black p-2 flex items-center gap-2 bg-white">
+                  <Badge className="bg-[#ffe17c] text-black border border-black font-black uppercase text-xs rounded-none">Rio Grande do Norte</Badge>
+                  <h3 className="font-display text-4xl sm:text-5xl font-black uppercase tracking-tight">Explore as Causas</h3>
+                  <p className="text-sm font-bold text-gray-500 leading-relaxed max-w-2xl">
+                    Encontre os projetos que mais tocam seu coração. Filtre por cidade, categoria ou busque por palavras-chave.
+                  </p>
+                  
+                  {/* Search Bar matching screenshot */}
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
+                    <div className="md:col-span-6 border-4 border-black p-2 bg-white flex items-center gap-2">
                       <Search className="w-5 h-5 text-gray-400" />
-                      <input placeholder="Buscar campanhas ou cidades..." className="w-full text-sm font-bold bg-transparent border-none outline-none" disabled />
+                      <input placeholder="Buscar campanhas, ONGs, causas..." className="w-full text-sm font-bold bg-transparent border-none outline-none" disabled />
                     </div>
-                    <Button className="border-4 border-black bg-primary p-3 shadow-brutalist-sm"><Filter className="w-5 h-5" /></Button>
+                    <div className="md:col-span-3 border-4 border-black bg-white p-2 flex items-center justify-between text-sm font-bold">
+                      <span>Todo o RN</span>
+                      <span>▼</span>
+                    </div>
+                    <div className="md:col-span-3 border-4 border-black bg-white p-2 flex items-center justify-between text-sm font-bold">
+                      <span>Todas as Categorias</span>
+                      <span>▼</span>
+                    </div>
                   </div>
                 </div>
 
-                {/* Grid List */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {MOCK_CAMPAIGNS.map(camp => (
-                    <div key={camp.id} className="border-4 border-black p-4 bg-white shadow-brutalist">
-                      <div className="aspect-video relative overflow-hidden border-2 border-black">
+                {/* Card list layout matching screenshot exactly */}
+                <div className="space-y-6">
+                  {displayCampaigns.map(camp => (
+                    <div key={camp.id} className="border-4 border-black p-6 bg-white shadow-brutalist flex flex-col md:flex-row gap-6">
+                      <div className="w-full md:w-80 shrink-0 aspect-video relative overflow-hidden border-2 border-black">
                         <img src={camp.coverImage} alt={camp.title} className="object-cover w-full h-full" />
-                        <div className="absolute top-2 left-2 flex flex-col gap-1">
-                          <Badge className="border-2 border-black bg-black text-white font-black uppercase text-[10px]">🤖 Classificado por IA (Seguro)</Badge>
-                          <Badge className="border-2 border-black bg-primary text-black font-black uppercase text-[10px]">{camp.category}</Badge>
+                        <span className="absolute top-2 left-2 border-2 border-black bg-[#ffe17c] text-black font-black uppercase text-[10px] px-2 py-0.5">
+                          {camp.category}
+                        </span>
+                      </div>
+                      <div className="flex-1 flex flex-col justify-between">
+                        <div className="space-y-2">
+                          <h4 className="font-display text-2xl font-black uppercase leading-none">{camp.title}</h4>
+                          <div className="font-display font-black text-xl text-black">
+                            R$ {camp.financialGoal?.toLocaleString('pt-BR') || '0'}
+                          </div>
+                          <div className="flex items-center gap-3 text-xs font-bold text-gray-500 flex-wrap mt-2">
+                            <span className="flex items-center gap-1.5 font-bold">
+                              <span className="w-2.5 h-2.5 rounded-full bg-green-500" /> Ativa
+                            </span>
+                            <Badge className="bg-gray-100 text-gray-500 border border-gray-300 font-bold uppercase text-[9px] px-2 py-0.5">
+                              🤖 Classificado por IA (Seguro)
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-gray-400 font-bold mt-2">
+                            <MapPin className="w-3.5 h-3.5 inline mr-1" /> {camp.city}, {camp.neighborhood} | Hoje, 11:58
+                          </p>
                         </div>
-                      </div>
-                      <h4 className="font-display text-xl font-black uppercase mt-3 leading-tight">{camp.title}</h4>
-                      <p className="text-xs text-gray-500 font-bold mt-1"><MapPin className="w-3.5 h-3.5 inline mr-1" /> {camp.city}, {camp.neighborhood}</p>
-                      
-                      <div className="mt-4 flex items-center justify-between text-xs font-black uppercase">
-                        <span>Progresso</span>
-                        <span>R$ {camp.financialRaised} / R$ {camp.financialGoal}</span>
-                      </div>
-                      <div className="mt-2 w-full bg-gray-200 border-2 border-black h-3 overflow-hidden">
-                        <div className="bg-primary h-full border-r-2 border-black" style={{ width: `${(camp.financialRaised / camp.financialGoal) * 100}%` }}></div>
+                        <div className="flex justify-end mt-4 md:mt-0">
+                          <Button className="h-9 border-2 border-black bg-white hover:bg-black hover:text-white text-xs font-black uppercase shadow-brutalist-sm flex items-center gap-1.5 text-orange-600">
+                            <MessageSquare className="w-4 h-4" /> Entrar na Causa
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -342,55 +504,130 @@ export default function PresentationPage() {
               </div>
             )}
 
-            {/* --- SLIDE 3: CAMPAIGN DETAIL CONTENT --- */}
+            {/* --- SLIDE 3: CAMPAIGN DETAIL (MATCHING SCREENSHOT) --- */}
             {slide.type === 'campaign_detail' && (
-              <div className="p-6 space-y-8">
-                {/* Header details */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                  <div className="lg:col-span-2 space-y-4">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Badge className="bg-primary text-black border-2 border-black font-black uppercase text-xs">Alimentação</Badge>
-                      <span className="text-xs font-bold text-gray-500"><MapPin className="w-3.5 h-3.5 inline mr-1" /> Caicó — Centro</span>
-                      <span className="text-xs font-black text-yellow-600 bg-yellow-50 px-2 py-0.5 border border-yellow-200 rounded">⭐ 4.8 (124 avaliações)</span>
-                      <span className="text-xs font-black text-red-600 bg-red-50 px-2 py-0.5 border border-red-200 rounded">❤️ 342 curtidas</span>
-                    </div>
-                    <h3 className="font-display text-3xl sm:text-4xl font-black uppercase tracking-tight leading-none text-black">
-                      Refeitório Comunitário e Sopão do Seridó
-                    </h3>
+              <div className="p-6 space-y-8 bg-white text-black">
+                {/* Header Tag and IA */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Badge className="bg-[#ffe17c] text-black border-2 border-black font-black uppercase text-xs rounded-none">{activeCamp.category}</Badge>
+                  <span className="text-xs font-black text-gray-400 flex items-center gap-1">
+                    <ShieldCheck className="w-4 h-4 text-green-600" /> Analisado por IA
+                  </span>
+                </div>
+
+                {/* Campaign Title */}
+                <h3 className="font-display text-3xl sm:text-4xl font-black uppercase tracking-tight leading-none text-black">
+                  {activeCamp.title}
+                </h3>
+
+                {/* Rating Likes and IA Thermometer bar */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="border-4 border-black p-3 bg-white flex items-center justify-around font-black text-sm shadow-brutalist-sm">
+                    <span className="text-yellow-600">⭐ 4.8 <span className="text-[10px] text-gray-400 font-bold">(124 avaliações)</span></span>
+                    <span className="text-red-500">❤️ 342 curtidas</span>
                   </div>
 
-                  {/* AI Safety Thermometer Widget */}
-                  <div className="bg-green-50 border-4 border-green-500 p-4 shadow-brutalist flex items-center gap-3">
-                    <ShieldCheck className="w-10 h-10 text-green-600 shrink-0" />
-                    <div>
-                      <div className="flex items-center justify-between text-[10px] font-black text-green-800">
+                  <div className="md:col-span-2 bg-green-50 border-4 border-green-500 p-3 shadow-brutalist-sm flex items-center gap-3">
+                    <ShieldCheck className="w-8 h-8 text-green-600 shrink-0" />
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between text-[9px] font-black text-green-800">
                         <span>TERMÔMETRO DE SEGURANÇA IA</span>
-                        <span>Muito Seguro (2% Risco)</span>
+                        <span>Risco de Golpe: Muito Baixo (2%)</span>
                       </div>
-                      <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden mt-1 border border-green-300">
+                      <div className="w-full bg-gray-200 h-1.5 rounded-full overflow-hidden mt-1 border border-green-300">
                         <div className="bg-green-500 h-full w-[2%]"></div>
                       </div>
-                      <p className="text-[10px] text-green-700 font-bold mt-1.5">
-                        Insumos validados localmente. Notas fiscais auditadas.
-                      </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                  {/* Left Side: About, Updates Timeline */}
-                  <div className="lg:col-span-2 space-y-8">
-                    <div className="space-y-3">
-                      <h4 className="font-display text-xl font-black uppercase border-b-4 border-black pb-1">Sobre a Campanha</h4>
-                      <p className="text-sm font-medium text-gray-700 leading-relaxed">
-                        Nossa campanha visa manter o refeitório comunitário em funcionamento por mais 3 meses, garantindo refeições diárias e sopão para centenas de moradores locais do Seridó.
+                <div className="text-xs font-bold text-gray-500 mt-2">
+                  <MapPin className="w-3.5 h-3.5 inline mr-1" /> {activeCamp.neighborhood}, {activeCamp.city} | Criada em 27/06/2026
+                </div>
+
+                {/* Main cover image */}
+                <div className="border-4 border-black overflow-hidden aspect-video max-h-96 relative">
+                  <img src={activeCamp.coverImage} alt={activeCamp.title} className="w-full h-full object-cover" />
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8">
+                  {/* Left Column content */}
+                  <div className="space-y-8">
+                    {/* Nossa Luta */}
+                    <div className="border-4 border-black p-6 bg-white shadow-brutalist">
+                      <h4 className="font-display text-2xl font-black uppercase mb-4">Nossa Luta</h4>
+                      <p className="text-sm font-bold text-gray-700 leading-relaxed">
+                        {activeCamp.description}
                       </p>
                     </div>
 
-                    <div className="space-y-6">
-                      <h4 className="font-display text-xl font-black uppercase border-b-4 border-black pb-1">Atualizações de Progresso</h4>
+                    {/* Vitrina Publica */}
+                    <div className="space-y-4">
+                      <h4 className="font-display text-2xl font-black uppercase border-b-4 border-black pb-1">Vitrine Pública</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="border-4 border-black p-6 bg-white shadow-brutalist flex flex-col justify-between">
+                          <div>
+                            <span className="text-[10px] font-black text-gray-400 uppercase">Progresso da Meta</span>
+                            <div className="font-display text-3xl font-black text-black mt-2">
+                              R$ {activeCamp.financialRaised?.toLocaleString('pt-BR') || '0'}
+                            </div>
+                            <span className="text-xs font-bold text-gray-400">de R$ {activeCamp.financialGoal?.toLocaleString('pt-BR') || '0'} arrecadados</span>
+                          </div>
+                          <div className="w-full bg-gray-200 border-2 border-black h-4 overflow-hidden mt-4">
+                            <div className="bg-primary h-full" style={{ width: `${(activeCamp.financialRaised / activeCamp.financialGoal) * 100}%` }}></div>
+                          </div>
+                        </div>
+
+                        <div className="border-4 border-black p-4 bg-white shadow-brutalist space-y-2">
+                          <span className="text-[10px] font-black text-gray-400 uppercase">Galeria</span>
+                          <div className="aspect-video relative border-2 border-black overflow-hidden">
+                            <img src={activeCamp.coverImage} alt="Galeria" className="w-full h-full object-cover" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Prestacao de contas */}
+                    <div className="space-y-4">
+                      <h4 className="font-display text-2xl font-black uppercase border-b-4 border-black pb-1">Prestação de Contas (Transparência)</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Categories distribution list */}
+                        <div className="border-4 border-black p-6 bg-white shadow-brutalist space-y-4">
+                          <span className="text-[10px] font-black text-gray-400 uppercase">Distribuição dos Gastos</span>
+                          <div className="space-y-3">
+                            <div className="text-xs font-bold flex justify-between"><span>Alimentação</span><span>R$ 450,00 (71%)</span></div>
+                            <div className="w-full bg-gray-200 h-2 rounded"><div className="bg-secondary h-full" style={{ width: '71%' }}></div></div>
+                            <div className="text-xs font-bold flex justify-between"><span>Logística</span><span>R$ 180,00 (29%)</span></div>
+                            <div className="w-full bg-gray-200 h-2 rounded"><div className="bg-accent h-full" style={{ width: '29%' }}></div></div>
+                          </div>
+                        </div>
+
+                        {/* Receipts grid */}
+                        <div className="border-4 border-black p-6 bg-white shadow-brutalist space-y-4">
+                          <span className="text-[10px] font-black text-gray-400 uppercase">Comprovantes e Despesas</span>
+                          <div className="space-y-3 max-h-60 overflow-y-auto no-scrollbar">
+                            {displayExpenses.map(exp => (
+                              <div key={exp.id} className="p-3 border-2 border-black bg-gray-50 text-xs">
+                                <div className="flex justify-between font-black">
+                                  <span className="uppercase text-gray-500">{exp.category}</span>
+                                  <span>R$ {exp.amount.toFixed(2)}</span>
+                                </div>
+                                <p className="text-[11px] font-bold text-gray-700 mt-1">{exp.description}</p>
+                                <div className="mt-2 text-[9px] font-black text-green-600 flex items-center gap-1">
+                                  <Check className="w-3 h-3" /> Nota Fiscal Validada
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Feed de atualizações */}
+                    <div className="space-y-4">
+                      <h4 className="font-display text-2xl font-black uppercase border-b-4 border-black pb-1">Feed de Atualizações</h4>
                       <div className="space-y-6">
-                        {MOCK_UPDATES.map(up => (
+                        {displayUpdates.map(up => (
                           <div key={up.id} className="border-4 border-black p-4 bg-white shadow-brutalist">
                             <div className="flex items-center gap-3 mb-3">
                               <div className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center font-display font-black text-sm">IA</div>
@@ -400,41 +637,58 @@ export default function PresentationPage() {
                               </div>
                             </div>
                             <p className="text-xs font-semibold leading-relaxed mb-3">{up.content}</p>
-                            <img src={up.imageUrl} alt="Update" className="border-2 border-black w-full h-40 object-cover" />
+                            {up.imageUrl && (
+                              <img src={up.imageUrl} alt="Update" className="border-2 border-black w-full h-40 object-cover" />
+                            )}
                           </div>
                         ))}
                       </div>
                     </div>
                   </div>
 
-                  {/* Right Side: Accountability ledger, Goal Progress */}
+                  {/* Right Column content (Goal Card) */}
                   <div className="space-y-6">
-                    <div className="border-4 border-black p-4 bg-white shadow-brutalist">
-                      <h4 className="font-display text-base font-black uppercase mb-3">Progresso de Arrecadação</h4>
+                    <div className="border-4 border-black p-6 bg-white shadow-brutalist space-y-4">
                       <div className="flex justify-between font-black text-sm">
-                        <span>Meta Atingida</span>
-                        <span className="text-green-600">R$ 3.000 / R$ 3.000</span>
+                        <span>Arrecadado</span>
+                        <span className="text-green-600">R$ {activeCamp.financialRaised}</span>
                       </div>
-                      <div className="mt-2 w-full bg-gray-200 border-2 border-black h-4 overflow-hidden">
-                        <div className="bg-green-500 h-full w-full"></div>
+                      <div className="w-full bg-gray-200 border-2 border-black h-4 overflow-hidden">
+                        <div className="bg-secondary h-full" style={{ width: `${(activeCamp.financialRaised / activeCamp.financialGoal) * 100}%` }}></div>
                       </div>
+                      <div className="text-[10px] font-bold text-gray-400 uppercase text-center">de meta de R$ {activeCamp.financialGoal}</div>
+                      
+                      <div className="border-2 border-dashed border-gray-200 p-3 bg-gray-50 rounded">
+                        <span className="text-[10px] font-black text-gray-400 uppercase block">Necessidade Principal</span>
+                        <p className="text-xs font-black uppercase text-black mt-1">{activeCamp.mainNeed}</p>
+                      </div>
+
+                      <Button className="w-full h-12 bg-black text-[#ffe17c] hover:bg-gray-800 border-2 border-black font-black uppercase shadow-brutalist text-sm">
+                        ❤️ Doar na Vakinha
+                      </Button>
+                      <Button className="w-full h-10 bg-white text-black hover:bg-gray-50 border-2 border-black font-black uppercase shadow-brutalist-sm text-xs">
+                        🔗 Multiplicar essa Causa
+                      </Button>
+                      <Button className="w-full h-10 bg-white text-black hover:bg-gray-50 border-2 border-black font-black uppercase shadow-brutalist-sm text-xs">
+                        ◀ Voltar ao Painel
+                      </Button>
                     </div>
 
-                    <div className="border-4 border-black p-4 bg-white shadow-brutalist space-y-4">
-                      <h4 className="font-display text-base font-black uppercase border-b-2 border-black pb-1">Comprovantes de Despesa</h4>
-                      <div className="space-y-3">
-                        {MOCK_EXPENSES.map(exp => (
-                          <div key={exp.id} className="p-3 border-2 border-black bg-gray-50 text-xs">
-                            <div className="flex justify-between font-black">
-                              <span className="uppercase text-gray-500">{exp.category}</span>
-                              <span>R$ {exp.amount.toFixed(2)}</span>
-                            </div>
-                            <p className="text-[11px] font-bold text-gray-700 mt-1">{exp.description}</p>
-                            <div className="mt-2 text-[9px] font-black text-green-600 flex items-center gap-1">
-                              <Check className="w-3.5 h-3.5" /> Nota Fiscal Validada por IA
-                            </div>
-                          </div>
-                        ))}
+                    {/* Organizador */}
+                    <div className="border-4 border-black p-6 bg-white shadow-brutalist space-y-3">
+                      <span className="text-[10px] font-black text-gray-400 uppercase">Organizador / ONG</span>
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center font-display font-black text-sm">IN</div>
+                        <div>
+                          <h5 className="font-display font-black text-base uppercase leading-none">Instituto Água Viva</h5>
+                          <span className="text-[10px] text-gray-400 font-bold uppercase mt-0.5">Natal</span>
+                        </div>
+                      </div>
+                      <p className="text-[11px] font-bold text-gray-500 leading-relaxed">
+                        ONG voltada à preservação ambiental e acesso a recursos básicos.
+                      </p>
+                      <div className="pt-2 border-t border-gray-100 text-[10px] font-bold text-gray-400">
+                        Contato Público: (84) 99888-1111
                       </div>
                     </div>
                   </div>
@@ -444,22 +698,22 @@ export default function PresentationPage() {
 
             {/* --- SLIDE 4: JOB POSTINGS CONTENT --- */}
             {slide.type === 'jobs' && (
-              <div className="p-6 space-y-8">
+              <div className="p-6 space-y-8 bg-white text-black">
                 <div className="space-y-4">
                   <h3 className="font-display text-4xl font-black uppercase">Vagas de Voluntariado</h3>
                   <div className="flex gap-2">
-                    <Badge className="bg-primary text-black border-2 border-black font-black text-xs uppercase">Natal, RN</Badge>
-                    <Badge className="bg-secondary text-black border-2 border-black font-black text-xs uppercase">Presencial</Badge>
+                    <Badge className="bg-[#ffe17c] text-black border-2 border-black font-black text-xs uppercase rounded-none">Natal, RN</Badge>
+                    <Badge className="bg-secondary text-black border-2 border-black font-black text-xs uppercase rounded-none">Presencial</Badge>
                   </div>
                 </div>
 
                 <div className="grid gap-6">
-                  {MOCK_JOBS.map(job => (
+                  {displayJobs.map(job => (
                     <div key={job.id} className="border-4 border-black p-5 bg-white shadow-brutalist flex flex-col md:flex-row justify-between gap-4 items-start md:items-center">
                       <div className="space-y-2">
                         <div className="flex items-center gap-2 flex-wrap">
                           <h4 className="font-display text-xl font-black uppercase text-black">{job.title}</h4>
-                          <Badge className="bg-primary text-black border-2 border-black text-xs font-black uppercase">{job.category}</Badge>
+                          <Badge className="bg-[#ffe17c] text-black border-2 border-black text-xs font-black uppercase rounded-none">{job.category}</Badge>
                         </div>
                         <p className="text-xs text-gray-600 font-bold max-w-2xl leading-relaxed">{job.description}</p>
                       </div>
@@ -473,61 +727,105 @@ export default function PresentationPage() {
               </div>
             )}
 
-            {/* --- SLIDE 5: ORGANIZER DASHBOARD --- */}
+            {/* --- SLIDE 5: VOLUNTEER DASHBOARD (MATCHING CODE RENDER) --- */}
             {slide.type === 'dashboard' && (
-              <div className="p-6 space-y-8">
-                <div className="flex items-center justify-between border-b-4 border-black pb-3">
+              <div className="p-6 space-y-8 bg-white text-black">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div>
-                    <h3 className="font-display text-2xl font-black uppercase">Painel do Organizador</h3>
-                    <p className="text-xs text-gray-400 font-black uppercase mt-0.5">Instituto Água Viva</p>
+                    <h3 className="font-display text-4xl sm:text-5xl font-black uppercase tracking-tighter">Olá, TESTE TESTE</h3>
+                    <p className="text-xs text-gray-500 font-black uppercase mt-1">Área do Voluntário — Veja seu impacto e candidaturas</p>
                   </div>
-                  <Badge className="bg-secondary text-black border-2 border-black font-black text-xs uppercase">Gestão Ativa</Badge>
+                  <Button className="border-4 border-black bg-[#ffe17c] font-black text-xs uppercase py-3 shadow-brutalist-sm">
+                    🔍 Buscar Vagas
+                  </Button>
                 </div>
 
-                {/* Metrics */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="border-4 border-black p-4 bg-primary/20 shadow-brutalist-sm">
-                    <div className="text-[10px] font-black text-gray-500 uppercase">Total Arrecadado</div>
-                    <div className="font-display text-2xl font-black text-black mt-1">R$ 6.450,00</div>
+                {/* Stats cards for Volunteer */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  <div className="border-4 border-black p-6 bg-primary shadow-brutalist flex items-center justify-between">
+                    <div>
+                      <p className="font-black text-xs uppercase text-gray-600">Candidaturas Realizadas</p>
+                      <h2 className="font-display text-4xl font-black mt-2">{displayApps.length}</h2>
+                    </div>
+                    <FileText className="w-12 h-12 opacity-50 shrink-0" />
                   </div>
-                  <div className="border-4 border-black p-4 bg-secondary/20 shadow-brutalist-sm">
-                    <div className="text-[10px] font-black text-gray-500 uppercase">Candidaturas</div>
-                    <div className="font-display text-2xl font-black text-black mt-1">12 Candidatos</div>
+
+                  <div className="border-4 border-black p-6 bg-secondary shadow-brutalist flex items-center justify-between">
+                    <div>
+                      <p className="font-black text-xs uppercase text-gray-600">Status da Conta</p>
+                      <h2 className="font-display text-3xl font-black mt-2">Ativo</h2>
+                    </div>
+                    <CheckCircle className="w-12 h-12 opacity-50 shrink-0" />
                   </div>
-                  <div className="border-4 border-black p-4 bg-accent/20 shadow-brutalist-sm">
-                    <div className="text-[10px] font-black text-gray-500 uppercase">Certificados Selo ESG</div>
-                    <div className="font-display text-2xl font-black text-black mt-1">4 Emitidos</div>
+
+                  <div className="border-4 border-black p-6 bg-accent text-white shadow-brutalist flex items-center justify-between">
+                    <div>
+                      <p className="font-black text-xs uppercase text-white/70">Perfil Concluído</p>
+                      <h2 className="font-display text-4xl font-black mt-2">100%</h2>
+                    </div>
+                    <User className="w-12 h-12 opacity-50 shrink-0" />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  {/* Left component: Issue Certificates */}
-                  <div className="border-4 border-black p-4 bg-white shadow-brutalist space-y-4">
-                    <h4 className="font-display text-sm font-black uppercase border-b-2 border-black pb-1 text-gray-500">Candidatos Aprovados (Emissão de Certificado)</h4>
-                    <div className="p-3 border-2 border-black bg-gray-50 flex items-center justify-between">
-                      <div>
-                        <div className="font-black text-sm uppercase">Ana Beatriz</div>
-                        <span className="text-[10px] text-gray-500 font-bold">Facilitadora de Oficinas — 4 Horas</span>
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8">
+                  {/* Left Column: Applications & Certificates */}
+                  <div className="space-y-8">
+                    {/* Applications */}
+                    <div className="space-y-4">
+                      <h4 className="font-display text-2xl font-black uppercase">Minhas Candidaturas</h4>
+                      <div className="space-y-4">
+                        {displayApps.map((app, index) => (
+                          <div key={index} className="border-4 border-black bg-white p-6 shadow-brutalist flex flex-col sm:flex-row justify-between gap-4">
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <h5 className="font-display text-xl font-black uppercase">{app.jobTitle}</h5>
+                                <Badge className="bg-[#ffe17c] text-black border border-black font-black uppercase text-[9px]">
+                                  {app.status === 'selected' ? 'Selecionado' : 'Pendente'}
+                                </Badge>
+                              </div>
+                              <p className="text-xs font-bold text-gray-500">Instituição: {app.institutionName}</p>
+                              <p className="text-xs font-medium text-gray-400 mt-2">Sua mensagem: &quot;{app.message}&quot;</p>
+                            </div>
+                            <div className="flex flex-col items-start sm:items-end justify-between shrink-0">
+                              <span className="text-[10px] font-bold text-gray-400">Enviada em {new Date(app.submittedAt).toLocaleDateString()}</span>
+                              <Button className="h-7 px-3 border border-black bg-white hover:bg-black hover:text-white text-[10px] font-black uppercase mt-2">Ver Vaga</Button>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                      <Button className="h-8 border-2 border-green-700 bg-green-500 text-white font-black text-xs uppercase hover:bg-green-600 shadow-brutalist-sm flex items-center gap-1">
-                        <Award className="w-4 h-4" /> Emitir Selo ESG
-                      </Button>
+                    </div>
+
+                    {/* Certificates */}
+                    <div className="space-y-4">
+                      <h4 className="font-display text-2xl font-black uppercase">Meus Certificados de Horas</h4>
+                      <div className="space-y-4">
+                        {displayCerts.map((cert, index) => (
+                          <div key={index} className="border-4 border-black bg-white p-6 shadow-brutalist flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                            <div>
+                              <h5 className="font-display text-lg font-black uppercase">{cert.jobTitle}</h5>
+                              <p className="text-xs font-bold text-gray-500">Emitido por: {cert.institutionName}</p>
+                              <p className="text-xs font-black uppercase text-green-600 mt-1">✓ {cert.hoursDonated} horas homologadas</p>
+                            </div>
+                            <Button className="border-2 border-black font-black uppercase text-[10px] h-8 bg-black text-white hover:bg-white hover:text-black">
+                              Visualizar Certificado
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
 
-                  {/* Right component: Budget / Expense ledger launcher */}
-                  <div className="border-4 border-black p-4 bg-white shadow-brutalist space-y-4">
-                    <h4 className="font-display text-sm font-black uppercase border-b-2 border-black pb-1 text-gray-500">Lançar Nova Despesa (Prestação de Contas)</h4>
-                    <div className="space-y-3">
-                      <div>
-                        <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Valor da Despesa (R$)</label>
-                        <input value="320.00" className="w-full border-2 border-black h-8 text-xs px-2 font-bold bg-white" disabled />
+                  {/* Right Column: Shortcuts */}
+                  <div className="space-y-6">
+                    <div className="border-4 border-black bg-white p-6 shadow-brutalist space-y-4">
+                      <h4 className="font-display text-xl font-black uppercase flex items-center gap-2">
+                        <Sparkles className="w-5 h-5 text-yellow-500 fill-yellow-500" /> Atalhos
+                      </h4>
+                      <div className="flex flex-col gap-3">
+                        <Button className="w-full text-left justify-start font-black uppercase text-xs h-10 border border-black" variant="outline">🔍 Explorar Vagas</Button>
+                        <Button className="w-full text-left justify-start font-black uppercase text-xs h-10 border border-black" variant="outline">📰 Feed de Notícias</Button>
+                        <Button className="w-full text-left justify-start font-black uppercase text-xs h-10 border border-black" variant="outline">👤 Meu Perfil Público</Button>
                       </div>
-                      <div>
-                        <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Descrição</label>
-                        <input value="Compra de gás de cozinha e copos descartáveis" className="w-full border-2 border-black h-8 text-xs px-2 font-bold bg-white" disabled />
-                      </div>
-                      <Button className="w-full h-8 border-2 border-black bg-black text-white hover:bg-white hover:text-black text-xs font-black uppercase shadow-brutalist-sm">Enviar Notas e Lançar</Button>
                     </div>
                   </div>
                 </div>

@@ -74,8 +74,8 @@ export default async function Home() {
           <div className="flex-1 w-full max-w-md lg:max-w-none hidden sm:block">
             <div className="border-4 border-black p-4 bg-secondary shadow-[8px_8px_0_0_#000] rotate-2 hover:rotate-0 transition-transform duration-300">
               <img
-                src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&q=80&w=800"
-                alt="Voluntários em ação comunitária no RN"
+                src="/images/hero_community.png"
+                alt="Comunidade voluntária do RN"
                 className="border-2 border-black w-full h-auto object-cover aspect-video"
               />
               <div className="mt-4 flex items-center justify-between font-bold">
