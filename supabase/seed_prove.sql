@@ -346,3 +346,48 @@ VALUES
     18
 )
 ON CONFLICT (id) DO NOTHING;
+
+
+-- ══════════════════════════════════════════════════════════════
+-- 8. POPULAR TABELA DE ATUALIZAÇÕES DE CAMPANHA (updates)
+-- ══════════════════════════════════════════════════════════════
+
+INSERT INTO public.updates (id, campaign_id, content, image_url, likes, shares, created_at)
+VALUES
+(
+    '70000000-0000-0000-0000-000000000001',
+    '10000000-0000-0000-0000-000000000002', -- Refeitório Comunitário e Sopão do Seridó
+    '🍲 Preparativos a todo vapor para o sopão deste sábado! Graças ao apoio de vocês, compramos todos os legumes e ingredientes fresquinhos no mercado local. Nossa cozinha comunitária em Caicó já está pronta para receber os voluntários.',
+    'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&q=80&w=800',
+    24,
+    5,
+    now() - interval '5 days'
+),
+(
+    '70000000-0000-0000-0000-000000000002',
+    '10000000-0000-0000-0000-000000000002', -- Refeitório Comunitário e Sopão do Seridó
+    '❤️ Meta de arrecadação financeira atingida em 100%! Estamos imensamente gratos a cada doador que tornou isso possível. Com esse valor de R$ 3.000,00 garantiremos a manutenção do refeitório social e o sopão dos idosos e crianças por mais 3 meses. Em breve postaremos a prestação de contas detalhada aqui no painel. Obrigado, Seridó! 🙏',
+    'https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&q=80&w=800',
+    48,
+    12,
+    now() - interval '2 days'
+),
+(
+    '70000000-0000-0000-0000-000000000003',
+    '10000000-0000-0000-0000-000000000002', -- Refeitório Comunitário e Sopão do Seridó
+    '🎉 Conclusão e Prestação de Contas! O sopão deste sábado foi um sucesso absoluto. Servimos mais de 160 refeições nutritivas. Já lançamos todas as notas fiscais e comprovantes de compras no painel de transparência de despesas da campanha. Venha conferir! Obrigado a todos os voluntários que doaram seu tempo e carinho.',
+    'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&q=80&w=800',
+    67,
+    20,
+    now() - interval '2 hours'
+),
+(
+    '70000000-0000-0000-0000-000000000004',
+    '10000000-0000-0000-0000-000000000001', -- Marmitas Solidárias Filipe Camarão
+    '🥦 Compra de insumos realizada! Feijão, arroz e legumes comprados e prontos para o preparo das marmitas que serão distribuídas na comunidade. Acompanhe a aba de despesas para ver as notas fiscais anexadas!',
+    'https://images.unsplash.com/photo-1593113598332-cd288d6494332?auto=format&fit=crop&q=80&w=800',
+    15,
+    2,
+    now() - interval '3 days'
+)
+ON CONFLICT (id) DO NOTHING;
