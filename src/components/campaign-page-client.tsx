@@ -1,4 +1,6 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -7,11 +9,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Campaign, UpdateRecord, User } from '@/domain/entities';
 import { appendCampaignUpdate, addCampaignNotification, loadCampaignData, updateCampaignSettings, type CampaignUpdateType } from '@/lib/campaign-storage';
-import { MapPin, Share2, Heart, Calendar, Megaphone, Sparkles, Camera, Settings, PlusCircle } from 'lucide-react';
+import { MapPin, Share2, Heart, Calendar, Megaphone, Sparkles, Camera, Settings, PlusCircle, AlertTriangle, Check, FileText, BarChart2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
 import { loadStoredProfile } from '@/lib/auth';
+import { createDonation, createExpense, getCampaignDonations, getCampaignExpenses, getCampaignAccountability } from '@/actions/accountability';
+import { Donation, Expense } from '@/domain/entities';
 
 type CampaignPageClientProps = {
   campaign: Campaign;
@@ -26,9 +30,46 @@ export function CampaignPageClient({ campaign, initialUpdates, organizer }: Camp
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [profile, setProfile] = useState<any>(null);
 
+  // Accountability and Gamification states
+  const [donations, setDonations] = useState<Donation[]>([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [totals, setTotals] = useState<Record<string, number>>({});
+  
+  // Modals / forms
+  const [donModalOpen, setDonModalOpen] = useState(false);
+  const [donForm, setDonForm] = useState({ donorName: '', amount: '', paymentMethod: 'pix' as 'pix' | 'card' });
+  const [expForm, setExpForm] = useState({ amount: '', category: 'Alimentação' as any, description: '', receiptUrl: '' });
+  const [donLoading, setDonLoading] = useState(false);
+  const [expLoading, setExpLoading] = useState(false);
+  const [donSuccess, setDonSuccess] = useState(false);
+  const [expSuccess, setExpSuccess] = useState(false);
+
   useEffect(() => {
-    setProfile(loadStoredProfile());
+    const loaded = loadStoredProfile();
+    setProfile(loaded);
+    if (loaded) {
+      setDonForm(prev => ({ ...prev, donorName: loaded.name }));
+    }
   }, []);
+
+  // Fetch donations, expenses, and category totals on mount
+  useEffect(() => {
+    async function loadAccountability() {
+      try {
+        const [dons, exps, catTotals] = await Promise.all([
+          getCampaignDonations(campaign.id),
+          getCampaignExpenses(campaign.id),
+          getCampaignAccountability(campaign.id)
+        ]);
+        setDonations(dons);
+        setExpenses(exps);
+        setTotals(catTotals);
+      } catch (err) {
+        console.error("Erro ao carregar dados de prestação de contas:", err);
+      }
+    }
+    loadAccountability();
+  }, [campaign.id, activeCampaign.financialRaised]);
 
   const canManage = profile && profile.profileType === 'institution' && (profile.id === activeCampaign.organizerId || profile.id === 'inst-1');
   const [updateForm, setUpdateForm] = useState({
@@ -141,12 +182,80 @@ export function CampaignPageClient({ campaign, initialUpdates, organizer }: Camp
     setStatusMessage('Dados da campanha atualizados.');
   };
 
+  const handleDonationSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!donForm.donorName.trim()) { alert("Por favor, informe seu nome."); return; }
+    const amountVal = Number(donForm.amount);
+    if (isNaN(amountVal) || amountVal <= 0) { alert("Informe um valor de doação válido maior que zero."); return; }
+
+    setDonLoading(true);
+    try {
+      const donation = await createDonation(campaign.id, donForm.donorName, amountVal, donForm.paymentMethod, profile?.id);
+      if (donation) {
+        setDonSuccess(true);
+        setActiveCampaign(current => ({
+          ...current,
+          financialRaised: (current.financialRaised || 0) + amountVal,
+          status: current.financialGoal && ((current.financialRaised || 0) + amountVal) >= current.financialGoal ? 'completed' : current.status
+        }));
+        setDonForm(prev => ({ ...prev, amount: '' }));
+      } else {
+        alert("Erro ao registrar doação.");
+      }
+    } catch (err: any) {
+      alert("Erro ao doar: " + err.message);
+    } finally {
+      setDonLoading(false);
+    }
+  };
+
+  const handleExpenseSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const amountVal = Number(expForm.amount);
+    if (isNaN(amountVal) || amountVal <= 0) { alert("Informe um valor de despesa válido."); return; }
+    if (!expForm.description.trim()) { alert("A descrição é obrigatória."); return; }
+
+    setExpLoading(true);
+    try {
+      const exp = await createExpense(campaign.id, amountVal, expForm.category, expForm.description.trim(), expForm.receiptUrl.trim() || undefined);
+      if (exp) {
+        setExpSuccess(true);
+        setExpenses(prev => [exp, ...prev]);
+        setTotals(prev => ({
+          ...prev,
+          [exp.category]: (prev[exp.category] || 0) + amountVal
+        }));
+        setExpForm({ amount: '', category: 'Alimentação', description: '', receiptUrl: '' });
+        setStatusMessage('Despesa lançada com sucesso no painel de transparência!');
+      } else {
+        alert("Erro ao registrar despesa.");
+      }
+    } catch (err: any) {
+      alert("Erro: " + err.message);
+    } finally {
+      setExpLoading(false);
+      setTimeout(() => setExpSuccess(false), 2000);
+    }
+  };
+
   const progress = activeCampaign.financialGoal
     ? Math.min(100, ((activeCampaign.financialRaised || 0) / activeCampaign.financialGoal) * 100)
     : 0;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 lg:py-12 flex flex-col lg:flex-row gap-8">
+    <div className="max-w-7xl mx-auto px-4 py-8 lg:py-12">
+      {activeCampaign.status === 'completed' && (
+        <div className="mb-8 border-4 border-black bg-yellow-100 p-6 shadow-[4px_4px_0_0_#000] flex flex-col sm:flex-row items-center gap-4">
+          <AlertTriangle className="w-12 h-12 text-yellow-600 shrink-0" />
+          <div>
+            <h3 className="font-display text-2xl font-black uppercase text-black">Meta Financeira Atingida! 🎯</h3>
+            <p className="font-bold text-sm text-gray-700 mt-1">
+              Esta campanha alcançou 100% de sua meta. A arrecadação foi pausada para que a ONG realize a destinação dos recursos. Acompanhe abaixo o painel de despesas e prestação de contas em tempo real.
+            </p>
+          </div>
+        </div>
+      )}
+      <div className="flex flex-col lg:flex-row gap-8">
       <div className="flex-1 space-y-12">
         <div className="space-y-6">
           <Badge className="text-lg" variant={activeCampaign.category === 'Educação' ? 'secondary' : 'default'}>
@@ -175,7 +284,7 @@ export function CampaignPageClient({ campaign, initialUpdates, organizer }: Camp
             <CardContent className="p-6 space-y-4">
               <div className="flex items-center gap-2 font-black uppercase"><Sparkles className="w-5 h-5" /> Gestão rápida</div>
               {statusMessage ? <p className="font-bold text-sm text-gray-700">{statusMessage}</p> : null}
-              <div className="grid gap-6 lg:grid-cols-2">
+              <div className="grid gap-6 lg:grid-cols-3">
                 <form onSubmit={handleUpdateSubmit} className="space-y-4">
                   <h3 className="font-display text-2xl font-black uppercase">Nova atualização</h3>
                   <p className="text-sm font-medium text-gray-700">Cadastre apenas uma imagem ou uma mensagem curta, como “está próximo da data”.</p>
@@ -225,6 +334,69 @@ export function CampaignPageClient({ campaign, initialUpdates, organizer }: Camp
                     <Settings className="mr-2 h-4 w-4" /> Salvar configurações
                   </Button>
                 </form>
+
+                {/* Lançar Despesa */}
+                <form onSubmit={handleExpenseSubmit} className="space-y-4 bg-white p-4 brutalist-border">
+                  <h3 className="font-display text-2xl font-black uppercase flex items-center gap-1.5">
+                    <FileText className="w-5 h-5" /> Lançar Despesa
+                  </h3>
+                  <p className="text-sm font-medium text-gray-700">Preste contas anexando notas fiscais e comprovantes de gastos.</p>
+                  
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-xs font-bold block mb-1">Valor (R$) *</label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={expForm.amount}
+                        onChange={e => setExpForm(prev => ({ ...prev, amount: e.target.value }))}
+                        placeholder="0.00"
+                        required
+                        className="h-10 border-2 border-black"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold block mb-1">Categoria *</label>
+                      <select
+                        value={expForm.category}
+                        onChange={e => setExpForm(prev => ({ ...prev, category: e.target.value as any }))}
+                        className="w-full h-10 border-2 border-black bg-white px-2 text-sm font-bold font-sans"
+                      >
+                        <option value="Alimentação">Alimentação</option>
+                        <option value="Combustível">Combustível</option>
+                        <option value="Infraestrutura">Infraestrutura</option>
+                        <option value="Logística">Logística</option>
+                        <option value="Serviços">Serviços</option>
+                        <option value="Outros">Outros</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold block mb-1">Descrição do Gasto *</label>
+                    <textarea
+                      value={expForm.description}
+                      onChange={e => setExpForm(prev => ({ ...prev, description: e.target.value }))}
+                      placeholder="Ex: Compra de 5 pacotes de arroz..."
+                      className="w-full min-h-16 brutalist-border bg-background p-2 text-xs font-medium"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold block mb-1">Link do Comprovante</label>
+                    <Input
+                      value={expForm.receiptUrl}
+                      onChange={e => setExpForm(prev => ({ ...prev, receiptUrl: e.target.value }))}
+                      placeholder="https://..."
+                      className="h-10 border-2 border-black"
+                    />
+                  </div>
+
+                  <Button type="submit" disabled={expLoading} className="w-full uppercase tracking-wider bg-black text-white hover:bg-gray-800 text-xs font-black">
+                    {expLoading ? "Lançando..." : "Registrar Despesa"}
+                  </Button>
+                </form>
               </div>
             </CardContent>
           </Card>
@@ -256,6 +428,84 @@ export function CampaignPageClient({ campaign, initialUpdates, organizer }: Camp
                 <p className="text-sm font-medium text-gray-600">Fotos e vídeos da campanha ajudam a contar a história e reforçar a confiança.</p>
                 <div className="relative aspect-video w-full border-2 border-border overflow-hidden">
                   <Image src={activeCampaign.coverImage} alt="Capa da campanha" fill className="object-cover" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* PRESTAÇÃO DE CONTAS EM TEMPO REAL */}
+        <div className="space-y-6">
+          <h2 className="font-display text-3xl font-black uppercase border-b-4 border-border inline-block pb-1">
+            Prestação de Contas (Transparência)
+          </h2>
+          <div className="grid gap-6 lg:grid-cols-[1fr_400px]">
+            {/* LADO ESQUERDO: Gráfico/Distribuição de despesas */}
+            <Card className="bg-white border-4 border-black rounded-none shadow-[4px_4px_0_0_#000]">
+              <CardContent className="p-6 space-y-6">
+                <div className="flex items-center gap-2 font-black uppercase"><BarChart2 className="w-5 h-5" /> Distribuição dos Gastos</div>
+                
+                {Object.keys(totals).length > 0 ? (
+                  <div className="space-y-4">
+                    {Object.entries(totals).map(([cat, val]) => {
+                      const totalExpenses = Object.values(totals).reduce((a, b) => a + b, 0);
+                      const catPercentage = Math.round((val / totalExpenses) * 100);
+                      return (
+                        <div key={cat} className="space-y-1">
+                          <div className="flex justify-between text-sm font-black uppercase">
+                            <span>{cat}</span>
+                            <span>R$ {val.toFixed(2)} ({catPercentage}%)</span>
+                          </div>
+                          <div className="w-full bg-gray-200 border-2 border-black h-4 rounded-none overflow-hidden">
+                            <div className="bg-secondary h-full border-r border-black" style={{ width: `${catPercentage}%` }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                    <div className="pt-4 border-t-2 border-dashed border-black flex justify-between font-black text-lg">
+                      <span>TOTAL DE DESPESAS</span>
+                      <span>R$ {Object.values(totals).reduce((a, b) => a + b, 0).toFixed(2)}</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-10 text-center font-bold text-gray-500 uppercase bg-gray-50 border-2 border-dashed border-gray-300">
+                    Nenhuma despesa lançada até o momento. Todo o recurso arrecadado está reservado para destinação.
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* LADO DIREITO: Histórico de cupons / notas */}
+            <Card className="bg-white border-4 border-black rounded-none shadow-[4px_4px_0_0_#000]">
+              <CardContent className="p-6 space-y-4">
+                <div className="flex items-center gap-2 font-black uppercase"><FileText className="w-5 h-5" /> Comprovantes e Despesas</div>
+                
+                <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
+                  {expenses.map((exp) => (
+                    <div key={exp.id} className="p-3 bg-gray-50 border-2 border-black space-y-2">
+                      <div className="flex justify-between items-start gap-2">
+                        <Badge className="bg-black text-white text-xs font-black uppercase">{exp.category}</Badge>
+                        <span className="font-display font-black text-sm text-black">R$ {exp.amount.toFixed(2)}</span>
+                      </div>
+                      <p className="text-xs font-bold text-gray-700">{exp.description}</p>
+                      
+                      {exp.receiptUrl && (
+                        <a href={exp.receiptUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs font-black text-accent hover:underline uppercase mt-1">
+                          <Camera className="w-3.5 h-3.5" /> Ver Comprovante
+                        </a>
+                      )}
+                      
+                      <div className="text-[10px] font-bold text-gray-400">
+                        Registrado em {new Date(exp.createdAt).toLocaleDateString("pt-BR")}
+                      </div>
+                    </div>
+                  ))}
+
+                  {expenses.length === 0 && (
+                    <div className="p-8 text-center text-xs font-bold text-gray-400 uppercase">
+                      Aguardando prestação de contas da ONG.
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -315,8 +565,13 @@ export function CampaignPageClient({ campaign, initialUpdates, organizer }: Camp
               </div>
 
               {activeCampaign.financialGoal ? (
-                <Button size="lg" className="w-full text-xl h-14 uppercase tracking-wider bg-black text-white hover:bg-gray-800 hover:text-white transition-transform active:scale-95">
-                  <Heart className="mr-2" /> Doar na Vakinha
+                <Button
+                  size="lg"
+                  disabled={activeCampaign.status === 'completed'}
+                  onClick={() => { setDonModalOpen(true); setDonSuccess(false); }}
+                  className="w-full text-xl h-14 uppercase tracking-wider bg-black text-white hover:bg-gray-800 hover:text-white transition-transform active:scale-95"
+                >
+                  <Heart className="mr-2" /> {activeCampaign.status === 'completed' ? 'Meta Atingida' : 'Doar na Vakinha'}
                 </Button>
               ) : (
                 <Button size="lg" className="w-full text-lg h-14 uppercase tracking-wider bg-[#25D366] text-black border-2 border-black hover:bg-[#20b858] transition-transform active:scale-95">
@@ -366,6 +621,115 @@ export function CampaignPageClient({ campaign, initialUpdates, organizer }: Camp
           )}
         </div>
       </div>
+      </div>
+
+      {/* DONATION MODAL */}
+      {donModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-md border-4 border-black bg-white p-6 shadow-[8px_8px_0_0_#000] relative space-y-6 text-black">
+            <button
+              onClick={() => setDonModalOpen(false)}
+              className="absolute top-4 right-4 border-2 border-black p-1 hover:bg-gray-100 font-black w-8 h-8 flex items-center justify-center"
+            >
+              ✕
+            </button>
+
+            <div>
+              <Badge className="bg-primary text-black border-2 border-black font-black uppercase text-xs">
+                Apoie esta causa
+              </Badge>
+              <h3 className="font-display text-2xl font-black uppercase mt-2">Fazer uma Doação</h3>
+              <p className="text-xs font-bold text-gray-500">{activeCampaign.title}</p>
+            </div>
+
+            {donSuccess ? (
+              <div className="border-4 border-green-500 bg-green-50 p-6 text-center space-y-4">
+                <Check className="w-12 h-12 text-green-600 mx-auto" />
+                <h4 className="font-display text-xl font-black uppercase text-green-700">Obrigado pela doação! ❤️</h4>
+                <p className="text-sm font-bold text-green-800">
+                  Seu apoio financeiro foi computado instantaneamente e já consta no painel de transparência!
+                </p>
+                <Button
+                  onClick={() => {
+                    setDonModalOpen(false);
+                    setDonSuccess(false);
+                  }}
+                  className="w-full bg-black text-white hover:bg-gray-800 uppercase font-black"
+                >
+                  Fechar
+                </Button>
+              </div>
+            ) : (
+              <form onSubmit={handleDonationSubmit} className="space-y-4">
+                <div>
+                  <label className="text-xs font-black uppercase block mb-1">Seu Nome *</label>
+                  <Input
+                    value={donForm.donorName}
+                    onChange={e => setDonForm(prev => ({ ...prev, donorName: e.target.value }))}
+                    placeholder="Nome completo ou Anônimo"
+                    required
+                    className="border-2 border-black h-11 font-bold"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-black uppercase block mb-1">Valor (R$) *</label>
+                    <Input
+                      type="number"
+                      value={donForm.amount}
+                      onChange={e => setDonForm(prev => ({ ...prev, amount: e.target.value }))}
+                      placeholder="Ex: 50"
+                      required
+                      className="border-2 border-black h-11 font-bold"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-black uppercase block mb-1">Forma de Pagamento</label>
+                    <select
+                      value={donForm.paymentMethod}
+                      onChange={e => setDonForm(prev => ({ ...prev, paymentMethod: e.target.value as any }))}
+                      className="w-full h-11 border-2 border-black bg-white px-2 text-sm font-bold font-sans"
+                    >
+                      <option value="pix">PIX (Instantâneo)</option>
+                      <option value="card">Cartão de Crédito</option>
+                    </select>
+                  </div>
+                </div>
+
+                {donForm.paymentMethod === 'pix' ? (
+                  <div className="bg-gray-50 border-2 border-dashed border-black p-4 text-center space-y-3">
+                    <p className="text-xs font-bold text-gray-600">Escaneie o QR Code ou use o Pix Copia e Cola:</p>
+                    <div className="w-32 h-32 bg-gray-200 border-2 border-black mx-auto flex items-center justify-center font-bold text-xs uppercase">
+                      QR CODE MOCK
+                    </div>
+                    <code className="block text-[10px] bg-white p-2 border border-black truncate">
+                      {activeCampaign.pixKey || "mutirao-pix-chave-chave-exemplo-rn"}
+                    </code>
+                  </div>
+                ) : (
+                  <div className="bg-gray-50 border-2 border-black p-4 space-y-2 text-left">
+                    <p className="text-xs font-bold text-gray-600">Simulação de Cartão:</p>
+                    <Input placeholder="Número do Cartão" className="h-9 border-2 border-black bg-white" />
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input placeholder="Validade (MM/AA)" className="h-9 border-2 border-black bg-white" />
+                      <Input placeholder="CVV" className="h-9 border-2 border-black bg-white" />
+                    </div>
+                  </div>
+                )}
+
+                <Button
+                  type="submit"
+                  disabled={donLoading}
+                  className="w-full h-12 bg-primary text-black hover:bg-yellow-300 border-2 border-black shadow-[4px_4px_0_0_#000] uppercase font-black transition-all"
+                >
+                  {donLoading ? "Processando..." : "Confirmar Doação"}
+                </Button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

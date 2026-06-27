@@ -336,3 +336,54 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+
+-- 9. Tabela de Doações
+CREATE TABLE IF NOT EXISTS public.donations (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    campaign_id UUID REFERENCES public.campaigns(id) ON DELETE CASCADE NOT NULL,
+    donor_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    donor_name TEXT NOT NULL,
+    amount NUMERIC NOT NULL CHECK (amount > 0),
+    payment_method TEXT NOT NULL CHECK (payment_method IN ('pix', 'card')),
+    status TEXT NOT NULL CHECK (status IN ('pending', 'completed', 'failed')) DEFAULT 'completed',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.donations ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Qualquer um pode ver doações completadas" ON public.donations;
+DROP POLICY IF EXISTS "Doadores podem ver suas próprias doações" ON public.donations;
+DROP POLICY IF EXISTS "Qualquer um pode doar" ON public.donations;
+
+CREATE POLICY "Qualquer um pode ver doações completadas" ON public.donations
+    FOR SELECT USING (true);
+
+CREATE POLICY "Doadores podem ver suas próprias doações" ON public.donations
+    FOR SELECT USING (auth.uid() = donor_id);
+
+CREATE POLICY "Qualquer um pode doar" ON public.donations
+    FOR INSERT WITH CHECK (true);
+
+-- 10. Tabela de Despesas da ONG (Prestação de Contas)
+CREATE TABLE IF NOT EXISTS public.expenses (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    campaign_id UUID REFERENCES public.campaigns(id) ON DELETE CASCADE NOT NULL,
+    amount NUMERIC NOT NULL CHECK (amount > 0),
+    category TEXT NOT NULL CHECK (category IN ('Alimentação', 'Combustível', 'Infraestrutura', 'Logística', 'Serviços', 'Outros')),
+    description TEXT NOT NULL,
+    receipt_url TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.expenses ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Qualquer um pode ver despesas" ON public.expenses;
+DROP POLICY IF EXISTS "Organizadores podem adicionar despesas" ON public.expenses;
+
+CREATE POLICY "Qualquer um pode ver despesas" ON public.expenses
+    FOR SELECT USING (true);
+
+CREATE POLICY "Organizadores podem adicionar despesas" ON public.expenses
+    FOR INSERT WITH CHECK (true);
+

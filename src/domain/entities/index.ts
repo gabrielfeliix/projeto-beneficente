@@ -182,3 +182,25 @@ export interface Review {
   comment: string;
   createdAt: string;
 }
+
+export interface Donation {
+  id: string;
+  campaignId: string;
+  donorId?: string;
+  donorName: string;
+  amount: number;
+  paymentMethod: 'pix' | 'card';
+  status: 'pending' | 'completed' | 'failed';
+  createdAt: string;
+}
+
+export interface Expense {
+  id: string;
+  campaignId: string;
+  amount: number;
+  category: 'Alimentação' | 'Combustível' | 'Infraestrutura' | 'Logística' | 'Serviços' | 'Outros';
+  description: string;
+  receiptUrl?: string;
+  createdAt: string;
+}
+
