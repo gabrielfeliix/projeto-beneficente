@@ -44,7 +44,7 @@ export default async function Home() {
                 </span>
                 <br />
                 <span className="text-3xl sm:text-4xl lg:text-5xl text-black/80 mt-3 block">
-                  Você é a força que falta.
+                  Você é a força que falta
                 </span>
               </h1>
             </div>
