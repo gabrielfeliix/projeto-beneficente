@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     description TEXT,
     phone TEXT,
     instagram TEXT,
-    profile_type TEXT NOT NULL CHECK (profile_type IN ('volunteer', 'institution')),
+    profile_type TEXT NOT NULL CHECK (profile_type IN ('volunteer', 'institution', 'donor', 'company')),
     
     -- Campos específicos de Voluntários
     cpf TEXT,
@@ -264,7 +264,7 @@ CREATE TABLE IF NOT EXISTS public.feed_posts (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     author_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
     author_name TEXT NOT NULL,
-    author_type TEXT NOT NULL CHECK (author_type IN ('volunteer', 'institution')),
+    author_type TEXT NOT NULL CHECK (author_type IN ('volunteer', 'institution', 'donor', 'company')),
     content TEXT NOT NULL,
     image_url TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
