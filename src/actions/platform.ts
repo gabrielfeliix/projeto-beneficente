@@ -140,6 +140,8 @@ function mapDBFeedPost(db: any): FeedPost {
     createdAt: db.created_at,
     likes: db.likes || 0,
     comments: db.comments || 0,
+    city: db.city || undefined,
+    badge: db.badge || undefined,
   };
 }
 

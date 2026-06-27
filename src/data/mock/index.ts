@@ -538,6 +538,8 @@ export const mockFeedPosts: FeedPost[] = [
     createdAt: new Date(Date.now() - 6 * 3600000).toISOString(),
     likes: 47,
     comments: 12,
+    city: 'Natal',
+    badge: 'Mentor da Comunidade',
   },
   {
     id: 'post-2',
@@ -549,6 +551,7 @@ export const mockFeedPosts: FeedPost[] = [
     createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
     likes: 68,
     comments: 21,
+    city: 'Natal',
   },
   {
     id: 'post-3',
@@ -559,6 +562,8 @@ export const mockFeedPosts: FeedPost[] = [
     createdAt: new Date(Date.now() - 1 * 86400000).toISOString(),
     likes: 89,
     comments: 18,
+    city: 'Parnamirim',
+    badge: 'Protetor da Fauna',
   },
   {
     id: 'post-4',
@@ -570,6 +575,31 @@ export const mockFeedPosts: FeedPost[] = [
     createdAt: new Date(Date.now() - 3 * 86400000).toISOString(),
     likes: 124,
     comments: 34,
+    city: 'Caicó',
+  },
+  {
+    id: 'post-9',
+    authorId: 'comp-1',
+    authorName: 'Supermercado Nordestão',
+    authorType: 'company',
+    content: '🏪 Temos o orgulho de apoiar o Mutirão com doações recorrentes mensais! O selo de impacto ESG Ouro já está ativo e exposto na nossa marca corporativa. Venha apoiar o desenvolvimento do RN também!',
+    createdAt: new Date(Date.now() - 12 * 3600000).toISOString(),
+    likes: 210,
+    comments: 42,
+    city: 'Natal',
+    badge: 'Empresa Ouro ESG 🏆',
+  },
+  {
+    id: 'post-10',
+    authorId: 'don-1',
+    authorName: 'Roberto Doador',
+    authorType: 'donor',
+    content: 'Acabei de destinar uma doação expressa para a campanha de reconstrução da horta comunitária. O processo é super transparente e deu pra ver todos os comprovantes e notas de gastos no painel de contas da ONG! Recomendo a todos ajudarem.',
+    createdAt: new Date(Date.now() - 4 * 3600000).toISOString(),
+    likes: 56,
+    comments: 9,
+    city: 'Parnamirim',
+    badge: 'Doador Solidário ❤️',
   },
   {
     id: 'post-5',
@@ -580,6 +610,8 @@ export const mockFeedPosts: FeedPost[] = [
     createdAt: new Date(Date.now() - 4 * 86400000).toISOString(),
     likes: 156,
     comments: 42,
+    city: 'Natal',
+    badge: 'Protetor da Fauna',
   },
   {
     id: 'post-6',
@@ -591,6 +623,7 @@ export const mockFeedPosts: FeedPost[] = [
     createdAt: new Date(Date.now() - 5 * 86400000).toISOString(),
     likes: 93,
     comments: 27,
+    city: 'Mossoró',
   },
   {
     id: 'post-7',
@@ -601,6 +634,7 @@ export const mockFeedPosts: FeedPost[] = [
     createdAt: new Date(Date.now() - 18 * 3600000).toISOString(),
     likes: 203,
     comments: 58,
+    city: 'Natal',
   },
   {
     id: 'post-8',
@@ -612,6 +646,7 @@ export const mockFeedPosts: FeedPost[] = [
     createdAt: new Date(Date.now() - 7 * 86400000).toISOString(),
     likes: 312,
     comments: 87,
+    city: 'Macaíba',
   },
 ];
 

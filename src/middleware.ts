@@ -14,8 +14,8 @@ const STORAGE_KEY = 'mutirao_user_profile';
 
 interface StoredProfile {
   id: string;
-  profileType: 'donor' | 'volunteer' | 'institution' | 'fiscal' | 'admin';
-  role: 'donor' | 'volunteer' | 'institution' | 'fiscal' | 'admin';
+  profileType: 'donor' | 'volunteer' | 'institution' | 'fiscal' | 'admin' | 'company';
+  role: 'donor' | 'volunteer' | 'institution' | 'fiscal' | 'admin' | 'company';
   name: string;
   email: string;
   approvalStatus?: 'pending_approval' | 'approved' | 'rejected';

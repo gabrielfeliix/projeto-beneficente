@@ -33,6 +33,7 @@ export function NavBar() {
       case "institution": return "ONG";
       case "fiscal": return "Fiscal";
       case "admin": return "Administrador";
+      case "company": return "Empresa Assinante";
       default: return "Voluntário";
     }
   };

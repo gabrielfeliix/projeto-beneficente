@@ -97,7 +97,7 @@ function AuthForm() {
 
   const [tab, setTab] = useState<"login" | "signup">("login");
   const [step, setStep] = useState<"auth" | "profile">("auth");
-  const [profileType, setProfileType] = useState<"donor" | "volunteer" | "institution">("volunteer");
+  const [profileType, setProfileType] = useState<"donor" | "volunteer" | "institution" | "company">("volunteer");
   const [userId, setUserId] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState("");
@@ -268,8 +268,13 @@ function AuthForm() {
       if (profileType === "donor" || profileType === "volunteer") {
         if (!validateCPF(cpf)) throw new Error("CPF inválido. Verifique o número informado.");
         if (!birthDate) throw new Error("Data de nascimento é obrigatória.");
-        if (!validatePhone(phone)) throw new Error("Telefone inválido. Use formato (DD) 99999-9999.");
-        if (!city) throw new Error("CEP ou cidade é obrigatório.");
+        if (!cep) throw new Error("CEP é obrigatório.");
+        const cleanCep = cep.replace(/\D/g, "");
+        if (cleanCep.length !== 8) throw new Error("CEP deve conter 8 dígitos.");
+        if (cleanCep.substring(0, 2) !== "59") {
+          throw new Error("Localização inválida. O Mutirão atua exclusivamente no Rio Grande do Norte (CEPs iniciando em 59).");
+        }
+        if (!city) throw new Error("Cidade é obrigatória.");
         if (!addressNumber) throw new Error("Número do endereço é obrigatório.");
         if (!terms) throw new Error("Aceite os termos para continuar.");
 
@@ -299,19 +304,25 @@ function AuthForm() {
         setTimeout(() => { router.push("/dashboard"); router.refresh(); }, 1000);
 
       } else {
-        // Institution
+        // Institution or Company
         if (!validateCNPJ(cnpj)) throw new Error("CNPJ inválido. Verifique o número informado.");
         if (!instRepName.trim()) throw new Error("Nome do representante legal é obrigatório.");
         if (instRepCpf && !validateCPF(instRepCpf)) throw new Error("CPF do representante inválido.");
-        if (instPhone && !validatePhone(instPhone)) throw new Error("Telefone da instituição inválido.");
-        if (!instCity) throw new Error("CEP / cidade da sede é obrigatório.");
+        if (instPhone && !validatePhone(instPhone)) throw new Error("Telefone inválido.");
+        if (!instCep) throw new Error("CEP é obrigatório.");
+        const cleanInstCep = instCep.replace(/\D/g, "");
+        if (cleanInstCep.length !== 8) throw new Error("CEP deve conter 8 dígitos.");
+        if (cleanInstCep.substring(0, 2) !== "59") {
+          throw new Error("Localização inválida. O Mutirão atua exclusivamente no Rio Grande do Norte (CEPs iniciando em 59).");
+        }
+        if (!instCity) throw new Error("Cidade é obrigatória.");
         if (!terms) throw new Error("Confirme os dados para continuar.");
 
         const fullAddress = `${instStreet}, ${instNumber}, ${instNeighborhood}, ${instCity} - ${instUf}, ${instCep}`;
 
         if (isSupabaseConfigured && supabase) {
           const { error: dbErr } = await supabase.from("profiles").upsert({
-            id: userId, name: signupName, email: signupEmail, profile_type: "institution",
+            id: userId, name: signupName, email: signupEmail, profile_type: profileType,
             cnpj: cnpj.replace(/\D/g, ""),
             phone: instPhone.replace(/\D/g, ""),
             headquarters_address: fullAddress,
@@ -321,7 +332,9 @@ function AuthForm() {
             accepted_terms: terms,
             city: instCity, neighborhood: instNeighborhood,
             cep: instCep.replace(/\D/g, ""),
-            approval_status: "pending_approval",
+            approval_status: profileType === "institution" ? "pending_approval" : "approved",
+            subscription_plan: profileType === "company" ? "mensal_ouro" : "none",
+            subscription_status: profileType === "company" ? "active" : "inactive",
           });
           if (dbErr) {
             if (dbErr.message.includes("row-level security"))
@@ -330,10 +343,18 @@ function AuthForm() {
           }
         }
         saveStoredProfile({
-          id: userId, profileType: "institution", role: "institution",
-          name: signupName, email: signupEmail, approvalStatus: "pending_approval",
+          id: userId, profileType: profileType as any, role: profileType as any,
+          name: signupName, email: signupEmail, 
+          approvalStatus: profileType === "institution" ? "pending_approval" : "approved",
+          subscriptionPlan: profileType === "company" ? "mensal_ouro" : "none",
+          subscriptionStatus: profileType === "company" ? "active" : "inactive",
         });
-        setSuccess("Cadastro enviado! Sua ONG está em análise. Em até 5 dias úteis você receberá uma resposta.");
+        
+        if (profileType === "institution") {
+          setSuccess("Cadastro enviado! Sua ONG está em análise. Em até 5 dias úteis você receberá uma resposta.");
+        } else {
+          setSuccess("Empresa cadastrada com sucesso! Assinatura de impacto Ouro ativada com sucesso.");
+        }
         setTimeout(() => { router.push("/dashboard"); router.refresh(); }, 1500);
       }
     } catch (err: unknown) {
@@ -363,14 +384,15 @@ function AuthForm() {
         </div>
 
         {/* Type selector */}
-        <div className="grid grid-cols-3 gap-3 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-8">
           {([
             { type: "donor", label: "Pessoa Física", icon: <Heart className="w-4 h-4" /> },
             { type: "volunteer", label: "Voluntário", icon: <User className="w-4 h-4" /> },
             { type: "institution", label: "ONG", icon: <Building2 className="w-4 h-4" /> },
+            { type: "company", label: "Empresa", icon: <Building2 className="w-4 h-4" /> },
           ] as const).map(({ type, label, icon }) => (
-            <button key={type} type="button" onClick={() => setProfileType(type)}
-              className={`py-3 font-black uppercase border-4 flex items-center justify-center gap-2 transition-all text-sm ${profileType === type ? "bg-black text-white border-black" : "bg-white border-gray-200 hover:border-black"}`}>
+            <button key={type} type="button" onClick={() => setProfileType(type as any)}
+              className={`py-3 font-black uppercase border-4 flex items-center justify-center gap-1 transition-all text-xs ${profileType === type ? "bg-black text-white border-black" : "bg-white border-gray-200 hover:border-black"}`}>
               {icon} {label}
             </button>
           ))}
@@ -496,13 +518,20 @@ function AuthForm() {
           </form>
         )}
 
-        {/* ── INSTITUTION FORM ── */}
-        {profileType === "institution" && (
+        {/* ── INSTITUTION / COMPANY FORM ── */}
+        {(profileType === "institution" || profileType === "company") && (
           <form onSubmit={handleSignupStep2} className="space-y-5 bg-white border-4 border-black p-6 sm:p-8 shadow-[6px_6px_0_0_#000]">
-            <div className="bg-amber-50 border-2 border-amber-400 p-4 text-sm font-bold text-amber-800 flex gap-2">
-              <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-amber-600" />
-              Após o cadastro, sua ONG passará por análise de um fiscal. O acesso completo é liberado após aprovação (até 5 dias úteis).
-            </div>
+            {profileType === "institution" ? (
+              <div className="bg-amber-50 border-2 border-amber-400 p-4 text-sm font-bold text-amber-800 flex gap-2">
+                <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-amber-600" />
+                Após o cadastro, sua ONG passará por análise de um fiscal. O acesso completo é liberado após aprovação (até 5 dias úteis).
+              </div>
+            ) : (
+              <div className="bg-cyan-50 border-2 border-cyan-400 p-4 text-sm font-bold text-cyan-800 flex gap-2">
+                <Sparkles className="w-5 h-5 shrink-0 mt-0.5 text-cyan-600" />
+                Empresa Assinante: Sua conta terá acesso a um painel ESG exclusivo com certificados de regularidade, doações mensais e relatórios dedutíveis.
+              </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {/* CNPJ */}
@@ -594,7 +623,7 @@ function AuthForm() {
 
             <Button type="submit" disabled={loading} size="lg"
               className="w-full h-14 font-black uppercase text-lg bg-black text-white hover:bg-gray-800">
-              {loading ? <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Enviando...</> : "Cadastrar minha organização"}
+              {loading ? <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Enviando...</> : (profileType === "company" ? "Cadastrar Empresa Assinante" : "Cadastrar minha organização")}
             </Button>
           </form>
         )}
@@ -681,14 +710,15 @@ function AuthForm() {
             {/* Tipo */}
             <div>
               <label className="font-bold uppercase text-sm text-gray-700 block mb-2">Sou um(a)</label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {([
                   { type: "donor", label: "Pessoa Física", icon: <Heart className="w-4 h-4" /> },
                   { type: "volunteer", label: "Voluntário", icon: <User className="w-4 h-4" /> },
                   { type: "institution", label: "ONG", icon: <Building2 className="w-4 h-4" /> },
+                  { type: "company", label: "Empresa", icon: <Building2 className="w-4 h-4" /> },
                 ] as const).map(({ type, label, icon }) => (
-                  <button key={type} type="button" onClick={() => setProfileType(type)}
-                    className={`py-2.5 font-black uppercase border-4 flex items-center justify-center gap-1.5 transition-all text-xs sm:text-sm ${profileType === type ? "bg-black text-white border-black" : "bg-white border-gray-200 hover:border-black"}`}>
+                  <button key={type} type="button" onClick={() => setProfileType(type as any)}
+                    className={`py-2.5 font-black uppercase border-4 flex items-center justify-center gap-1 transition-all text-xs ${profileType === type ? "bg-black text-white border-black" : "bg-white border-gray-200 hover:border-black"}`}>
                     {icon} {label}
                   </button>
                 ))}
@@ -699,14 +729,20 @@ function AuthForm() {
                   ONGs passam por aprovação antes de acessar o painel completo.
                 </p>
               )}
+              {profileType === "company" && (
+                <p className="text-xs font-bold text-accent mt-2 flex items-center gap-1">
+                  <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                  Empresas têm painel de assinatura de impacto e benefícios fiscais.
+                </p>
+              )}
             </div>
 
             <div>
               <label className="font-bold uppercase text-sm text-gray-700 block mb-1">
-                {profileType === "institution" ? "Nome / Razão Social" : "Nome Completo"}
+                {profileType === "institution" || profileType === "company" ? "Nome / Razão Social" : "Nome Completo"}
               </label>
               <Input value={signupName} onChange={e => setSignupName(e.target.value)}
-                placeholder={profileType === "institution" ? "Ex: Associação Viva Bem" : "Ex: Maria Silva"}
+                placeholder={profileType === "institution" || profileType === "company" ? "Ex: Associação Viva Bem" : "Ex: Maria Silva"}
                 required className="h-12 border-2 border-black" />
             </div>
 

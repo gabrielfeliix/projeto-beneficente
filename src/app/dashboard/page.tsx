@@ -1,4 +1,7 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @next/next/no-img-element */
 
 import { useEffect, useState } from "react";
 import { getCampaigns } from "@/actions/campaigns";
@@ -11,6 +14,7 @@ import { issueCertificate, getVolunteerCertificates, type CertificateData } from
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { loadStoredProfile } from "@/lib/auth";
 import {
   Plus,
@@ -320,6 +324,224 @@ export default function DashboardPage() {
                 </Link>
               </div>
             </Card>
+          </aside>
+        </div>
+      </div>
+    );
+  }
+
+  // --- RENDERIZAÇÃO DO DASHBOARD DO DOADOR ---
+  if (profile.profileType === "donor") {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-12 space-y-12 text-black">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b-4 border-black pb-8">
+          <div>
+            <Badge className="bg-primary text-black border-2 border-black font-black uppercase mb-2">Painel do Doador</Badge>
+            <h1 className="font-display text-4xl sm:text-5xl font-black uppercase tracking-tighter">Olá, {profile.name}</h1>
+            <p className="text-gray-600 font-bold mt-2">Veja o impacto das suas doações e apoie novas causas no RN.</p>
+          </div>
+          <div className="flex gap-2">
+            <Link href="/campaigns">
+              <Button size="lg" className="text-lg font-black uppercase tracking-wider bg-black text-white hover:bg-gray-800">
+                Apoiar Projetos
+              </Button>
+            </Link>
+          </div>
+        </div>
+
+        {/* Estatísticas e Gamificação */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <Card className="bg-primary border-4 border-black shadow-[6px_6px_0_0_#000] rounded-none">
+            <CardContent className="p-6 space-y-2">
+              <span className="font-bold text-xs uppercase text-gray-700">Total Contribuído</span>
+              <h2 className="font-display text-4xl font-black">R$ 450,00</h2>
+              <p className="text-xs font-bold text-gray-500">Destinado a 3 causas no RN</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-secondary border-4 border-black shadow-[6px_6px_0_0_#000] rounded-none">
+            <CardContent className="p-6 space-y-2">
+              <span className="font-bold text-xs uppercase text-gray-700">Sua Ofensiva (Streak)</span>
+              <h2 className="font-display text-4xl font-black flex items-center gap-2">🔥 12 Dias</h2>
+              <p className="text-xs font-bold text-gray-500">Você doou ou interagiu 3x esta semana!</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white border-4 border-black shadow-[6px_6px_0_0_#000] rounded-none">
+            <CardContent className="p-6 space-y-2">
+              <span className="font-bold text-xs uppercase text-gray-700">Recursos Doados</span>
+              <h2 className="font-display text-4xl font-black">8 Itens</h2>
+              <p className="text-xs font-bold text-gray-500">Alimentos, roupas e brinquedos</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
+          {/* Esquerda: Histórico de doações e causas */}
+          <div className="space-y-6">
+            <h3 className="font-display text-2xl font-black uppercase border-b-2 border-black pb-2">Minhas Doações Ativas</h3>
+            
+            <div className="space-y-4">
+              {[
+                { campaign: "Marmitas Solidárias Filipe Camarão", amount: 150.00, date: "25/06/2026", type: "Financeiro" },
+                { campaign: "Abrigo Animal Cão Feliz Natal", amount: 50.00, date: "20/06/2026", type: "Financeiro" },
+                { campaign: "Roupas de Frio para Crianças do Seridó", amount: 250.00, date: "15/06/2026", type: "Recurso Físico (15 peças)" },
+              ].map((item, index) => (
+                <div key={index} className="p-5 border-4 border-black bg-white shadow-[4px_4px_0_0_#000] flex justify-between items-center gap-4">
+                  <div>
+                    <h4 className="font-display text-lg font-black uppercase">{item.campaign}</h4>
+                    <p className="text-xs font-bold text-gray-400">Tipo: {item.type} | Data: {item.date}</p>
+                  </div>
+                  <div className="font-display font-black text-xl bg-primary px-3 py-1 border-2 border-black">
+                    {typeof item.amount === 'number' ? `R$ ${item.amount.toFixed(2)}` : item.amount}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Direita: Perfil rápido para doação de qualquer valor / recurso */}
+          <aside className="border-4 border-black p-6 bg-white shadow-[6px_6px_0_0_#000] space-y-6">
+            <div>
+              <h3 className="font-display text-2xl font-black uppercase">Apoio Expresso</h3>
+              <p className="text-xs font-bold text-gray-500 mt-1">Doe qualquer valor diretamente para o fundo geral do Mutirão RN.</p>
+            </div>
+            
+            <form onSubmit={(e) => { e.preventDefault(); alert("Obrigado pela sua contribuição expressa no fundo geral do Mutirão!"); }} className="space-y-4">
+              <div>
+                <label className="text-xs font-black uppercase block mb-1">Destinar Para</label>
+                <select className="w-full h-11 border-2 border-black bg-white px-2 font-bold text-sm font-sans">
+                  <option value="fundo_geral">Fundo Geral de Impacto (Mutirão)</option>
+                  <option value="alimentacao">Fundo Setorial Alimentação</option>
+                  <option value="saude">Fundo Setorial Saúde</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-black uppercase block mb-1">Valor (R$)</label>
+                <Input type="number" placeholder="Ex: 20" required className="border-2 border-black font-bold h-11 text-black bg-white" />
+              </div>
+
+              <Button type="submit" className="w-full h-12 bg-secondary text-black hover:bg-yellow-400 border-2 border-black font-black uppercase shadow-[3px_3px_0_0_#000]">
+                Doar Imediatamente
+              </Button>
+            </form>
+
+            <div className="pt-4 border-t-2 border-dashed border-gray-200">
+              <h4 className="font-black text-xs uppercase mb-2">Badges de Orgulho</h4>
+              <div className="flex gap-2">
+                <Badge className="bg-accent text-white border border-black font-black text-[10px]">🔥 STREAK ATIVO</Badge>
+                <Badge className="bg-primary text-black border border-black font-black text-[10px]">❤️ DOADOR ATIVO</Badge>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    );
+  }
+
+  // --- RENDERIZAÇÃO DO DASHBOARD DA EMPRESA ASSINANTE ---
+  if (profile.profileType === "company") {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-12 space-y-12 text-black">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b-4 border-black pb-8">
+          <div>
+            <Badge className="bg-accent text-white border-2 border-black font-black uppercase mb-2">Painel Corporativo ESG</Badge>
+            <h1 className="font-display text-4xl sm:text-5xl font-black uppercase tracking-tighter">{profile.name}</h1>
+            <p className="text-gray-600 font-bold mt-2">
+              Gerencie sua assinatura de impacto corporativo, selos de sustentabilidade e deduções fiscais no RN.
+            </p>
+          </div>
+          <div className="bg-black text-white p-3 border-2 border-black font-bold text-sm">
+            Status: <span className="text-green-400 uppercase font-black">Plano Ouro Ativo ✓</span>
+          </div>
+        </div>
+
+        {/* Métricas Corporativas */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <Card className="bg-[#E0F2FE] border-4 border-black shadow-[6px_6px_0_0_#000] rounded-none">
+            <CardContent className="p-6 space-y-2">
+              <span className="font-bold text-xs uppercase text-gray-700">Arrecadação Mensal Recorrente</span>
+              <h2 className="font-display text-4xl font-black text-sky-900">R$ 500,00</h2>
+              <p className="text-xs font-bold text-sky-700">Cobrado via PIX recorrente todo dia 10</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-[#F0FDF4] border-4 border-black shadow-[6px_6px_0_0_#000] rounded-none">
+            <CardContent className="p-6 space-y-2">
+              <span className="font-bold text-xs uppercase text-gray-700">Deduções Fiscais (Simuladas)</span>
+              <h2 className="font-display text-4xl font-black text-green-900">R$ 1.200,00</h2>
+              <p className="text-xs font-bold text-green-700">Isenção potencial acumulada Lei Rouanet / Fundos Municipais</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-primary border-4 border-black shadow-[6px_6px_0_0_#000] rounded-none">
+            <CardContent className="p-6 space-y-2">
+              <span className="font-bold text-xs uppercase text-gray-700">Selo de Impacto ESG</span>
+              <h2 className="font-display text-2xl font-black">Empresa Ouro 🏆</h2>
+              <p className="text-xs font-bold text-gray-500">Exibido nas páginas de apoio e relatórios</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
+          {/* Esquerda: Campanhas e impacto apoiado */}
+          <div className="space-y-6">
+            <h3 className="font-display text-2xl font-black uppercase border-b-2 border-black pb-2">Campanhas Apoiadas sob seu Selo</h3>
+            
+            <div className="grid gap-4 sm:grid-cols-2">
+              {[
+                { title: "Refeitório Popular Seridó", description: "Sua assinatura mensal garante 200 marmitas por mês.", image: "https://images.unsplash.com/photo-1547082299-de196ea013d6?auto=format&fit=crop&q=80&w=300" },
+                { title: "Inclusão Digital RN", description: "Parceria corporativa para doação de equipamentos usados.", image: "https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&q=80&w=300" },
+              ].map((c, idx) => (
+                <div key={idx} className="border-4 border-black bg-white shadow-[4px_4px_0_0_#000] overflow-hidden">
+                  <div className="h-32 w-full relative">
+                    <img src={c.image} alt={c.title} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="p-4 space-y-2">
+                    <h4 className="font-display text-lg font-black uppercase">{c.title}</h4>
+                    <p className="text-xs text-gray-600 font-bold">{c.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Direita: Simulador de assinatura corporativa / cobrança mensal regular */}
+          <aside className="border-4 border-black p-6 bg-white shadow-[6px_6px_0_0_#000] space-y-6">
+            <div>
+              <h3 className="font-display text-xl font-black uppercase">Simulador de Assinatura ESG</h3>
+              <p className="text-xs font-bold text-gray-500 mt-1">
+                Configure sua doação corporativa mensal recorrente (PIX ou Cartão).
+              </p>
+            </div>
+
+            <form onSubmit={(e) => { e.preventDefault(); alert("Frequência de pagamento regular configurada com sucesso!"); }} className="space-y-4">
+              <div>
+                <label className="text-xs font-black uppercase block mb-1">Escolha o Plano</label>
+                <select className="w-full h-11 border-2 border-black bg-white px-2 font-bold text-sm font-sans">
+                  <option value="ouro">Plano Ouro (R$ 500,00/mês)</option>
+                  <option value="prata">Plano Prata (R$ 200,00/mês)</option>
+                  <option value="platina">Plano Platina (R$ 1.000,00/mês)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-black uppercase block mb-1">Método de Recorrência</label>
+                <select className="w-full h-11 border-2 border-black bg-white px-2 font-bold text-sm font-sans">
+                  <option value="pix">PIX Recorrente Automatizado</option>
+                  <option value="card">Cartão Corporativo</option>
+                </select>
+              </div>
+
+              <div className="bg-cyan-50 border border-cyan-300 p-3 text-[11px] font-bold text-cyan-800 leading-snug">
+                💡 Nota: Doações corporativas no RN podem deduzir até 2% do lucro operacional bruto do imposto de renda da pessoa jurídica.
+              </div>
+
+              <Button type="submit" className="w-full h-12 bg-primary text-black hover:bg-yellow-300 border-2 border-black font-black uppercase shadow-[3px_3px_0_0_#000]">
+                Atualizar Assinatura
+              </Button>
+            </form>
           </aside>
         </div>
       </div>

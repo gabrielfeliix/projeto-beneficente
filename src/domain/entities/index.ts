@@ -34,7 +34,7 @@ export interface User {
   instagram?: string;
 }
 
-export type ProfileType = 'donor' | 'volunteer' | 'institution' | 'fiscal' | 'admin';
+export type ProfileType = 'donor' | 'volunteer' | 'institution' | 'fiscal' | 'admin' | 'company';
 export type InstitutionStatus = 'pending_approval' | 'approved' | 'rejected';
 
 export interface Donor extends User {
@@ -43,6 +43,17 @@ export interface Donor extends User {
   birthDate: string;
   address: string;
   phone: string;
+  acceptedTerms: boolean;
+}
+
+export interface Company extends User {
+  profileType: 'company';
+  cnpj: string;
+  representativeName: string;
+  address: string;
+  phone: string;
+  subscriptionPlan: 'none' | 'mensal_prata' | 'mensal_ouro' | 'mensal_platina';
+  subscriptionStatus: 'active' | 'inactive';
   acceptedTerms: boolean;
 }
 
@@ -127,6 +138,8 @@ export interface FeedPost {
   createdAt: string;
   likes: number;
   comments: number;
+  city?: string;
+  badge?: string;
 }
 
 export interface Notification {

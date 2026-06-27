@@ -3,12 +3,14 @@ import { supabase } from "./supabase";
 
 export type StoredProfile = {
   id: string;
-  profileType: "donor" | "volunteer" | "institution" | "fiscal" | "admin";
-  role: "donor" | "volunteer" | "institution" | "fiscal" | "admin";
+  profileType: "donor" | "volunteer" | "institution" | "fiscal" | "admin" | "company";
+  role: "donor" | "volunteer" | "institution" | "fiscal" | "admin" | "company";
   name: string;
   email: string;
   avatarUrl?: string;
   approvalStatus?: "pending_approval" | "approved" | "rejected";
+  subscriptionPlan?: string;
+  subscriptionStatus?: string;
 };
 
 const STORAGE_KEY = "mutirao_user_profile";
