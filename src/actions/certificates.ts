@@ -1,6 +1,6 @@
 "use server";
 
-import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured, isUUID } from "@/lib/supabase";
 
 export interface CertificateData {
   id: string;
@@ -22,7 +22,7 @@ export async function issueCertificate(
 ): Promise<CertificateData> {
   const code = "LUM-" + Math.random().toString(36).substring(2, 9).toUpperCase();
 
-  if (isSupabaseConfigured && supabase) {
+  if (isSupabaseConfigured && supabase && isUUID(applicationId)) {
     // 1. Carrega dados da candidatura
     const { data: app, error: appErr } = await supabase
       .from("applications")
@@ -139,7 +139,7 @@ export async function getCertificateByCode(code: string): Promise<CertificateDat
 }
 
 export async function getVolunteerCertificates(volunteerId: string): Promise<CertificateData[]> {
-  if (isSupabaseConfigured && supabase) {
+  if (isSupabaseConfigured && supabase && isUUID(volunteerId)) {
     const { data: certs, error } = await supabase
       .from("certificates")
       .select("*")

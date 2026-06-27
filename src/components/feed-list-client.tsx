@@ -6,6 +6,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Heart, MessageCircle, Calendar, MapPin, Loader2, Award, Sparkles } from 'lucide-react';
 import Image from 'next/image';
@@ -25,6 +26,9 @@ export function FeedListClient({ initialPosts }: FeedListClientProps) {
   const [loading, setLoading] = useState(false);
   const [proximityFilter, setProximityFilter] = useState(false);
   const [likesState, setLikesState] = useState<Record<string, { count: number; active: boolean }>>({});
+  const [newContent, setNewContent] = useState('');
+  const [selectedImage, setSelectedImage] = useState('');
+  const [showCreator, setShowCreator] = useState(false);
 
   const loaderRef = useRef<HTMLDivElement>(null);
 
@@ -124,6 +128,30 @@ export function FeedListClient({ initialPosts }: FeedListClientProps) {
     });
   };
 
+  const handleSubmitPost = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newContent.trim()) return;
+
+    const newPost: FeedPost = {
+      id: 'post-user-' + Date.now(),
+      authorId: profile?.id || 'anonymous',
+      authorName: profile?.name || 'Comunidade Mutirão',
+      authorType: profile?.profileType || 'volunteer',
+      content: newContent,
+      imageUrl: selectedImage || undefined,
+      createdAt: new Date().toISOString(),
+      likes: 0,
+      comments: 0,
+      city: profile?.city || 'Natal',
+      badge: profile?.profileType === 'company' ? 'Empresa ESG 🏆' : profile?.profileType === 'donor' ? 'Doador Solidário ❤️' : undefined
+    };
+
+    setPosts(prev => [newPost, ...prev]);
+    setNewContent('');
+    setSelectedImage('');
+    setShowCreator(false);
+  };
+
   return (
     <div className="space-y-6">
       {/* Proximity Toggle Filter */}
@@ -143,6 +171,95 @@ export function FeedListClient({ initialPosts }: FeedListClientProps) {
           {proximityFilter ? "Ativado: Local Primeiro ✓" : "Ordenar por Proximidade"}
         </button>
       </div>
+
+      {/* Instagram-style Post Creator */}
+      {profile && !showCreator && (
+        <Card className="border-4 border-black rounded-none bg-white p-4 shadow-[4px_4px_0_0_#000] text-black">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-primary border-2 border-black flex items-center justify-center font-black text-sm uppercase">
+              {profile.name.charAt(0)}
+            </div>
+            <button
+              onClick={() => setShowCreator(true)}
+              className="flex-1 h-11 px-4 border-2 border-black bg-gray-50 text-left text-gray-500 font-bold text-sm hover:bg-gray-100 transition-colors"
+            >
+              No que você está pensando, {profile.name}? Compartilhe uma história...
+            </button>
+          </div>
+        </Card>
+      )}
+
+      {profile && showCreator && (
+        <Card className="border-4 border-black rounded-none bg-white p-6 shadow-[6px_6px_0_0_#000] space-y-4 text-black">
+          <div className="flex items-center justify-between border-b-2 border-gray-100 pb-3">
+            <span className="font-display text-xl font-black uppercase flex items-center gap-1.5">
+              <Sparkles className="w-5 h-5 text-accent" /> Criar Publicação (Estilo Instagram)
+            </span>
+            <button onClick={() => setShowCreator(false)} className="text-gray-400 hover:text-black font-black uppercase text-xs">
+              Fechar ✗
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmitPost} className="space-y-4">
+            <div>
+              <textarea
+                value={newContent}
+                onChange={(e) => setNewContent(e.target.value)}
+                required
+                placeholder="Escreva sua legenda com hashtags de impacto... #MutirãoRN #Voluntariado"
+                rows={4}
+                className="w-full border-2 border-black p-3 font-bold text-sm resize-none focus:outline-none focus:ring-2 focus:ring-black"
+              />
+            </div>
+
+            {/* Preset image suggestions to simulate uploads easily */}
+            <div className="space-y-2">
+              <label className="text-xs font-black uppercase block text-gray-600">Escolha uma Imagem Temática</label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {[
+                  { label: "🍲 Alimentação", url: "https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&q=80&w=800" },
+                  { label: "🐶 Animais", url: "https://images.unsplash.com/photo-1581888227599-779811939961?auto=format&fit=crop&q=80&w=800" },
+                  { label: "📚 Educação", url: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&q=80&w=800" },
+                  { label: "🌳 Ecologia", url: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=800" }
+                ].map((img, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setSelectedImage(img.url)}
+                    className={`py-2 text-xs font-black border-2 border-black transition-all ${selectedImage === img.url ? 'bg-primary text-black' : 'bg-white hover:bg-gray-100'}`}
+                  >
+                    {img.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Custom URL Input */}
+            <div>
+              <label className="text-xs font-black uppercase block text-gray-600 mb-1">Ou Insira URL do Instagram / Foto</label>
+              <Input
+                type="url"
+                value={selectedImage}
+                onChange={(e) => setSelectedImage(e.target.value)}
+                placeholder="https://images.unsplash.com/..."
+                className="border-2 border-black font-bold h-11 bg-white text-black"
+              />
+            </div>
+
+            {selectedImage && (
+              <div className="relative h-48 w-full border-4 border-black overflow-hidden mt-3">
+                <img src={selectedImage} alt="Prévia do Post" className="w-full h-full object-cover" />
+              </div>
+            )}
+
+            <div className="flex justify-end gap-2 pt-2 border-t border-gray-100">
+              <Button type="submit" className="font-black uppercase text-xs bg-black text-white hover:bg-gray-800 border-2 border-black shadow-[3px_3px_0_0_#000]">
+                Compartilhar Publicação
+              </Button>
+            </div>
+          </form>
+        </Card>
+      )}
 
       {/* Feed list */}
       <div className="grid gap-6">

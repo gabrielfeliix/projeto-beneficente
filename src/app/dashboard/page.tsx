@@ -9,7 +9,9 @@ import {
   getApplicationsForVolunteer,
   getApplicationsForInstitution,
   updateApplicationStatus,
+  getProfile,
 } from "@/actions/platform";
+import { mockVolunteers } from "@/data/mock";
 import { issueCertificate, getVolunteerCertificates, type CertificateData } from "@/actions/certificates";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -43,6 +45,7 @@ export default function DashboardPage() {
   const [feedbackMsg, setFeedbackMsg] = useState<string>("Parabéns por sua contribuição social!");
   const [updatingAppId, setUpdatingAppId] = useState<string | null>(null);
   const [certs, setCerts] = useState<CertificateData[]>([]);
+  const [volunteerPhones, setVolunteerPhones] = useState<Record<string, string>>({});
 
   const handleStatusChange = async (appId: string, nextStatus: "pending" | "selected" | "rejected") => {
     setUpdatingAppId(appId);
@@ -90,12 +93,68 @@ export default function DashboardPage() {
         if (user) {
           if (user.profileType === "volunteer") {
             const volunteerApps = await getApplicationsForVolunteer(user.id);
-            setApplications(volunteerApps);
+            const defaultVolApps = [
+              {
+                id: "app-mock-1",
+                jobId: "job-1",
+                volunteerId: user.id,
+                institutionId: "inst-1",
+                jobTitle: "Facilitador de Oficinas de Leitura",
+                institutionName: "Instituto Água Viva",
+                volunteerName: user.name,
+                message: "Gostaria muito de apoiar as crianças da comunidade com oficinas de leitura.",
+                status: "selected" as const,
+                submittedAt: new Date(Date.now() - 3 * 86400000).toISOString(),
+              }
+            ];
+            setApplications(volunteerApps.length > 0 ? volunteerApps : defaultVolApps);
             const volunteerCerts = await getVolunteerCertificates(user.id);
             setCerts(volunteerCerts);
           } else {
             const institutionApps = await getApplicationsForInstitution(user.id);
-            setApplications(institutionApps);
+            const defaultApps = [
+              {
+                id: "app-mock-2",
+                jobId: "job-1",
+                volunteerId: "vol-2",
+                institutionId: user.id,
+                jobTitle: "Cozinheiro para Sopão Solidário",
+                institutionName: user.name,
+                volunteerName: "Lucas Mendes",
+                message: "Olá! Tenho experiência com culinária de grande porte e gostaria muito de ajudar nos finais de semana.",
+                status: "pending" as const,
+                submittedAt: new Date(Date.now() - 1 * 86400000).toISOString(),
+              },
+              {
+                id: "app-mock-3",
+                jobId: "job-2",
+                volunteerId: "vol-3",
+                institutionId: user.id,
+                jobTitle: "Pedagoga para Reforço Escolar",
+                institutionName: user.name,
+                volunteerName: "Juliana Santos",
+                message: "Olá! Sou pedagoga aposentada e posso auxiliar no apoio escolar e alfabetização de crianças carentes.",
+                status: "selected" as const,
+                submittedAt: new Date(Date.now() - 4 * 86400000).toISOString(),
+              },
+            ];
+            const finalApps = institutionApps.length > 0 ? institutionApps : defaultApps;
+            setApplications(finalApps);
+
+            // Fetch phone numbers for candidates
+            const phones: Record<string, string> = {};
+            for (const app of finalApps) {
+              const mockVol = mockVolunteers.find(v => v.id === app.volunteerId || v.name === app.volunteerName);
+              if (mockVol) {
+                phones[app.volunteerId] = mockVol.phone || "";
+              } else {
+                const profileData = await getProfile(app.volunteerId);
+                if (profileData && 'phone' in profileData) {
+                  phones[app.volunteerId] = (profileData as any).phone || "";
+                }
+              }
+            }
+            setVolunteerPhones(phones);
           }
         }
       } catch (err) {
@@ -554,35 +613,7 @@ export default function DashboardPage() {
     (c) => c.organizerId === profile.id || (profile.id === "inst-1" && c.organizerId === "user-1")
   );
 
-  const displayApplications =
-    applications.length > 0
-      ? applications
-      : [
-          {
-            id: "app-mock-2",
-            jobId: "job-1",
-            volunteerId: "vol-2",
-            institutionId: profile.id,
-            jobTitle: "Cozinheiro para Sopão Solidário",
-            institutionName: profile.name,
-            volunteerName: "Lucas Mendes",
-            message: "Olá! Tenho experiência com culinária de grande porte e gostaria muito de ajudar nos finais de semana.",
-            status: "pending" as const,
-            submittedAt: new Date(Date.now() - 1 * 86400000).toISOString(),
-          },
-          {
-            id: "app-mock-3",
-            jobId: "job-2",
-            volunteerId: "vol-3",
-            institutionId: profile.id,
-            jobTitle: "Pedagoga para Reforço Escolar",
-            institutionName: profile.name,
-            volunteerName: "Juliana Santos",
-            message: "Olá! Sou pedagoga aposentada e posso auxiliar no apoio escolar e alfabetização de crianças carentes.",
-            status: "selected" as const,
-            submittedAt: new Date(Date.now() - 4 * 86400000).toISOString(),
-          },
-        ];
+  const displayApplications = applications;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12 space-y-12">
@@ -718,20 +749,27 @@ export default function DashboardPage() {
                       </span>
 
                       {/* Botão Direct WhatsApp Chat */}
-                      <a
-                        href={`https://wa.me/5511999999999?text=Olá%20${encodeURIComponent(
-                          app.volunteerName
-                        )}!%20Recebemos%20sua%20candidatura%20no%20Lumiar%20para%20a%20vaga%20${encodeURIComponent(
-                          app.jobTitle
-                        )}.%20Gostaríamos%20de%20combinar%20os%20próximos%20passos!`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-full"
-                      >
-                        <Button className="w-full font-bold uppercase text-xs border-2 border-black bg-white text-black hover:bg-black hover:text-white">
-                          💬 Chamar no WhatsApp
-                        </Button>
-                      </a>
+                      {(() => {
+                        const rawPhone = volunteerPhones[app.volunteerId] || "(84) 98888-7777";
+                        const cleanPhone = rawPhone.replace(/\D/g, "");
+                        const formattedPhone = cleanPhone.startsWith("55") ? cleanPhone : `55${cleanPhone}`;
+                        return (
+                          <a
+                            href={`https://wa.me/${formattedPhone}?text=Olá%20${encodeURIComponent(
+                              app.volunteerName
+                            )}!%20Recebemos%20sua%20candidatura%20no%20Lumiar%20para%20a%20vaga%20${encodeURIComponent(
+                              app.jobTitle
+                            )}.%20Gostaríamos%20de%20combinar%20os%20próximos%20passos!`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full"
+                          >
+                            <Button className="w-full font-bold uppercase text-xs border-2 border-black bg-white text-black hover:bg-black hover:text-white">
+                              💬 Chamar no WhatsApp ({rawPhone})
+                            </Button>
+                          </a>
+                        );
+                      })()}
 
                       {app.status === "pending" && (
                         <div className="flex gap-2">

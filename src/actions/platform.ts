@@ -17,7 +17,7 @@ import {
   mockNotifications,
   mockVolunteers,
 } from '@/data/mock';
-import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured, isUUID } from '@/lib/supabase';
 
 // Mapeamentos específicos do banco de dados (snake_case) para as Entidades do Domínio (camelCase)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -218,7 +218,7 @@ export async function getJobs(): Promise<JobPosting[]> {
 }
 
 export async function getJobById(id: string): Promise<JobPosting | null> {
-  if (isSupabaseConfigured && supabase) {
+  if (isSupabaseConfigured && supabase && isUUID(id)) {
     const { data, error } = await supabase
       .from('job_postings')
       .select('*')
@@ -238,7 +238,7 @@ export async function getJobById(id: string): Promise<JobPosting | null> {
 }
 
 export async function getApplicationsForVolunteer(volunteerId: string): Promise<Application[]> {
-  if (isSupabaseConfigured && supabase) {
+  if (isSupabaseConfigured && supabase && isUUID(volunteerId)) {
     const { data, error } = await supabase
       .from('applications')
       .select('*')
@@ -257,7 +257,7 @@ export async function getApplicationsForVolunteer(volunteerId: string): Promise<
 }
 
 export async function getApplicationsForInstitution(institutionId: string): Promise<Application[]> {
-  if (isSupabaseConfigured && supabase) {
+  if (isSupabaseConfigured && supabase && isUUID(institutionId)) {
     const { data, error } = await supabase
       .from('applications')
       .select('*')
@@ -295,7 +295,7 @@ export async function getFeedPosts(): Promise<FeedPost[]> {
 }
 
 export async function getNotifications(userId: string): Promise<Notification[]> {
-  if (isSupabaseConfigured && supabase) {
+  if (isSupabaseConfigured && supabase && isUUID(userId)) {
     const { data, error } = await supabase
       .from('notifications')
       .select('*')
@@ -314,7 +314,7 @@ export async function getNotifications(userId: string): Promise<Notification[]> 
 }
 
 export async function getProfile(userId: string): Promise<Volunteer | Institution | null> {
-  if (isSupabaseConfigured && supabase) {
+  if (isSupabaseConfigured && supabase && isUUID(userId)) {
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
@@ -340,7 +340,7 @@ export async function updateApplicationStatus(
   applicationId: string,
   status: "pending" | "selected" | "rejected"
 ): Promise<boolean> {
-  if (isSupabaseConfigured && supabase) {
+  if (isSupabaseConfigured && supabase && isUUID(applicationId)) {
     const { error } = await supabase
       .from("applications")
       .update({ status })
