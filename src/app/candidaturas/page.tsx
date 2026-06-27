@@ -2,7 +2,7 @@ import { getApplicationsForVolunteer } from '@/actions/platform';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Briefcase, CheckCircle2, XCircle, MessageSquare } from 'lucide-react';
+import { MessageSquare } from 'lucide-react';
 
 export default async function CandidaturasPage() {
   const applications = await getApplicationsForVolunteer('vol-1');

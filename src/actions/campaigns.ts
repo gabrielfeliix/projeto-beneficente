@@ -1,122 +1,176 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use server';
 
 import { Campaign, UpdateRecord, User } from '@/domain/entities';
-import { supabase } from '@/lib/supabase';
+import { mockCampaigns, mockUpdates, mockUsers } from '@/data/mock';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+
+// Helper de mapeamento de banco snake_case para caminhos CamelCase do Domínio
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapDBCampaign(db: any): Campaign {
+  return {
+    id: db.id,
+    organizerId: db.organizer_id,
+    title: db.title,
+    description: db.description,
+    category: db.category,
+    city: db.city,
+    neighborhood: db.neighborhood,
+    address: db.address || undefined,
+    helpTypes: db.help_types || [],
+    mainNeed: db.main_need,
+    financialGoal: db.financial_goal ? Number(db.financial_goal) : undefined,
+    financialRaised: db.financial_raised ? Number(db.financial_raised) : undefined,
+    endDate: db.end_date || undefined,
+    coverImage: db.cover_image,
+    gallery: db.gallery || [],
+    pixKey: db.pix_key || undefined,
+    contact: db.contact,
+    tags: db.tags || [],
+    status: db.status,
+    createdAt: db.created_at,
+    updatedAt: db.updated_at,
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapDBUpdate(db: any): UpdateRecord {
+  return {
+    id: db.id,
+    campaignId: db.campaign_id,
+    content: db.content,
+    imageUrl: db.image_url || undefined,
+    videoUrl: db.video_url || undefined,
+    createdAt: db.created_at,
+    likes: db.likes || 0,
+    shares: db.shares || 0,
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapDBProfileToUser(db: any): User {
+  return {
+    id: db.id,
+    name: db.name,
+    email: db.email,
+    avatarUrl: db.avatar_url || undefined,
+    city: db.city || 'Não informada',
+    neighborhood: db.neighborhood || 'Não informado',
+    description: db.description || undefined,
+    phone: db.phone || undefined,
+    instagram: db.instagram || undefined,
+  };
+}
 
 export async function getCampaigns(): Promise<Campaign[]> {
-  const { data, error } = await supabase.from('campaigns').select('*').order('created_at', { ascending: false });
-  if (error || !data) return [];
-  
-  return data.map((c: any) => ({
-    id: c.id,
-    organizerId: c.organizer_id,
-    title: c.title,
-    description: c.description,
-    category: c.category,
-    city: c.city,
-    neighborhood: c.neighborhood,
-    helpTypes: c.help_types,
-    mainNeed: c.main_need,
-    financialGoal: c.financial_goal,
-    financialRaised: c.financial_raised,
-    coverImage: c.cover_image,
-    gallery: c.gallery,
-    contact: c.contact,
-    tags: c.tags,
-    status: c.status,
-    createdAt: c.created_at,
-    updatedAt: c.updated_at,
-  }));
+  if (isSupabaseConfigured && supabase) {
+    const { data, error } = await supabase
+      .from('campaigns')
+      .select('*')
+      .order('created_at', { ascending: false });
+      
+    if (error) {
+      console.error('Error in getCampaigns:', error.message);
+      return [];
+    }
+    return (data || []).map(mapDBCampaign);
+  }
+
+  // Fallback
+  await new Promise((resolve) => setTimeout(resolve, 800));
+  return [...mockCampaigns].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
 export async function getCampaignById(id: string): Promise<Campaign | null> {
-  const { data: c, error } = await supabase.from('campaigns').select('*').eq('id', id).single();
-  if (error || !c) return null;
+  if (isSupabaseConfigured && supabase) {
+    const { data, error } = await supabase
+      .from('campaigns')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
 
-  return {
-    id: c.id,
-    organizerId: c.organizer_id,
-    title: c.title,
-    description: c.description,
-    category: c.category,
-    city: c.city,
-    neighborhood: c.neighborhood,
-    helpTypes: c.help_types,
-    mainNeed: c.main_need,
-    financialGoal: c.financial_goal,
-    financialRaised: c.financial_raised,
-    coverImage: c.cover_image,
-    gallery: c.gallery,
-    contact: c.contact,
-    tags: c.tags,
-    status: c.status,
-    createdAt: c.created_at,
-    updatedAt: c.updated_at,
-  };
+    if (error) {
+      console.error('Error in getCampaignById:', error.message);
+      return null;
+    }
+    return data ? mapDBCampaign(data) : null;
+  }
+
+  // Fallback
+  await new Promise((resolve) => setTimeout(resolve, 500));
+  const campaign = mockCampaigns.find(c => c.id === id);
+  return campaign || null;
 }
 
 export async function getCampaignUpdates(campaignId: string): Promise<UpdateRecord[]> {
-  const { data, error } = await supabase.from('updates').select('*').eq('campaign_id', campaignId).order('created_at', { ascending: false });
-  if (error || !data) return [];
+  if (isSupabaseConfigured && supabase) {
+    const { data, error } = await supabase
+      .from('updates')
+      .select('*')
+      .eq('campaign_id', campaignId)
+      .order('created_at', { ascending: false });
 
-  return data.map((u: any) => ({
-    id: u.id,
-    campaignId: u.campaign_id,
-    content: u.content,
-    imageUrl: u.image_url,
-    likes: u.likes,
-    shares: u.shares,
-    createdAt: u.created_at,
-  }));
+    if (error) {
+      console.error('Error in getCampaignUpdates:', error.message);
+      return [];
+    }
+    return (data || []).map(mapDBUpdate);
+  }
+
+  // Fallback
+  await new Promise((resolve) => setTimeout(resolve, 400));
+  return mockUpdates
+    .filter(u => u.campaignId === campaignId)
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
 export async function getCampaignOrganizer(organizerId: string): Promise<User | null> {
-  const { data, error } = await supabase.from('profiles').select('*').eq('id', organizerId).single();
-  if (error || !data) return null;
+  if (isSupabaseConfigured && supabase) {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', organizerId)
+      .maybeSingle();
 
-  return {
-    id: data.id,
-    name: data.name,
-    email: data.email,
-    city: data.city,
-    neighborhood: data.neighborhood,
-    description: data.description,
-    avatarUrl: data.avatar_url,
-  };
+    if (error) {
+      console.error('Error in getCampaignOrganizer:', error.message);
+      return null;
+    }
+    return data ? mapDBProfileToUser(data) : null;
+  }
+
+  // Fallback
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  return mockUsers.find(u => u.id === organizerId) || null;
 }
 
 export async function getRecentUpdates(): Promise<(UpdateRecord & { campaign: Campaign })[]> {
-  const { data: updatesData, error: updatesError } = await supabase.from('updates').select('*, campaigns(*)').order('created_at', { ascending: false }).limit(10);
-  if (updatesError || !updatesData) return [];
+  if (isSupabaseConfigured && supabase) {
+    const { data, error } = await supabase
+      .from('updates')
+      .select('*, campaign:campaigns(*)')
+      .order('created_at', { ascending: false });
 
-  return updatesData.map((u: any) => ({
-    id: u.id,
-    campaignId: u.campaign_id,
-    content: u.content,
-    imageUrl: u.image_url,
-    likes: u.likes,
-    shares: u.shares,
-    createdAt: u.created_at,
-    campaign: {
-      id: u.campaigns.id,
-      organizerId: u.campaigns.organizer_id,
-      title: u.campaigns.title,
-      description: u.campaigns.description,
-      category: u.campaigns.category,
-      city: u.campaigns.city,
-      neighborhood: u.campaigns.neighborhood,
-      helpTypes: u.campaigns.help_types,
-      mainNeed: u.campaigns.main_need,
-      financialGoal: u.campaigns.financial_goal,
-      financialRaised: u.campaigns.financial_raised,
-      coverImage: u.campaigns.cover_image,
-      gallery: u.campaigns.gallery,
-      contact: u.campaigns.contact,
-      tags: u.campaigns.tags,
-      status: u.campaigns.status,
-      createdAt: u.campaigns.created_at,
-      updatedAt: u.campaigns.updated_at,
+    if (error) {
+      console.error('Error in getRecentUpdates:', error.message);
+      return [];
     }
-  }));
+
+    return (data || [])
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .filter((update: any) => update.campaign) // Garante que a campanha associada existe
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .map((update: any) => ({
+        ...mapDBUpdate(update),
+        campaign: mapDBCampaign(update.campaign),
+      }));
+  }
+
+  // Fallback
+  await new Promise((resolve) => setTimeout(resolve, 600));
+  const recent = [...mockUpdates].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  
+  return recent.map(update => {
+    const campaign = mockCampaigns.find(c => c.id === update.campaignId)!;
+    return { ...update, campaign };
+  });
 }

@@ -7,10 +7,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Campaign, UpdateRecord, User } from '@/domain/entities';
 import { appendCampaignUpdate, addCampaignNotification, loadCampaignData, updateCampaignSettings, type CampaignUpdateType } from '@/lib/campaign-storage';
-import { getCurrentProfile } from '@/lib/auth';
-import { MapPin, Target, Share2, Heart, Calendar, Megaphone, Sparkles, Star, Camera, MessageSquare, Settings, PlusCircle } from 'lucide-react';
+import { MapPin, Share2, Heart, Calendar, Megaphone, Sparkles, Camera, Settings, PlusCircle } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+
+import { loadStoredProfile } from '@/lib/auth';
 
 type CampaignPageClientProps = {
   campaign: Campaign;
@@ -22,12 +23,19 @@ export function CampaignPageClient({ campaign, initialUpdates, organizer }: Camp
   const [activeCampaign, setActiveCampaign] = useState(campaign);
   const [updates, setUpdates] = useState(initialUpdates);
   const [statusMessage, setStatusMessage] = useState('');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [profile, setProfile] = useState<any>(null);
+
+  useEffect(() => {
+    setProfile(loadStoredProfile());
+  }, []);
+
+  const canManage = profile && profile.profileType === 'institution' && (profile.id === activeCampaign.organizerId || profile.id === 'inst-1');
   const [updateForm, setUpdateForm] = useState({
     content: '',
     imageUrl: '',
     updateType: 'urgency' as CampaignUpdateType,
   });
-  const [isOwner, setIsOwner] = useState(false);
   const [settingsForm, setSettingsForm] = useState({
     title: campaign.title,
     description: campaign.description,
@@ -41,42 +49,43 @@ export function CampaignPageClient({ campaign, initialUpdates, organizer }: Camp
   });
 
   useEffect(() => {
-    getCurrentProfile().then((profile) => {
-      if (profile && profile.id === campaign.organizerId) {
-        setIsOwner(true);
+    async function load() {
+      try {
+        const persisted = await loadCampaignData(campaign.id);
+        const persistedSettings = persisted.settings as Partial<Campaign>;
+
+        if (persistedSettings && Object.keys(persistedSettings).length > 0) {
+          setActiveCampaign((current) => ({ ...current, ...persistedSettings }));
+          setSettingsForm((current) => ({
+            ...current,
+            title: persistedSettings.title ?? current.title,
+            description: persistedSettings.description ?? current.description,
+            mainNeed: persistedSettings.mainNeed ?? current.mainNeed,
+            financialGoal: persistedSettings.financialGoal?.toString() ?? current.financialGoal,
+            contact: persistedSettings.contact ?? current.contact,
+            pixKey: persistedSettings.pixKey ?? current.pixKey,
+            endDate: persistedSettings.endDate ?? current.endDate,
+            neighborhood: persistedSettings.neighborhood ?? current.neighborhood,
+            city: persistedSettings.city ?? current.city,
+          }));
+        }
+
+        if (persisted.updates?.length) {
+          setUpdates((current) => {
+            const merged = [...persisted.updates, ...current];
+            const unique = merged.filter((item, index, array) => index === array.findIndex((candidate) => candidate.id === item.id));
+            return unique.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          });
+        }
+      } catch (err) {
+        console.error("Erro ao carregar dados persistidos da campanha:", err);
       }
-    });
+    }
 
-    loadCampaignData(campaign.id).then((persisted) => {
-      const persistedSettings = persisted.settings as Partial<Campaign>;
+    load();
+  }, [campaign.id]);
 
-      if (persistedSettings && Object.keys(persistedSettings).length > 0) {
-        setActiveCampaign((current) => ({ ...current, ...persistedSettings }));
-        setSettingsForm((current) => ({
-          ...current,
-          title: persistedSettings.title ?? current.title,
-          description: persistedSettings.description ?? current.description,
-          mainNeed: persistedSettings.mainNeed ?? current.mainNeed,
-          financialGoal: persistedSettings.financialGoal?.toString() ?? current.financialGoal,
-          contact: persistedSettings.contact ?? current.contact,
-          pixKey: persistedSettings.pixKey ?? current.pixKey,
-          endDate: persistedSettings.endDate ?? current.endDate,
-          neighborhood: persistedSettings.neighborhood ?? current.neighborhood,
-          city: persistedSettings.city ?? current.city,
-        }));
-      }
-
-      if (persisted.updates?.length) {
-        setUpdates((current) => {
-          const merged = [...persisted.updates, ...current];
-          const unique = merged.filter((item, index, array) => index === array.findIndex((candidate) => candidate.id === item.id));
-          return unique.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-        });
-      }
-    });
-  }, [campaign.id, campaign.organizerId]);
-
-  const handleUpdateSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleUpdateSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!updateForm.content.trim() && !updateForm.imageUrl.trim()) {
@@ -97,8 +106,8 @@ export function CampaignPageClient({ campaign, initialUpdates, organizer }: Camp
       updateType: updateForm.updateType,
     };
 
-    await appendCampaignUpdate(campaign.id, newUpdate);
-    await addCampaignNotification(campaign.id, {
+    appendCampaignUpdate(campaign.id, newUpdate);
+    addCampaignNotification(campaign.id, {
       id: `notif-${Date.now()}`,
       title: 'Nova atualização',
       message: content,
@@ -112,7 +121,7 @@ export function CampaignPageClient({ campaign, initialUpdates, organizer }: Camp
     setStatusMessage('Atualização publicada com sucesso.');
   };
 
-  const handleSettingsSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSettingsSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const payload = {
@@ -127,7 +136,7 @@ export function CampaignPageClient({ campaign, initialUpdates, organizer }: Camp
       city: settingsForm.city,
     };
 
-    await updateCampaignSettings(campaign.id, payload);
+    updateCampaignSettings(campaign.id, payload);
     setActiveCampaign((current) => ({ ...current, ...payload }));
     setStatusMessage('Dados da campanha atualizados.');
   };
@@ -154,71 +163,71 @@ export function CampaignPageClient({ campaign, initialUpdates, organizer }: Camp
 
         <div className="w-full aspect-video relative brutalist-card bg-primary overflow-hidden group">
           <Image
-            src={activeCampaign.coverImage || '/images/campaign_library.png'}
+            src={activeCampaign.coverImage}
             alt={activeCampaign.title}
             fill
             className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
         </div>
 
-        {isOwner && (
-        <Card className="border-4 bg-secondary">
-          <CardContent className="p-6 space-y-4">
-            <div className="flex items-center gap-2 font-black uppercase"><Sparkles className="w-5 h-5" /> Gestão rápida</div>
-            {statusMessage ? <p className="font-bold text-sm text-gray-700">{statusMessage}</p> : null}
-            <div className="grid gap-6 lg:grid-cols-2">
-              <form onSubmit={handleUpdateSubmit} className="space-y-4">
-                <h3 className="font-display text-2xl font-black uppercase">Nova atualização</h3>
-                <p className="text-sm font-medium text-gray-700">Cadastre apenas uma imagem ou uma mensagem curta, como “está próximo da data”.</p>
-                <textarea
-                  value={updateForm.content}
-                  onChange={(event) => setUpdateForm((current) => ({ ...current, content: event.target.value }))}
-                  placeholder="Ex.: Está quase chegando a data da campanha."
-                  className="min-h-28 w-full brutalist-border bg-background p-3 text-sm font-medium"
-                />
-                <Input
-                  value={updateForm.imageUrl}
-                  onChange={(event) => setUpdateForm((current) => ({ ...current, imageUrl: event.target.value }))}
-                  placeholder="URL da imagem (opcional)"
-                />
-                <select
-                  value={updateForm.updateType}
-                  onChange={(event) => setUpdateForm((current) => ({ ...current, updateType: event.target.value as CampaignUpdateType }))}
-                  className="w-full border-2 border-black bg-white p-3 text-sm font-bold"
-                >
-                  <option value="urgency">Próximo da data</option>
-                  <option value="milestone">Marco</option>
-                  <option value="purchase">Compra</option>
-                  <option value="completion">Conclusão</option>
-                </select>
-                <Button type="submit" className="w-full uppercase tracking-wider">
-                  <PlusCircle className="mr-2 h-4 w-4" /> Publicar atualização
-                </Button>
-              </form>
+        {canManage && (
+          <Card className="border-4 bg-secondary">
+            <CardContent className="p-6 space-y-4">
+              <div className="flex items-center gap-2 font-black uppercase"><Sparkles className="w-5 h-5" /> Gestão rápida</div>
+              {statusMessage ? <p className="font-bold text-sm text-gray-700">{statusMessage}</p> : null}
+              <div className="grid gap-6 lg:grid-cols-2">
+                <form onSubmit={handleUpdateSubmit} className="space-y-4">
+                  <h3 className="font-display text-2xl font-black uppercase">Nova atualização</h3>
+                  <p className="text-sm font-medium text-gray-700">Cadastre apenas uma imagem ou uma mensagem curta, como “está próximo da data”.</p>
+                  <textarea
+                    value={updateForm.content}
+                    onChange={(event) => setUpdateForm((current) => ({ ...current, content: event.target.value }))}
+                    placeholder="Ex.: Está quase chegando a data da campanha."
+                    className="min-h-28 w-full brutalist-border bg-background p-3 text-sm font-medium"
+                  />
+                  <Input
+                    value={updateForm.imageUrl}
+                    onChange={(event) => setUpdateForm((current) => ({ ...current, imageUrl: event.target.value }))}
+                    placeholder="URL da imagem (opcional)"
+                  />
+                  <select
+                    value={updateForm.updateType}
+                    onChange={(event) => setUpdateForm((current) => ({ ...current, updateType: event.target.value as CampaignUpdateType }))}
+                    className="w-full border-2 border-black bg-white p-3 text-sm font-bold"
+                  >
+                    <option value="urgency">Próximo da data</option>
+                    <option value="milestone">Marco</option>
+                    <option value="purchase">Compra</option>
+                    <option value="completion">Conclusão</option>
+                  </select>
+                  <Button type="submit" className="w-full uppercase tracking-wider">
+                    <PlusCircle className="mr-2 h-4 w-4" /> Publicar atualização
+                  </Button>
+                </form>
 
-              <form onSubmit={handleSettingsSubmit} className="space-y-4">
-                <h3 className="font-display text-2xl font-black uppercase">Configurações</h3>
-                <p className="text-sm font-medium text-gray-700">Edite os dados já definidos para a campanha.</p>
-                <Input value={settingsForm.title} onChange={(event) => setSettingsForm((current) => ({ ...current, title: event.target.value }))} placeholder="Título da campanha" />
-                <textarea value={settingsForm.description} onChange={(event) => setSettingsForm((current) => ({ ...current, description: event.target.value }))} placeholder="Descrição" className="min-h-24 w-full brutalist-border bg-background p-3 text-sm font-medium" />
-                <Input value={settingsForm.mainNeed} onChange={(event) => setSettingsForm((current) => ({ ...current, mainNeed: event.target.value }))} placeholder="Necessidade principal" />
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <Input value={settingsForm.financialGoal} onChange={(event) => setSettingsForm((current) => ({ ...current, financialGoal: event.target.value }))} placeholder="Meta financeira" type="number" />
-                  <Input value={settingsForm.endDate} onChange={(event) => setSettingsForm((current) => ({ ...current, endDate: event.target.value }))} placeholder="Data final" type="date" />
-                </div>
-                <Input value={settingsForm.contact} onChange={(event) => setSettingsForm((current) => ({ ...current, contact: event.target.value }))} placeholder="Contato público" />
-                <Input value={settingsForm.pixKey} onChange={(event) => setSettingsForm((current) => ({ ...current, pixKey: event.target.value }))} placeholder="Chave Pix" />
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <Input value={settingsForm.neighborhood} onChange={(event) => setSettingsForm((current) => ({ ...current, neighborhood: event.target.value }))} placeholder="Bairro" />
-                  <Input value={settingsForm.city} onChange={(event) => setSettingsForm((current) => ({ ...current, city: event.target.value }))} placeholder="Cidade" />
-                </div>
-                <Button type="submit" variant="secondary" className="w-full uppercase tracking-wider">
-                  <Settings className="mr-2 h-4 w-4" /> Salvar configurações
-                </Button>
-              </form>
-            </div>
-          </CardContent>
-        </Card>
+                <form onSubmit={handleSettingsSubmit} className="space-y-4">
+                  <h3 className="font-display text-2xl font-black uppercase">Configurações</h3>
+                  <p className="text-sm font-medium text-gray-700">Edite os dados já definidos para a campanha.</p>
+                  <Input value={settingsForm.title} onChange={(event) => setSettingsForm((current) => ({ ...current, title: event.target.value }))} placeholder="Título da campanha" />
+                  <textarea value={settingsForm.description} onChange={(event) => setSettingsForm((current) => ({ ...current, description: event.target.value }))} placeholder="Descrição" className="min-h-24 w-full brutalist-border bg-background p-3 text-sm font-medium" />
+                  <Input value={settingsForm.mainNeed} onChange={(event) => setSettingsForm((current) => ({ ...current, mainNeed: event.target.value }))} placeholder="Necessidade principal" />
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <Input value={settingsForm.financialGoal} onChange={(event) => setSettingsForm((current) => ({ ...current, financialGoal: event.target.value }))} placeholder="Meta financeira" type="number" />
+                    <Input value={settingsForm.endDate} onChange={(event) => setSettingsForm((current) => ({ ...current, endDate: event.target.value }))} placeholder="Data final" type="date" />
+                  </div>
+                  <Input value={settingsForm.contact} onChange={(event) => setSettingsForm((current) => ({ ...current, contact: event.target.value }))} placeholder="Contato público" />
+                  <Input value={settingsForm.pixKey} onChange={(event) => setSettingsForm((current) => ({ ...current, pixKey: event.target.value }))} placeholder="Chave Pix" />
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <Input value={settingsForm.neighborhood} onChange={(event) => setSettingsForm((current) => ({ ...current, neighborhood: event.target.value }))} placeholder="Bairro" />
+                    <Input value={settingsForm.city} onChange={(event) => setSettingsForm((current) => ({ ...current, city: event.target.value }))} placeholder="Cidade" />
+                  </div>
+                  <Button type="submit" variant="secondary" className="w-full uppercase tracking-wider">
+                    <Settings className="mr-2 h-4 w-4" /> Salvar configurações
+                  </Button>
+                </form>
+              </div>
+            </CardContent>
+          </Card>
         )}
 
         <div className="space-y-4">
@@ -246,7 +255,7 @@ export function CampaignPageClient({ campaign, initialUpdates, organizer }: Camp
                 <div className="flex items-center gap-2 font-black uppercase"><Camera className="w-5 h-5" /> Galeria</div>
                 <p className="text-sm font-medium text-gray-600">Fotos e vídeos da campanha ajudam a contar a história e reforçar a confiança.</p>
                 <div className="relative aspect-video w-full border-2 border-border overflow-hidden">
-                  <Image src={activeCampaign.coverImage || '/images/campaign_library.png'} alt="Capa da campanha" fill className="object-cover" />
+                  <Image src={activeCampaign.coverImage} alt="Capa da campanha" fill className="object-cover" />
                 </div>
               </CardContent>
             </Card>

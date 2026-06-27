@@ -2,7 +2,7 @@ import { getCampaignById, getCampaignUpdates, getCampaignOrganizer } from "@/act
 import { CampaignPageClient } from "@/components/campaign-page-client";
 import { notFound } from "next/navigation";
 
-export default async function CampaignPage({ params }: { params: { id: string } }) {
+export default async function CampaignPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const campaign = await getCampaignById(id);
 

@@ -2,7 +2,7 @@ import { getProfile } from '@/actions/platform';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Pencil, ClipboardList } from 'lucide-react';
+import { Pencil } from 'lucide-react';
 
 export default async function PerfilPage() {
   const profile = await getProfile('vol-1');

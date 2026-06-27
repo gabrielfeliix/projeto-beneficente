@@ -5,12 +5,26 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AlertCircle, FileText, CheckCircle2 } from "lucide-react";
+import { loadStoredProfile } from "@/lib/auth";
 
 export default function NewCampaignPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAllowed, setIsAllowed] = useState(false);
+
+  useEffect(() => {
+    const profile = loadStoredProfile();
+    if (!profile) {
+      router.push("/login");
+    } else if (profile.profileType !== "institution") {
+      alert("Acesso restrito. Apenas instituições/ONGs podem criar campanhas.");
+      router.push("/dashboard");
+    } else {
+      setIsAllowed(true);
+    }
+  }, [router]);
 
   // States for conditionals
   const [organizerType, setOrganizerType] = useState<"fisica" | "juridica">("fisica");
@@ -33,6 +47,13 @@ export default function NewCampaignPage() {
       router.push("/dashboard");
     }, 1500);
   };
+  if (!isAllowed) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-20 text-center font-display text-2xl font-black uppercase tracking-tighter">
+        Verificando permissões...
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">

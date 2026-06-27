@@ -1,13 +1,22 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
-// Usamos um fallback de URL válida para que a aplicação não quebre (crash)
-// antes de você colocar as chaves reais no .env.local
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your-supabase-url-here' && process.env.NEXT_PUBLIC_SUPABASE_URL 
-  ? process.env.NEXT_PUBLIC_SUPABASE_URL 
-  : 'https://xyzxyzxyzxyzxyzxyzxyz.supabase.co';
+// Credenciais do Supabase reais fornecidas pelo usuário
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://looiynayvxnmpqdtnqld.supabase.co";
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "sb_publishable_y1HLC-x1pqr8d6iSPc6dBg_N5znh3yy";
 
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY !== 'your-supabase-anon-key-here' && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  ? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY 
-  : 'public-anon-key';
+export const isSupabaseConfigured = !!(
+  supabaseUrl &&
+  supabaseAnonKey &&
+  supabaseUrl !== "your-supabase-url-here" &&
+  supabaseAnonKey !== "your-supabase-anon-key-here"
+);
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+if (!isSupabaseConfigured && typeof window !== "undefined") {
+  console.warn(
+    "⚠️ Supabase não está configurado. Defina NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY no seu arquivo .env.local para habilitar a persistência em banco de dados real. O app está utilizando persistência local fallback (localStorage/mocks)."
+  );
+}
+
+export const supabase = isSupabaseConfigured
+  ? createClient(supabaseUrl, supabaseAnonKey)
+  : null;

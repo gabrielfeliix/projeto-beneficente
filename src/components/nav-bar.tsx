@@ -1,0 +1,145 @@
+"use client";
+
+import Link from "next/link";
+import { useState, useEffect } from "react";
+import { getCurrentProfile, signOut, StoredProfile } from "@/lib/auth";
+import { Button } from "@/components/ui/button";
+import { Menu, X, Bell, LayoutDashboard, User, LogOut, Briefcase, Newspaper, Compass, Plus } from "lucide-react";
+
+export function NavBar() {
+  const [profile, setProfile] = useState<StoredProfile | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getCurrentProfile().then((p) => {
+      setProfile(p);
+      setLoading(false);
+    });
+  }, []);
+
+  const handleLogout = async () => {
+    await signOut();
+    setProfile(null);
+    setMenuOpen(false);
+    window.location.href = "/";
+  };
+
+  const navLinks = [
+    { href: "/", label: "Explorar", icon: <Compass className="w-4 h-4" />, public: true },
+    { href: "/vagas", label: "Vagas", icon: <Briefcase className="w-4 h-4" />, public: true },
+    { href: "/feed", label: "Feed", icon: <Newspaper className="w-4 h-4" />, public: true },
+    { href: "/dashboard", label: "Painel", icon: <LayoutDashboard className="w-4 h-4" />, public: false },
+    { href: "/notificacoes", label: "Notificações", icon: <Bell className="w-4 h-4" />, public: false },
+  ];
+
+  const visibleLinks = navLinks.filter(l => l.public || !!profile);
+
+  return (
+    <header className="sticky top-0 z-50 w-full border-b-4 border-black bg-primary shadow-[0_4px_0_0_#000]">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
+        {/* LOGO */}
+        <Link href="/" className="flex items-center gap-2 group" onClick={() => setMenuOpen(false)}>
+          <div className="bg-black text-primary p-1.5 border-2 border-black group-hover:-translate-y-0.5 transition-transform">
+            <span className="text-xl leading-none">💛</span>
+          </div>
+          <span className="font-display text-2xl font-black uppercase tracking-tighter">Mutirão</span>
+        </Link>
+
+        {/* DESKTOP NAV */}
+        <nav className="hidden md:flex items-center gap-1">
+          {visibleLinks.map(link => (
+            <Link key={link.href} href={link.href}
+              className="flex items-center gap-1.5 px-4 py-2 font-bold uppercase text-sm hover:bg-black/10 rounded-none transition-colors">
+              {link.label}
+            </Link>
+          ))}
+        </nav>
+
+        {/* DESKTOP AUTH */}
+        <div className="hidden md:flex items-center gap-3">
+          {loading ? (
+            <div className="h-8 w-24 bg-black/10 animate-pulse" />
+          ) : profile ? (
+            <div className="flex items-center gap-3">
+              <div className="text-right leading-tight">
+                <div className="font-black text-sm uppercase truncate max-w-[140px]">{profile.name}</div>
+                <div className="text-xs font-bold text-black/60">{profile.profileType === "institution" ? "ONG" : "Voluntário"}</div>
+              </div>
+              {profile.profileType === "institution" ? (
+                <Link href="/campaigns/new">
+                  <Button size="sm" className="font-black uppercase border-2 border-black bg-black text-primary hover:bg-gray-800">
+                    <Plus className="w-3.5 h-3.5 mr-1" /> Campanha
+                  </Button>
+                </Link>
+              ) : (
+                <Link href="/perfil">
+                  <Button size="sm" variant="outline" className="font-black uppercase border-2 border-black">
+                    <User className="w-3.5 h-3.5 mr-1" /> Perfil
+                  </Button>
+                </Link>
+              )}
+              <Button size="sm" variant="ghost" onClick={handleLogout} className="font-black border-2 border-black/20 hover:border-black hover:bg-black/10">
+                <LogOut className="w-4 h-4" />
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Link href="/login">
+                <Button variant="outline" size="sm" className="font-black uppercase border-2 border-black">Entrar</Button>
+              </Link>
+              <Link href="/login?mode=signup">
+                <Button size="sm" className="font-black uppercase border-2 border-black bg-black text-primary hover:bg-gray-800">Cadastrar</Button>
+              </Link>
+            </div>
+          )}
+        </div>
+
+        {/* MOBILE HAMBURGER */}
+        <button
+          className="md:hidden border-2 border-black p-2 hover:bg-black/10 transition-colors"
+          onClick={() => setMenuOpen(!menuOpen)}
+          aria-label="Abrir menu">
+          {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        </button>
+      </div>
+
+      {/* MOBILE MENU DRAWER */}
+      {menuOpen && (
+        <div className="md:hidden border-t-4 border-black bg-primary animate-in slide-in-from-top-2 duration-200">
+          <nav className="flex flex-col py-2">
+            {visibleLinks.map(link => (
+              <Link key={link.href} href={link.href}
+                onClick={() => setMenuOpen(false)}
+                className="flex items-center gap-3 px-6 py-4 font-black uppercase text-sm border-b-2 border-black/10 hover:bg-black/10 transition-colors">
+                {link.icon} {link.label}
+              </Link>
+            ))}
+
+            <div className="px-6 py-4 border-t-2 border-black mt-2">
+              {profile ? (
+                <div className="space-y-3">
+                  <div className="font-black text-lg uppercase">{profile.name}</div>
+                  <div className="text-sm font-bold text-black/60">{profile.profileType === "institution" ? "ONG / Instituição" : "Voluntário(a)"}</div>
+                  <button onClick={handleLogout}
+                    className="flex items-center gap-2 font-black uppercase text-sm text-red-700 border-2 border-red-700 px-4 py-2 hover:bg-red-50 w-full justify-center transition-colors">
+                    <LogOut className="w-4 h-4" /> Sair da Conta
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <Link href="/login" onClick={() => setMenuOpen(false)}>
+                    <Button className="w-full font-black uppercase border-2 border-black bg-black text-primary">Entrar</Button>
+                  </Link>
+                  <Link href="/login?mode=signup" onClick={() => setMenuOpen(false)}>
+                    <Button variant="outline" className="w-full font-black uppercase border-2 border-black">Criar Conta Grátis</Button>
+                  </Link>
+                </div>
+              )}
+            </div>
+          </nav>
+        </div>
+      )}
+    </header>
+  );
+}

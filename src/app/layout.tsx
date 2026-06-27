@@ -1,12 +1,17 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Link from "next/link";
-import { AuthStatus } from "@/components/auth-status";
-import { Heart } from "lucide-react";
+import { NavBar } from "@/components/nav-bar";
 
 export const metadata: Metadata = {
-  title: "Mutirão - Ação e Transparência",
-  description: "Plataforma de Visibilidade para Projetos Sociais no Rio Grande do Norte",
+  title: "Mutirão — Voluntariado e Impacto Social",
+  description: "A maior plataforma de conexão entre voluntários e ONGs do Rio Grande do Norte. Encontre vagas, apoie campanhas e faça a diferença.",
+  keywords: ["voluntariado", "ONG", "impacto social", "Rio Grande do Norte", "Natal", "doação"],
+  openGraph: {
+    title: "Mutirão — Voluntariado e Impacto Social",
+    description: "Conectando voluntários com organizações sociais no RN.",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
@@ -17,41 +22,48 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className="antialiased min-h-screen flex flex-col bg-background">
-        <header className="sticky top-0 z-50 w-full border-b-2 border-border bg-primary px-4 py-3 sm:px-6 lg:px-8 brutalist-shadow-bottom">
-          <div className="mx-auto flex max-w-7xl items-center justify-between">
-            <Link href="/" className="flex items-center gap-2 group">
-              <div className="bg-black text-white p-1.5 brutalist-border group-hover:-translate-y-1 transition-transform">
-                <Heart size={24} className="fill-current text-secondary" />
-              </div>
-              <span className="font-display text-2xl font-black uppercase tracking-tighter">Mutirão</span>
-            </Link>
-            
-            <nav className="hidden md:flex gap-6 font-bold">
-              <Link href="/" className="hover:underline decoration-2 underline-offset-4">Explorar</Link>
-              <Link href="/vagas" className="hover:underline decoration-2 underline-offset-4">Vagas</Link>
-              <Link href="/feed" className="hover:underline decoration-2 underline-offset-4">Feed</Link>
-              <Link href="/perfil" className="hover:underline decoration-2 underline-offset-4">Perfil</Link>
-              <Link href="/notificacoes" className="hover:underline decoration-2 underline-offset-4">Notificações</Link>
-              <Link href="/dashboard" className="hover:underline decoration-2 underline-offset-4">Minhas Campanhas</Link>
-            </nav>
-
-            <div className="flex gap-4">
-              <AuthStatus />
-            </div>
-          </div>
-        </header>
+        <NavBar />
 
         <main className="flex-1">
           {children}
         </main>
 
-        <footer className="border-t-2 border-border bg-black text-white py-12 px-6 mt-20">
-          <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-            <div className="flex items-center gap-2">
-              <Heart size={24} className="text-primary fill-current" />
-              <span className="font-display text-2xl font-black uppercase tracking-tighter">Mutirão</span>
+        <footer className="border-t-4 border-black bg-black text-white py-12 px-6 mt-20">
+          <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10">
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-2xl">💛</span>
+                <span className="font-display text-2xl font-black uppercase tracking-tighter">Mutirão</span>
+              </div>
+              <p className="text-gray-400 font-bold text-sm leading-relaxed">
+                A plataforma de voluntariado e impacto social do Rio Grande do Norte. Conectando pessoas e organizações para transformar comunidades.
+              </p>
             </div>
-            <p className="text-sm font-bold text-gray-500 uppercase tracking-widest mt-8">© 2026 MUTIRÃO PLATAFORMA. TODOS OS DIREITOS RESERVADOS.</p>
+            <div>
+              <h3 className="font-black uppercase text-sm mb-4 tracking-widest text-primary">Navegação</h3>
+              <ul className="space-y-2 text-sm font-bold text-gray-400">
+                <li><Link href="/" className="hover:text-white transition-colors">Explorar Campanhas</Link></li>
+                <li><Link href="/vagas" className="hover:text-white transition-colors">Vagas de Voluntariado</Link></li>
+                <li><Link href="/feed" className="hover:text-white transition-colors">Feed da Comunidade</Link></li>
+                <li><Link href="/login" className="hover:text-white transition-colors">Entrar / Cadastrar</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-black uppercase text-sm mb-4 tracking-widest text-primary">Informações</h3>
+              <ul className="space-y-2 text-sm font-bold text-gray-400">
+                <li><span className="text-gray-500">📧</span> contato@mutirao.org.br</li>
+                <li><span className="text-gray-500">📍</span> Natal — Rio Grande do Norte</li>
+                <li><span className="text-gray-500">🕐</span> Seg – Sex: 8h às 18h</li>
+              </ul>
+            </div>
+          </div>
+          <div className="max-w-7xl mx-auto border-t border-gray-800 mt-10 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-xs font-bold text-gray-600 uppercase tracking-widest">
+              © 2026 Mutirão Plataforma. Todos os direitos reservados.
+            </p>
+            <p className="text-xs font-bold text-gray-600">
+              Feito com 💛 para o RN
+            </p>
           </div>
         </footer>
       </body>

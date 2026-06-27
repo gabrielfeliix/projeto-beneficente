@@ -1,32 +1,384 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { getCampaigns } from "@/actions/campaigns";
+import {
+  getApplicationsForVolunteer,
+  getApplicationsForInstitution,
+  updateApplicationStatus,
+} from "@/actions/platform";
+import { issueCertificate, getVolunteerCertificates, type CertificateData } from "@/actions/certificates";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Settings, Eye, MessageSquare, BarChart, Megaphone, Sparkles } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { loadStoredProfile } from "@/lib/auth";
+import {
+  Plus,
+  Eye,
+  MessageSquare,
+  BarChart,
+  Sparkles,
+  Search,
+  User,
+  CheckCircle,
+  FileText,
+} from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { Campaign, Application } from "@/domain/entities";
 
-export default async function DashboardPage() {
-  // In a real app, this would use the logged-in user's ID
-  const campaigns = await getCampaigns();
-  const myCampaigns = campaigns.filter(c => c.organizerId === 'user-1'); // Mock filter
+export default function DashboardPage() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [profile, setProfile] = useState<any>(null);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [applications, setApplications] = useState<Application[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const [selectedApp, setSelectedApp] = useState<Application | null>(null);
+  const [hoursToEmit, setHoursToEmit] = useState<number>(4);
+  const [feedbackMsg, setFeedbackMsg] = useState<string>("Parabéns por sua contribuição social!");
+  const [updatingAppId, setUpdatingAppId] = useState<string | null>(null);
+  const [certs, setCerts] = useState<CertificateData[]>([]);
+
+  const handleStatusChange = async (appId: string, nextStatus: "pending" | "selected" | "rejected") => {
+    setUpdatingAppId(appId);
+    try {
+      const ok = await updateApplicationStatus(appId, nextStatus);
+      if (ok) {
+        setApplications((prev) =>
+          prev.map((app) => (app.id === appId ? { ...app, status: nextStatus } : app))
+        );
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setUpdatingAppId(null);
+    }
+  };
+
+  const handleCreateCertificate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedApp) return;
+
+    try {
+      await issueCertificate(selectedApp.id, hoursToEmit, feedbackMsg);
+      alert(`Certificado emitido com sucesso para ${selectedApp.volunteerName}!`);
+      // Update app status to selected locally
+      setApplications((prev) =>
+        prev.map((app) => (app.id === selectedApp.id ? { ...app, status: "selected" } : app))
+      );
+      setSelectedApp(null);
+    } catch (err) {
+      const error = err as Error;
+      alert("Erro ao emitir certificado: " + error.message);
+    }
+  };
+
+  useEffect(() => {
+    const user = loadStoredProfile();
+    setProfile(user);
+
+    async function loadData() {
+      try {
+        const allCampaigns = await getCampaigns();
+        setCampaigns(allCampaigns);
+
+        if (user) {
+          if (user.profileType === "volunteer") {
+            const volunteerApps = await getApplicationsForVolunteer(user.id);
+            setApplications(volunteerApps);
+            const volunteerCerts = await getVolunteerCertificates(user.id);
+            setCerts(volunteerCerts);
+          } else {
+            const institutionApps = await getApplicationsForInstitution(user.id);
+            setApplications(institutionApps);
+          }
+        }
+      } catch (err) {
+        console.error("Erro ao carregar dados do dashboard:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="text-center font-display text-2xl font-black uppercase py-24">
+        Carregando Painel...
+      </div>
+    );
+  }
+
+  // Se o usuário não estiver logado
+  if (!profile) {
+    return (
+      <div className="max-w-md mx-auto px-4 py-20 text-center space-y-6">
+        <div className="border-4 border-black p-8 bg-white shadow-brutalist-lg">
+          <h1 className="font-display text-4xl font-black uppercase tracking-tighter">Acesso Restrito</h1>
+          <p className="text-gray-600 font-bold mt-4">
+            Você precisa estar logado para acessar seu painel personalizado.
+          </p>
+          <div className="mt-8">
+            <Link href="/login">
+              <Button size="lg" className="w-full uppercase font-black text-lg tracking-wider">
+                Fazer Login
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // --- RENDEREIZAÇÃO DO DASHBOARD DO VOLUNTÁRIO ---
+  if (profile.profileType === "volunteer") {
+    // Caso de demonstração offline
+    const displayApps =
+      applications.length > 0
+        ? applications
+        : [
+            {
+              id: "app-mock-1",
+              jobId: "job-1",
+              volunteerId: profile.id,
+              institutionId: "inst-1",
+              jobTitle: "Facilitador de Oficinas de Leitura",
+              institutionName: "Instituto Água Viva",
+              volunteerName: profile.name,
+              message: "Gostaria muito de apoiar as crianças da comunidade com oficinas de leitura.",
+              status: "selected" as const,
+              submittedAt: new Date(Date.now() - 3 * 86400000).toISOString(),
+            },
+          ];
+
+    const displayCerts =
+      certs.length > 0
+        ? certs
+        : [
+            {
+              id: "cert-mock-1",
+              volunteerId: profile.id,
+              institutionId: "inst-1",
+              jobId: "job-1",
+              volunteerName: profile.name,
+              institutionName: "Associação Água Viva",
+              jobTitle: "Auxiliar Administrativo de Doações",
+              hoursDonated: 12,
+              issuedAt: new Date().toISOString(),
+              verificationCode: "LUM-DEMO123",
+            },
+          ];
+
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-12">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-12 gap-4">
+          <div>
+            <h1 className="font-display text-4xl sm:text-5xl font-black uppercase tracking-tighter">
+              Olá, {profile.name}
+            </h1>
+            <p className="text-gray-600 font-bold mt-2">Área do Voluntário — Veja seu impacto e candidaturas</p>
+          </div>
+          <Link href="/vagas">
+            <Button size="lg" className="text-lg uppercase font-black tracking-wider">
+              <Search className="mr-2 w-5 h-5" /> Buscar Vagas
+            </Button>
+          </Link>
+        </div>
+
+        {/* Cards de Estatísticas do Voluntário */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+          <Card className="bg-primary border-4 border-black shadow-brutalist">
+            <CardContent className="p-6 flex items-center justify-between">
+              <div>
+                <p className="font-bold text-sm uppercase">Candidaturas Realizadas</p>
+                <h2 className="font-display text-4xl font-black mt-2">{displayApps.length}</h2>
+              </div>
+              <FileText className="w-12 h-12 opacity-50" />
+            </CardContent>
+          </Card>
+          <Card className="bg-secondary border-4 border-black shadow-brutalist">
+            <CardContent className="p-6 flex items-center justify-between">
+              <div>
+                <p className="font-bold text-sm uppercase">Status da Conta</p>
+                <h2 className="font-display text-3xl font-black mt-2">Ativo</h2>
+              </div>
+              <CheckCircle className="w-12 h-12 opacity-50" />
+            </CardContent>
+          </Card>
+          <Card className="bg-accent text-white border-4 border-black shadow-brutalist">
+            <CardContent className="p-6 flex items-center justify-between">
+              <div>
+                <p className="font-bold text-sm uppercase">Perfil Concluído</p>
+                <h2 className="font-display text-4xl font-black mt-2">100%</h2>
+              </div>
+              <User className="w-12 h-12 opacity-50" />
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8">
+          {/* LADO ESQUERDO: Candidaturas e Certificados */}
+          <div className="space-y-8">
+            {/* Listagem de candidaturas */}
+            <div className="space-y-6">
+            <h2 className="font-display text-3xl font-black uppercase">Minhas Candidaturas</h2>
+            
+            <div className="space-y-6">
+              {displayApps.map((app) => (
+                <Card key={app.id} className="border-4 bg-white hover:bg-gray-50 flex flex-col sm:flex-row justify-between p-6 gap-4">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <h3 className="font-display text-2xl font-bold">{app.jobTitle}</h3>
+                      <Badge
+                        variant={
+                          app.status === "selected"
+                            ? "default"
+                            : app.status === "pending"
+                            ? "secondary"
+                            : "outline"
+                        }
+                      >
+                        {app.status === "selected"
+                          ? "Selecionado"
+                          : app.status === "pending"
+                          ? "Pendente"
+                          : "Recusado"}
+                      </Badge>
+                    </div>
+                    <p className="text-gray-600 font-bold text-sm">Instituição: {app.institutionName}</p>
+                    <p className="text-sm font-medium text-gray-500">
+                      Sua mensagem de motivação: &quot;{app.message}&quot;
+                    </p>
+                  </div>
+                  <div className="flex items-end justify-between sm:flex-col sm:justify-start gap-4">
+                    <span className="text-xs font-bold text-gray-400">
+                      Enviada em {new Date(app.submittedAt).toLocaleDateString()}
+                    </span>
+                    <Link href={`/vagas/${app.jobId}`}>
+                      <Button variant="outline" size="sm" className="uppercase font-bold">
+                        Ver Vaga
+                      </Button>
+                    </Link>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+
+          {/* Seção Certificados */}
+          <div className="space-y-6">
+            <h2 className="font-display text-3xl font-black uppercase">Meus Certificados de Horas</h2>
+            <div className="space-y-4">
+              {displayCerts.map((cert) => (
+                <Card key={cert.id} className="border-4 bg-white p-6 shadow-brutalist flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <div>
+                    <h3 className="font-display text-xl font-black uppercase">{cert.jobTitle}</h3>
+                    <p className="text-sm font-bold text-gray-500">Emitido por: {cert.institutionName}</p>
+                    <p className="text-xs font-black uppercase text-green-600 mt-1">✓ {cert.hoursDonated} horas homologadas</p>
+                  </div>
+                  <Link href={`/certificados/${cert.verificationCode}`}>
+                    <Button className="border-2 border-black font-black uppercase text-xs bg-black text-white hover:bg-white hover:text-black">
+                      Visualizar Certificado
+                    </Button>
+                  </Link>
+                </Card>
+              ))}
+
+              {displayCerts.length === 0 && (
+                <div className="p-8 border-4 border-dashed border-gray-200 text-center font-bold text-gray-400 uppercase text-xs tracking-wider">
+                  Nenhum certificado emitido até o momento.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+          {/* Atalhos Rápidos */}
+          <aside className="space-y-6">
+            <Card className="border-4 bg-white p-6 shadow-brutalist">
+              <h2 className="font-display text-2xl font-black uppercase mb-4 flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-primary" /> Atalhos
+              </h2>
+              <div className="flex flex-col gap-4">
+                <Link href="/vagas">
+                  <Button className="w-full text-left justify-start font-bold uppercase py-4" variant="outline">
+                    🔍 Explorar Vagas
+                  </Button>
+                </Link>
+                <Link href="/feed">
+                  <Button className="w-full text-left justify-start font-bold uppercase py-4" variant="outline">
+                    📰 Feed de Notícias
+                  </Button>
+                </Link>
+                <Link href="/perfil">
+                  <Button className="w-full text-left justify-start font-bold uppercase py-4" variant="outline">
+                    👤 Meu Perfil Público
+                  </Button>
+                </Link>
+              </div>
+            </Card>
+          </aside>
+        </div>
+      </div>
+    );
+  }
+
+  // --- RENDERIZAÇÃO DO DASHBOARD DA ONG ---
+  // Filtra campanhas da ONG ativa
+  const myCampaigns = campaigns.filter(
+    (c) => c.organizerId === profile.id || (profile.id === "inst-1" && c.organizerId === "user-1")
+  );
+
+  const displayApplications =
+    applications.length > 0
+      ? applications
+      : [
+          {
+            id: "app-mock-2",
+            jobId: "job-1",
+            volunteerId: "vol-2",
+            institutionId: profile.id,
+            jobTitle: "Cozinheiro para Sopão Solidário",
+            institutionName: profile.name,
+            volunteerName: "Lucas Mendes",
+            message: "Olá! Tenho experiência com culinária de grande porte e gostaria muito de ajudar nos finais de semana.",
+            status: "pending" as const,
+            submittedAt: new Date(Date.now() - 1 * 86400000).toISOString(),
+          },
+          {
+            id: "app-mock-3",
+            jobId: "job-2",
+            volunteerId: "vol-3",
+            institutionId: profile.id,
+            jobTitle: "Pedagoga para Reforço Escolar",
+            institutionName: profile.name,
+            volunteerName: "Juliana Santos",
+            message: "Olá! Sou pedagoga aposentada e posso auxiliar no apoio escolar e alfabetização de crianças carentes.",
+            status: "selected" as const,
+            submittedAt: new Date(Date.now() - 4 * 86400000).toISOString(),
+          },
+        ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-12">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-12 gap-4">
+    <div className="max-w-7xl mx-auto px-4 py-12 space-y-12">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="font-display text-4xl sm:text-5xl font-black uppercase tracking-tighter">Meu Painel</h1>
-          <p className="text-gray-600 font-bold mt-2">Gerencie suas campanhas e atualizações</p>
+          <p className="text-gray-600 font-bold mt-2">Área Administrativa — Gerencie suas campanhas e candidaturas</p>
         </div>
         <Link href="/campaigns/new">
-          <Button size="lg" className="text-lg">
-            <Plus className="mr-2" /> Nova Campanha
+          <Button size="lg" className="text-lg font-black uppercase tracking-wider">
+            <Plus className="mr-2 w-5 h-5" /> Nova Campanha
           </Button>
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-        <Card className="bg-primary border-4">
+      {/* Cards de Métricas da ONG */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <Card className="bg-primary border-4 border-black shadow-brutalist">
           <CardContent className="p-6 flex items-center justify-between">
             <div>
               <p className="font-bold text-sm uppercase">Total Arrecadado</p>
@@ -35,92 +387,241 @@ export default async function DashboardPage() {
             <BarChart className="w-12 h-12 opacity-50" />
           </CardContent>
         </Card>
-        <Card className="bg-secondary border-4">
+        <Card className="bg-secondary border-4 border-black shadow-brutalist">
           <CardContent className="p-6 flex items-center justify-between">
             <div>
-              <p className="font-bold text-sm uppercase">Campanhas Ativas</p>
+              <p className="font-bold text-sm uppercase">Minhas Campanhas</p>
               <h2 className="font-display text-4xl font-black mt-2">{myCampaigns.length}</h2>
             </div>
             <Eye className="w-12 h-12 opacity-50" />
           </CardContent>
         </Card>
-        <Card className="bg-accent text-white border-4 border-black">
+        <Card className="bg-accent text-white border-4 border-black shadow-brutalist">
           <CardContent className="p-6 flex items-center justify-between">
             <div>
-              <p className="font-bold text-sm uppercase">Novos Comentários</p>
-              <h2 className="font-display text-4xl font-black mt-2">14</h2>
+              <p className="font-bold text-sm uppercase">Candidaturas Ativas</p>
+              <h2 className="font-display text-4xl font-black mt-2">{displayApplications.length}</h2>
             </div>
             <MessageSquare className="w-12 h-12 opacity-50" />
           </CardContent>
         </Card>
       </div>
 
-      <div className="space-y-6">
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <h2 className="font-display text-3xl font-black uppercase">Minhas Campanhas</h2>
-          <Link href="/campaigns/new">
-            <Button size="lg" className="uppercase tracking-wider"><Plus className="mr-2" /> Nova Campanha</Button>
-          </Link>
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8 items-start">
+        {/* LADO ESQUERDO: CAMPANHAS E CANDIDATURAS */}
+        <div className="space-y-12">
+          {/* SEÇÃO CAMPANHAS */}
+          <div className="space-y-6">
+            <h2 className="font-display text-3xl font-black uppercase">Nossas Campanhas</h2>
+            <div className="grid grid-cols-1 gap-6">
+              {myCampaigns.map((campaign) => (
+                <Card key={campaign.id} className="flex flex-col sm:flex-row overflow-hidden hover:bg-gray-50 border-4 border-black shadow-brutalist">
+                  <div className="w-full sm:w-56 h-40 relative border-b-4 sm:border-b-0 sm:border-r-4 border-black shrink-0">
+                    <Image src={campaign.coverImage} alt={campaign.title} fill className="object-cover" />
+                  </div>
+                  <div className="flex-1 p-6 flex flex-col justify-between">
+                    <div>
+                      <div className="flex justify-between items-start">
+                        <h3 className="font-display text-xl font-black uppercase">{campaign.title}</h3>
+                        <Badge className="bg-black text-white">{campaign.status === "active" ? "Ativa" : "Pausada"}</Badge>
+                      </div>
+                      <p className="text-gray-600 font-bold text-sm mt-2 line-clamp-2">{campaign.description}</p>
+                    </div>
+                    <div className="mt-6 flex flex-wrap gap-3">
+                      <Link href={`/campaigns/${campaign.id}`}>
+                        <Button variant="outline" size="sm" className="bg-white border-2 border-black font-bold uppercase text-xs">
+                          Página Pública
+                        </Button>
+                      </Link>
+                      <Link href={`/campaigns/${campaign.id}`}>
+                        <Button size="sm" className="bg-black border-2 border-black text-white font-black uppercase text-xs hover:bg-white hover:text-black">
+                          <Plus className="w-3.5 h-3.5 mr-1" /> Atualização
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+
+              {myCampaigns.length === 0 && (
+                <div className="p-10 border-4 border-dashed border-gray-300 text-center font-bold text-gray-500">
+                  Nenhuma campanha cadastrada por esta instituição.
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* SEÇÃO CANDIDATURAS / RECRUTAMENTO (KANBAN/LISTA ESTILO ATADOS) */}
+          <div className="space-y-6">
+            <h2 className="font-display text-3xl font-black uppercase">Candidaturas e Recrutamento</h2>
+            <div className="space-y-6">
+              {displayApplications.map((app) => (
+                <Card
+                  key={app.id}
+                  className={`border-4 p-6 bg-white shadow-brutalist relative ${
+                    updatingAppId === app.id ? "opacity-60 pointer-events-none" : ""
+                  }`}
+                >
+                  <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <h3 className="font-display text-xl font-black uppercase">{app.volunteerName}</h3>
+                        <Badge
+                          className={`uppercase font-black text-xs ${
+                            app.status === "selected"
+                              ? "bg-green-500 text-white"
+                              : app.status === "rejected"
+                              ? "bg-red-500 text-white"
+                              : "bg-yellow-500 text-black"
+                          }`}
+                        >
+                          {app.status === "selected"
+                            ? "Aprovado"
+                            : app.status === "rejected"
+                            ? "Recusado"
+                            : "Pendente"}
+                        </Badge>
+                      </div>
+                      <p className="text-gray-500 font-black text-xs uppercase">
+                        Vaga: <span className="text-black">{app.jobTitle}</span>
+                      </p>
+                      <p className="text-gray-600 font-bold text-sm bg-gray-50 p-3 border-2 border-dashed border-gray-200 leading-relaxed">
+                        &quot;{app.message}&quot;
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col gap-2 w-full sm:w-auto shrink-0">
+                      <span className="text-xs font-bold text-gray-400 sm:text-right">
+                        Recebida em {new Date(app.submittedAt).toLocaleDateString()}
+                      </span>
+
+                      {/* Botão Direct WhatsApp Chat */}
+                      <a
+                        href={`https://wa.me/5511999999999?text=Olá%20${encodeURIComponent(
+                          app.volunteerName
+                        )}!%20Recebemos%20sua%20candidatura%20no%20Lumiar%20para%20a%20vaga%20${encodeURIComponent(
+                          app.jobTitle
+                        )}.%20Gostaríamos%20de%20combinar%20os%20próximos%20passos!`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full"
+                      >
+                        <Button className="w-full font-bold uppercase text-xs border-2 border-black bg-white text-black hover:bg-black hover:text-white">
+                          💬 Chamar no WhatsApp
+                        </Button>
+                      </a>
+
+                      {app.status === "pending" && (
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={() => handleStatusChange(app.id, "selected")}
+                            size="sm"
+                            className="flex-1 font-black uppercase text-xs bg-green-600 text-white border-2 border-black hover:bg-white hover:text-green-600"
+                          >
+                            ✓ Aceitar
+                          </Button>
+                          <Button
+                            onClick={() => handleStatusChange(app.id, "rejected")}
+                            size="sm"
+                            className="flex-1 font-black uppercase text-xs bg-red-600 text-white border-2 border-black hover:bg-white hover:text-red-600"
+                          >
+                            ✗ Recusar
+                          </Button>
+                        </div>
+                      )}
+
+                      {app.status === "selected" && (
+                        <Button
+                          onClick={() => setSelectedApp(app)}
+                          className="w-full font-black uppercase text-xs bg-yellow-400 text-black border-2 border-black hover:bg-black hover:text-white"
+                        >
+                          🎓 Emitir Certificado
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
         </div>
 
-        <Card className="border-4 bg-white">
-          <CardContent className="p-6 space-y-4">
-            <div className="flex items-center gap-2 font-black uppercase"><Sparkles className="w-5 h-5" /> Ferramentas da ONG</div>
-            <div className="grid gap-4 md:grid-cols-3">
-              <Link href="/campaigns/new" className="block">
-                <Button variant="secondary" className="w-full justify-start"><Plus className="mr-2" /> Nova campanha</Button>
+        {/* LADO DIREITO: ATALHOS */}
+        <aside className="space-y-6">
+          <Card className="border-4 bg-white p-6 shadow-brutalist">
+            <h2 className="font-display text-xl font-black uppercase mb-4 flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-primary" /> Painel ONG
+            </h2>
+            <div className="flex flex-col gap-3">
+              <Link href="/campaigns/new">
+                <Button className="w-full justify-start font-bold uppercase text-sm" variant="outline">
+                  ➕ Criar Nova Campanha
+                </Button>
               </Link>
-              <Link href="/campaigns/camp-1" className="block">
-                <Button variant="outline" className="w-full justify-start"><Megaphone className="mr-2" /> Nova atualização</Button>
+              <Link href="/feed">
+                <Button className="w-full justify-start font-bold uppercase text-sm" variant="outline">
+                  📰 Feed da Comunidade
+                </Button>
               </Link>
-              <Link href="/campaigns/camp-1" className="block">
-                <Button variant="ghost" className="w-full justify-start"><Settings className="mr-2" /> Configurações</Button>
+              <Link href="/perfil">
+                <Button className="w-full justify-start font-bold uppercase text-sm" variant="outline">
+                  👤 Configurar Perfil
+                </Button>
               </Link>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-      
-      <div className="grid grid-cols-1 gap-6 mt-8">
-        {myCampaigns.map(campaign => (
-          <Card key={campaign.id} className="flex flex-col sm:flex-row overflow-hidden hover:bg-gray-50">
-            <div className="w-full sm:w-64 h-48 sm:h-auto relative border-b-2 sm:border-b-0 sm:border-r-2 border-border shrink-0">
-              <Image 
-                src={campaign.coverImage} 
-                alt={campaign.title} 
-                fill 
-                className="object-cover"
-              />
-            </div>
-            <div className="flex-1 p-6 flex flex-col justify-between">
-              <div>
-                <div className="flex justify-between items-start">
-                  <h3 className="font-display text-2xl font-bold">{campaign.title}</h3>
-                  <Badge variant={campaign.status === 'active' ? 'default' : 'secondary'}>
-                    {campaign.status === 'active' ? 'Ativa' : 'Pausada'}
-                  </Badge>
-                </div>
-                <p className="text-gray-600 font-medium line-clamp-2 mt-2">{campaign.description}</p>
-              </div>
-              <div className="mt-6 flex flex-wrap gap-4">
-                <Link href={`/campaigns/${campaign.id}`}>
-                  <Button variant="outline" className="bg-white">Ver Página</Button>
-                </Link>
-                <Link href={`/campaigns/${campaign.id}`}>
-                  <Button variant="secondary" className="border-2 border-border">
-                    <Plus className="w-4 h-4 mr-2" /> Nova Atualização
-                  </Button>
-                </Link>
-                <Link href={`/campaigns/${campaign.id}`}>
-                  <Button variant="ghost" size="icon">
-                    <Settings className="w-5 h-5" />
-                  </Button>
-                </Link>
-              </div>
             </div>
           </Card>
-        ))}
+        </aside>
       </div>
+
+      {/* MODAL DE EMISSÃO DE CERTIFICADOS (EFEITO UAU) */}
+      {selectedApp && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white border-4 border-black p-8 max-w-md w-full shadow-[8px_8px_0px_0px_#000000] space-y-6">
+            <h3 className="font-display text-2xl font-black uppercase tracking-tight">Emitir Certificado</h3>
+            <p className="text-gray-600 font-bold text-sm leading-relaxed">
+              Ao emitir o certificado, você valida as horas trabalhadas do voluntário <strong>{selectedApp.volunteerName}</strong> na vaga <strong>{selectedApp.jobTitle}</strong>.
+            </p>
+            <form onSubmit={handleCreateCertificate} className="space-y-4">
+              <div>
+                <label className="font-bold uppercase text-xs text-gray-500 block mb-1">Carga Horária Aprovada (Horas)</label>
+                <input
+                  type="number"
+                  min="1"
+                  required
+                  value={hoursToEmit}
+                  onChange={(e) => setHoursToEmit(parseInt(e.target.value))}
+                  className="w-full h-11 border-2 border-black rounded-none px-3 font-bold focus:ring-0 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="font-bold uppercase text-xs text-gray-500 block mb-1">Agradecimento / Feedback</label>
+                <textarea
+                  value={feedbackMsg}
+                  onChange={(e) => setFeedbackMsg(e.target.value)}
+                  className="w-full p-3 border-2 border-black rounded-none font-bold text-sm h-24 focus:ring-0 focus:outline-none"
+                  placeholder="Ex: Excelente engajamento no apoio comunitário..."
+                />
+              </div>
+              <div className="flex justify-end gap-3 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setSelectedApp(null)}
+                  className="uppercase font-bold border-2 border-black rounded-none"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  className="uppercase font-black border-2 border-black bg-black text-white hover:bg-white hover:text-black rounded-none px-6"
+                >
+                  Gerar Certificado
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
