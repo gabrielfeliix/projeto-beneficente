@@ -53,7 +53,7 @@ export default function RootLayout({
               <ul className="space-y-2 text-sm font-bold text-gray-400">
                 <li><span className="text-gray-500">📧</span> contato@mutirao.org.br</li>
                 <li><span className="text-gray-500">📍</span> Natal — Rio Grande do Norte</li>
-                <li><span className="text-gray-500">🕐</span> Seg – Sex: 8h às 18h</li>
+                <li><span className="text-gray-500">🕐</span> Respondemos em até 24h</li>
               </ul>
             </div>
           </div>

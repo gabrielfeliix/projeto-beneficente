@@ -4,9 +4,16 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
+        // Unsplash: todas as imagens de campanhas, voluntários e hero
         protocol: "https",
         hostname: "images.unsplash.com",
-        pathname: "/photo-**",
+        pathname: "/**",
+      },
+      {
+        // QR Code Server: geração dinâmica de QR Codes PIX
+        protocol: "https",
+        hostname: "api.qrserver.com",
+        pathname: "/**",
       },
     ],
   },
