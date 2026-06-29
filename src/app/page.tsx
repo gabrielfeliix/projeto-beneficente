@@ -59,7 +59,7 @@ export default async function Home() {
               </Link>
               <Link href="/login?mode=signup" className="w-full sm:w-auto">
                 <Button variant="outline" size="lg" className="w-full sm:w-auto text-base sm:text-xl h-14 font-black uppercase border-4 border-black shadow-[4px_4px_0_0_#000] hover:-translate-y-1 transition-transform bg-white">
-                  Criar Conta Grátis
+                  Criar Conta
                 </Button>
               </Link>
             </div>

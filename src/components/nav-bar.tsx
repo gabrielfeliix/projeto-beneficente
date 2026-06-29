@@ -10,13 +10,26 @@ export function NavBar() {
   const [profile, setProfile] = useState<StoredProfile | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [theme, setTheme] = useState<"warm" | "cold" | "colorblind">("warm");
 
   useEffect(() => {
     getCurrentProfile().then((p) => {
       setProfile(p);
       setLoading(false);
     });
+
+    const saved = localStorage.getItem("lumiar-theme") as "warm" | "cold" | "colorblind" | null;
+    if (saved && ["warm", "cold", "colorblind"].includes(saved)) {
+      setTheme(saved);
+      document.body.className = `theme-${saved}`;
+    }
   }, []);
+
+  const changeTheme = (newTheme: "warm" | "cold" | "colorblind") => {
+    setTheme(newTheme);
+    localStorage.setItem("lumiar-theme", newTheme);
+    document.body.className = `theme-${newTheme}`;
+  };
 
   const handleLogout = async () => {
     await signOut();
@@ -69,8 +82,33 @@ export function NavBar() {
           ))}
         </nav>
 
-        {/* DESKTOP AUTH */}
-        <div className="hidden md:flex items-center gap-3">
+        {/* THEME SWITCHER & DESKTOP AUTH */}
+        <div className="hidden md:flex items-center gap-4">
+          {/* THEME PICKER */}
+          <div className="flex items-center gap-1 border-2 border-black p-1 bg-white shadow-[2px_2px_0px_0px_#000000]">
+            <button 
+              onClick={() => changeTheme("warm")}
+              className={`px-2 py-1 text-xs font-black uppercase transition-colors ${theme === "warm" ? "bg-primary text-black animate-pulse" : "hover:bg-gray-100 text-gray-500"}`}
+              title="Esquema Quente"
+            >
+              Quente
+            </button>
+            <button 
+              onClick={() => changeTheme("cold")}
+              className={`px-2 py-1 text-xs font-black uppercase transition-colors ${theme === "cold" ? "bg-[#93c5fd] text-black" : "hover:bg-gray-100 text-gray-500"}`}
+              title="Esquema Frio"
+            >
+              Frio
+            </button>
+            <button 
+              onClick={() => changeTheme("colorblind")}
+              className={`px-2 py-1 text-xs font-black uppercase transition-colors ${theme === "colorblind" ? "bg-black text-white" : "hover:bg-gray-100 text-gray-500"}`}
+              title="Acessível / Contraste"
+            >
+              Daltonismo
+            </button>
+          </div>
+
           {loading ? (
             <div className="h-8 w-24 bg-black/10 animate-pulse" />
           ) : profile ? (
@@ -129,7 +167,32 @@ export function NavBar() {
               </Link>
             ))}
 
-            <div className="px-6 py-4 border-t-2 border-black mt-2">
+            <div className="px-6 py-4 border-t-2 border-black mt-2 space-y-4">
+              {/* MOBILE THEME PICKER */}
+              <div className="space-y-2">
+                <div className="text-xs font-black uppercase text-gray-500">Esquema de Cores</div>
+                <div className="grid grid-cols-3 gap-2 border-2 border-black p-1 bg-white shadow-[2px_2px_0px_0px_#000000]">
+                  <button 
+                    onClick={() => changeTheme("warm")}
+                    className={`py-2 text-xs font-black uppercase transition-colors ${theme === "warm" ? "bg-primary text-black" : "hover:bg-gray-100 text-gray-500"}`}
+                  >
+                    Quente
+                  </button>
+                  <button 
+                    onClick={() => changeTheme("cold")}
+                    className={`py-2 text-xs font-black uppercase transition-colors ${theme === "cold" ? "bg-[#93c5fd] text-black" : "hover:bg-gray-100 text-gray-500"}`}
+                  >
+                    Frio
+                  </button>
+                  <button 
+                    onClick={() => changeTheme("colorblind")}
+                    className={`py-2 text-xs font-black uppercase transition-colors ${theme === "colorblind" ? "bg-black text-white" : "hover:bg-gray-100 text-gray-500"}`}
+                  >
+                    Daltonismo
+                  </button>
+                </div>
+              </div>
+
               {profile ? (
                 <div className="space-y-3">
                   <div className="font-black text-lg uppercase">{profile.name}</div>
@@ -145,7 +208,7 @@ export function NavBar() {
                     <Button className="w-full font-black uppercase border-2 border-black bg-black text-primary">Entrar</Button>
                   </Link>
                   <Link href="/login?mode=signup" onClick={() => setMenuOpen(false)}>
-                    <Button variant="outline" className="w-full font-black uppercase border-2 border-black">Criar Conta Grátis</Button>
+                    <Button variant="outline" className="w-full font-black uppercase border-2 border-black">Criar Conta</Button>
                   </Link>
                 </div>
               )}

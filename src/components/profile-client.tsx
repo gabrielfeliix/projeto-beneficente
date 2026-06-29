@@ -2,16 +2,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { Pencil, Check, Loader2, Save, X } from 'lucide-react';
+import { Pencil, Check, Loader2, Save, X, Bookmark, Clock, Award, ShieldCheck, Heart, User, Building2 } from 'lucide-react';
 import { loadStoredProfile, saveStoredProfile } from '@/lib/auth';
 import { getProfile, updateProfile } from '@/actions/platform';
+import { getVolunteerCertificates } from '@/actions/certificates';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
 export function ProfileClient() {
+  const searchParams = useSearchParams();
+  const targetId = searchParams.get('id');
+  const [isReadOnly, setIsReadOnly] = useState(false);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -25,28 +30,55 @@ export function ProfileClient() {
   const [neighborhood, setNeighborhood] = useState('');
   const [description, setDescription] = useState('');
 
-  useEffect(() => {
-    const stored = loadStoredProfile();
-    if (!stored) {
-      setLoading(false);
-      return;
-    }
+  // Custom States
+  const [certificatesList, setCertificatesList] = useState<any[]>([]);
+  const [showAddCert, setShowAddCert] = useState(false);
+  const [certOrg, setCertOrg] = useState('');
+  const [certTitle, setCertTitle] = useState('');
+  const [certHours, setCertHours] = useState('4');
+  const [certDate, setCertDate] = useState('');
+  
+  const [donationsList, setDonationsList] = useState<any[]>([]);
+  const [actionsCount, setActionsCount] = useState(5);
+  const [causesList, setCausesList] = useState<string[]>(["Alimentação", "Saúde", "Educação"]);
 
-    const storedProfile = stored;
+  useEffect(() => {
     async function loadData() {
+      setLoading(true);
       try {
-        const fullProfile = await getProfile(storedProfile.id);
-        if (fullProfile) {
-          setProfile(fullProfile);
-          setName(fullProfile.name || '');
-          setPhone(fullProfile.phone || '');
-          setCity(fullProfile.city || '');
-          setNeighborhood(fullProfile.neighborhood || '');
-          setDescription(fullProfile.description || (fullProfile as any).mission || '');
+        if (targetId) {
+          setIsReadOnly(true);
+          const fullProfile = await getProfile(targetId);
+          if (fullProfile) {
+            setProfile(fullProfile);
+            setName(fullProfile.name || '');
+            setPhone(fullProfile.phone || '');
+            setCity(fullProfile.city || '');
+            setNeighborhood(fullProfile.neighborhood || '');
+            setDescription(fullProfile.description || (fullProfile as any).mission || '');
+          } else {
+            setProfile(null);
+          }
         } else {
-          // Fallback minimal profile from cookie
-          setProfile(storedProfile);
-          setName(storedProfile.name || '');
+          setIsReadOnly(false);
+          const stored = loadStoredProfile();
+          if (!stored) {
+            setProfile(null);
+            setLoading(false);
+            return;
+          }
+          const fullProfile = await getProfile(stored.id);
+          if (fullProfile) {
+            setProfile(fullProfile);
+            setName(fullProfile.name || '');
+            setPhone(fullProfile.phone || '');
+            setCity(fullProfile.city || '');
+            setNeighborhood(fullProfile.neighborhood || '');
+            setDescription(fullProfile.description || (fullProfile as any).mission || '');
+          } else {
+            setProfile(stored);
+            setName(stored.name || '');
+          }
         }
       } catch (err) {
         console.error(err);
@@ -55,7 +87,51 @@ export function ProfileClient() {
       }
     }
     loadData();
-  }, []);
+  }, [targetId]);
+
+  useEffect(() => {
+    if (profile) {
+      if (profile.profileType === 'volunteer') {
+        getVolunteerCertificates(profile.id).then(list => {
+          if (list.length === 0) {
+            setCertificatesList([
+              { id: "cert-mock-1", volunteerName: profile.name, institutionName: "Associação Água Viva", jobTitle: "Apoio Logístico", hoursDonated: 8, issuedAt: new Date(Date.now() - 15 * 86400000).toISOString(), verificationCode: "LUM-DEMO123" }
+            ]);
+          } else {
+            setCertificatesList(list);
+          }
+        });
+      } else if (profile.profileType === 'donor') {
+        setDonationsList([
+          { id: "don-1", campaignTitle: "Ajuda para o Sopão Solidário", amount: 150, date: new Date(Date.now() - 3 * 86400000).toLocaleDateString() },
+          { id: "don-2", campaignTitle: "Marmitas Solidárias Filipe Camarão", amount: 50, date: new Date(Date.now() - 12 * 86400000).toLocaleDateString() },
+        ]);
+      } else if (profile.profileType === 'institution') {
+        setActionsCount(8);
+        setCausesList(["Educação", "Alimentação", "Inclusão Digital"]);
+      }
+    }
+  }, [profile]);
+
+  const handleAddCertSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const newCert = {
+      id: "cert-manual-" + Date.now(),
+      volunteerName: name,
+      institutionName: certOrg,
+      jobTitle: certTitle,
+      hoursDonated: Number(certHours),
+      issuedAt: new Date(certDate).toISOString() || new Date().toISOString(),
+      verificationCode: "LUM-MANUAL" + Math.random().toString(36).substring(2, 7).toUpperCase()
+    };
+    setCertificatesList(prev => [newCert, ...prev]);
+    setCertOrg('');
+    setCertTitle('');
+    setCertHours('4');
+    setCertDate('');
+    setShowAddCert(false);
+    alert("Certificado manual adicionado com sucesso!");
+  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -139,13 +215,15 @@ export function ProfileClient() {
                   {description || 'Sem descrição ou missão definida ainda.'}
                 </p>
               </div>
-              <Button
-                onClick={() => setIsEditing(true)}
-                size="lg"
-                className="uppercase tracking-wider font-black border-2 border-black bg-primary text-black hover:bg-black hover:text-white shrink-0 shadow-[3px_3px_0_0_#000]"
-              >
-                <Pencil className="mr-2 w-4 h-4" /> Editar Perfil
-              </Button>
+              {!isReadOnly && (
+                <Button
+                  onClick={() => setIsEditing(true)}
+                  size="lg"
+                  className="uppercase tracking-wider font-black border-2 border-black bg-primary text-black hover:bg-black hover:text-white shrink-0 shadow-[3px_3px_0_0_#000]"
+                >
+                  <Pencil className="mr-2 w-4 h-4" /> Editar Perfil
+                </Button>
+              )}
             </div>
           ) : (
             <form onSubmit={handleSave} className="space-y-6">
@@ -209,9 +287,10 @@ export function ProfileClient() {
               <CardContent className="p-6">
                 <h2 className="font-display text-2xl font-black uppercase mb-4">Dados de Registro</h2>
                 <div className="space-y-3 text-sm font-bold text-gray-700">
-                  <div><strong>E-mail de Login:</strong> {profile.email}</div>
+                  <div><strong>E-mail:</strong> {profile.email || 'Privado'}</div>
                   <div><strong>Cidade / Estado:</strong> {profile.city || 'Não configurada'} - RN</div>
                   <div><strong>Bairro:</strong> {profile.neighborhood || 'Não informado'}</div>
+                  {profile.phone && <div><strong>Contato:</strong> {profile.phone}</div>}
                 </div>
               </CardContent>
             </Card>
@@ -229,11 +308,144 @@ export function ProfileClient() {
                        'Instituição / ONG'}
                     </Badge>
                   </div>
-                  <div><strong>Data de Cadastro:</strong> {new Date().toLocaleDateString('pt-BR')}</div>
+                  <div><strong>Status na Plataforma:</strong> Ativo ✓</div>
                 </div>
               </CardContent>
             </Card>
           </div>
+
+          {/* VOLUNTEER SECTION: CERTIFICADOS */}
+          {profile.profileType === 'volunteer' && (
+            <Card className="border-4 border-black rounded-none shadow-[4px_4px_0_0_#000] mt-6 bg-white">
+              <CardContent className="p-6 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b-2 border-black pb-3">
+                  <h2 className="font-display text-2xl font-black uppercase flex items-center gap-2">
+                    <Award className="w-6 h-6 text-yellow-500" /> Certificados de Impacto
+                  </h2>
+                  {!isReadOnly && (
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="border-2 border-black font-black uppercase text-xs shadow-[2px_2px_0_0_#000]" 
+                      onClick={() => setShowAddCert(!showAddCert)}
+                    >
+                      {showAddCert ? "Fechar" : "Adicionar Manual"}
+                    </Button>
+                  )}
+                </div>
+
+                {showAddCert && (
+                  <form onSubmit={handleAddCertSubmit} className="bg-yellow-50 p-5 border-4 border-black space-y-4 shadow-[4px_4px_0_0_#000]">
+                    <h3 className="font-display text-lg font-black uppercase">Registrar Trabalho Voluntário</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-xs font-black uppercase block mb-1">Instituição / ONG</label>
+                        <Input required value={certOrg} onChange={e => setCertOrg(e.target.value)} placeholder="Ex: Lar do Idoso" className="h-10 border-2 border-black bg-white" />
+                      </div>
+                      <div>
+                        <label className="text-xs font-black uppercase block mb-1">Atividade / Função</label>
+                        <Input required value={certTitle} onChange={e => setCertTitle(e.target.value)} placeholder="Ex: Cozinheiro Solidário" className="h-10 border-2 border-black bg-white" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-xs font-black uppercase block mb-1">Horas Prestadas</label>
+                        <Input required type="number" min={1} value={certHours} onChange={e => setCertHours(e.target.value)} className="h-10 border-2 border-black bg-white" />
+                      </div>
+                      <div>
+                        <label className="text-xs font-black uppercase block mb-1">Data da Atividade</label>
+                        <Input required type="date" value={certDate} onChange={e => setCertDate(e.target.value)} className="h-10 border-2 border-black bg-white" />
+                      </div>
+                    </div>
+                    <Button type="submit" className="w-full font-black uppercase border-2 border-black bg-black text-white hover:bg-gray-800">
+                      Salvar Certificado
+                    </Button>
+                  </form>
+                )}
+
+                <div className="grid gap-3 pt-2">
+                  {certificatesList.map((cert: any) => (
+                    <div key={cert.id} className="border-2 border-black p-4 bg-primary/10 flex justify-between items-center hover:bg-primary/20 transition-colors shadow-[2px_2px_0_0_#000]">
+                      <div>
+                        <div className="font-black text-sm uppercase">{cert.jobTitle}</div>
+                        <div className="text-xs font-bold text-gray-600">{cert.institutionName} • {new Date(cert.issuedAt).toLocaleDateString('pt-BR')}</div>
+                      </div>
+                      <div className="text-right">
+                        <Badge className="bg-black text-primary font-black border-2 border-black text-xs px-2.5 py-1">
+                          {cert.hoursDonated}h Doadas
+                        </Badge>
+                        {cert.verificationCode && (
+                          <div className="text-[10px] font-mono font-bold mt-1 text-gray-500">COD: {cert.verificationCode}</div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  {certificatesList.length === 0 && (
+                    <p className="text-gray-500 text-sm font-bold p-4 border-2 border-dashed border-gray-200 text-center">Nenhum certificado registrado.</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* DONOR SECTION: DOADORES */}
+          {profile.profileType === 'donor' && (
+            <Card className="border-4 border-black rounded-none shadow-[4px_4px_0_0_#000] mt-6 bg-white">
+              <CardContent className="p-6 space-y-4">
+                <h2 className="font-display text-2xl font-black uppercase flex items-center gap-2 border-b-2 border-black pb-3">
+                  <Heart className="w-6 h-6 text-red-500 fill-red-500" /> Registro de Doações
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="bg-primary/20 border-2 border-black p-4 text-center shadow-[2px_2px_0_0_#000]">
+                    <div className="text-3xl font-black">{donationsList.length}</div>
+                    <div className="text-xs font-black uppercase text-gray-600">Doações Realizadas</div>
+                  </div>
+                  <div className="bg-secondary/20 border-2 border-black p-4 text-center shadow-[2px_2px_0_0_#000]">
+                    <div className="text-3xl font-black">R$ {donationsList.reduce((acc, curr) => acc + curr.amount, 0)}</div>
+                    <div className="text-xs font-black uppercase text-gray-600">Valor Total Apoiado</div>
+                  </div>
+                </div>
+                <div className="space-y-2 pt-2">
+                  {donationsList.map((don: any) => (
+                    <div key={don.id} className="border-2 border-black p-3 bg-white flex justify-between items-center text-sm font-bold shadow-[2px_2px_0_0_#000]">
+                      <div>
+                        <div className="uppercase">{don.campaignTitle}</div>
+                        <div className="text-xs text-gray-500 font-bold">{don.date}</div>
+                      </div>
+                      <div className="text-accent font-black text-base">R$ {don.amount.toFixed(2)}</div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* INSTITUTION SECTION: ONGs */}
+          {profile.profileType === 'institution' && (
+            <Card className="border-4 border-black rounded-none shadow-[4px_4px_0_0_#000] mt-6 bg-white">
+              <CardContent className="p-6 space-y-4">
+                <h2 className="font-display text-2xl font-black uppercase flex items-center gap-2 border-b-2 border-black pb-3">
+                  <Building2 className="w-6 h-6 text-accent" /> Indicadores da Organização
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="bg-primary/20 border-2 border-black p-4 text-center shadow-[2px_2px_0_0_#000]">
+                    <div className="text-3xl font-black">{actionsCount}</div>
+                    <div className="text-xs font-black uppercase text-gray-600">Número de Ações Realizadas</div>
+                  </div>
+                  <div className="bg-secondary/20 border-2 border-black p-4 text-center shadow-[2px_2px_0_0_#000]">
+                    <div className="text-xs font-black uppercase text-gray-600 mb-2">Causas Principais</div>
+                    <div className="flex flex-wrap justify-center gap-1.5">
+                      {causesList.map((cause: string) => (
+                        <Badge key={cause} className="bg-black text-white border border-black font-black text-[10px]">
+                          {cause}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </section>
 

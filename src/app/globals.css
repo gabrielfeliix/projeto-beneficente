@@ -1,7 +1,7 @@
 @import url('https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@800,500,700,900&f[]=satoshi@900,700,500,300,400&display=swap');
 @import "tailwindcss";
 
-:root {
+:root, .theme-warm {
   --background: #fdfdfd;
   --foreground: #000000;
   
@@ -22,6 +22,54 @@
   --ring: #000000;
   
   --radius: 0px; /* Neo-brutalism usually has hard edges or very specific roundness. Let's use hard edges or 8px. Let's go with 4px */
+  --radius-brutalist: 4px;
+}
+
+.theme-cold {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  
+  --primary: #93c5fd; /* Soft Blue */
+  --primary-foreground: #0f172a;
+  
+  --secondary: #a7f3d0; /* Soft Green/Mint */
+  --secondary-foreground: #0f172a;
+
+  --accent: #818cf8; /* Indigo */
+  --accent-foreground: #ffffff;
+
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+
+  --border: #0f172a;
+  --input: #ffffff;
+  --ring: #0f172a;
+  
+  --radius: 0px;
+  --radius-brutalist: 4px;
+}
+
+.theme-colorblind {
+  --background: #ffffff;
+  --foreground: #000000;
+  
+  --primary: #3b82f6; /* Accessible blue */
+  --primary-foreground: #ffffff;
+  
+  --secondary: #f59e0b; /* Accessible amber */
+  --secondary-foreground: #000000;
+
+  --accent: #000000; /* Pure black for maximum contrast */
+  --accent-foreground: #ffffff;
+
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+
+  --border: #000000;
+  --input: #ffffff;
+  --ring: #000000;
+  
+  --radius: 0px;
   --radius-brutalist: 4px;
 }
 

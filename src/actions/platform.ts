@@ -566,3 +566,51 @@ export async function checkUniqueField(
   }
   return { exists: false };
 }
+
+export async function createJob(jobData: {
+  title: string;
+  description: string;
+  category: any;
+  city: string;
+  neighborhood: string;
+  modality: string;
+  causes: string;
+  startDate: string;
+  endDate: string;
+  requirementsEssential: string[];
+  requirementsOptional: string[];
+  contactName: string;
+  contactEmail: string;
+  contactPhone: string;
+}): Promise<{ success: boolean; data?: any; error?: string }> {
+  const id = 'job-' + Date.now();
+  
+  if (isSupabaseConfigured && supabase) {
+    const { data, error } = await supabase
+      .from('job_postings')
+      .insert({
+        title: jobData.title,
+        description: jobData.description,
+        category: jobData.category,
+        city: jobData.city,
+        neighborhood: jobData.neighborhood,
+        modality: jobData.modality,
+        causes: jobData.causes,
+        start_date: jobData.startDate,
+        end_date: jobData.endDate,
+        requirements_essential: jobData.requirementsEssential,
+        requirements_optional: jobData.requirementsOptional,
+        contact_name: jobData.contactName,
+        contact_email: jobData.contactEmail,
+        contact_phone: jobData.contactPhone,
+        status: 'open',
+      })
+      .select()
+      .single();
+      
+    if (error) return { success: false, error: error.message };
+    return { success: true, data };
+  }
+  
+  return { success: true, data: { id, ...jobData } };
+}

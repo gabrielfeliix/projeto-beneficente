@@ -41,7 +41,7 @@ export default function NewCampaignPage() {
     setIsSubmitting(true);
     // Simulate API delay
     setTimeout(() => {
-      router.push("/dashboard");
+      router.push("/campaigns");
     }, 1500);
   };
   if (!isAllowed) {

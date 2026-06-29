@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Heart, MessageCircle, Calendar, MapPin, Loader2, Award, Sparkles, Search, Filter, ArrowUpDown, Clock, X, MessageSquare } from 'lucide-react';
+import { Heart, MessageCircle, Calendar, MapPin, Loader2, Award, Sparkles, Search, Filter, ArrowUpDown, Clock, X, MessageSquare, Bell } from 'lucide-react';
 import Image from 'next/image';
 import { FeedPost } from '@/domain/entities';
 import { loadStoredProfile } from '@/lib/auth';
@@ -45,8 +45,15 @@ export function FeedListClient({ initialPosts }: FeedListClientProps) {
   const [newCommentText, setNewCommentText] = useState<Record<string, string>>({});
   const [selectedPostDetails, setSelectedPostDetails] = useState<FeedPost | null>(null);
 
+  // States for post location and notifications
+  const [postCity, setPostCity] = useState("Natal");
+  const [postNeighborhood, setPostNeighborhood] = useState("");
+  const [notifiedPosts, setNotifiedPosts] = useState<Record<string, boolean>>({});
+
   useEffect(() => {
-    setProfile(loadStoredProfile());
+    const loaded = loadStoredProfile();
+    setProfile(loaded);
+    if (loaded?.city) setPostCity(loaded.city);
   }, []);
 
   // Populate mock comments for initial posts on mount
@@ -225,6 +232,10 @@ export function FeedListClient({ initialPosts }: FeedListClientProps) {
   }, [displayedPosts, hasMore, loading]);
 
   const handleLike = async (postId: string) => {
+    if (!profile) {
+      alert("Você precisa estar logado para curtir publicações no feed!");
+      return;
+    }
     setLikesState(prev => {
       const current = prev[postId] || { count: posts.find(p => p.id === postId)?.likes || 0, active: false };
       const nextActive = !current.active;
@@ -250,6 +261,10 @@ export function FeedListClient({ initialPosts }: FeedListClientProps) {
   };
 
   const handleSubmitComment = async (postId: string) => {
+    if (!profile) {
+      alert("Você precisa estar logado para comentar nas publicações do feed!");
+      return;
+    }
     const text = newCommentText[postId] || "";
     if (!text.trim()) return;
 
@@ -299,6 +314,21 @@ export function FeedListClient({ initialPosts }: FeedListClientProps) {
     });
   };
 
+  const handleToggleNotifications = (postId: string, authorName: string) => {
+    if (!profile) {
+      alert("Você precisa estar logado para seguir e ativar notificações!");
+      return;
+    }
+    setNotifiedPosts(prev => {
+      const active = !prev[postId];
+      alert(active 
+        ? `Notificações ativadas! Você receberá alertas de novas publicações de "${authorName}".`
+        : `Notificações desativadas para "${authorName}".`
+      );
+      return { ...prev, [postId]: active };
+    });
+  };
+
   const handleSubmitPost = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newContent.trim()) return;
@@ -313,13 +343,14 @@ export function FeedListClient({ initialPosts }: FeedListClientProps) {
       createdAt: new Date().toISOString(),
       likes: 0,
       comments: 0,
-      city: profile?.city || 'Natal',
+      city: postNeighborhood ? `${postCity} (${postNeighborhood})` : postCity,
       badge: profile?.profileType === 'company' ? 'Empresa ESG 🏆' : profile?.profileType === 'donor' ? 'Doador Solidário ❤️' : undefined
     };
 
     setPosts(prev => [newPost, ...prev]);
     setNewContent('');
     setSelectedImage('');
+    setPostNeighborhood('');
     setShowCreator(false);
 
     // Save in DB if supabase active
@@ -500,7 +531,7 @@ export function FeedListClient({ initialPosts }: FeedListClientProps) {
         <Card className="border-4 border-black rounded-none bg-white p-6 shadow-[6px_6px_0_0_#000] space-y-4 text-black">
           <div className="flex items-center justify-between border-b-2 border-gray-100 pb-3">
             <span className="font-display text-xl font-black uppercase flex items-center gap-1.5">
-              <Sparkles className="w-5 h-5 text-accent" /> Criar Publicação (Estilo Instagram)
+              <Sparkles className="w-5 h-5 text-accent" /> Criar Publicação
             </span>
             <button onClick={() => setShowCreator(false)} className="text-gray-400 hover:text-black font-black uppercase text-xs cursor-pointer">
               Fechar ✗
@@ -508,6 +539,30 @@ export function FeedListClient({ initialPosts }: FeedListClientProps) {
           </div>
 
           <form onSubmit={handleSubmitPost} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-black uppercase block text-gray-600 mb-1">Cidade (RN)</label>
+                <select
+                  value={postCity}
+                  onChange={(e) => setPostCity(e.target.value)}
+                  className="w-full h-10 border-2 border-black bg-white px-2 font-bold text-sm font-sans"
+                >
+                  <option value="Natal">Natal</option>
+                  <option value="Caicó">Caicó</option>
+                  <option value="Parnamirim">Parnamirim</option>
+                  <option value="Mossoró">Mossoró</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-black uppercase block text-gray-600 mb-1">Bairro / Região</label>
+                <Input
+                  value={postNeighborhood}
+                  onChange={(e) => setPostNeighborhood(e.target.value)}
+                  placeholder="Ex: Petrópolis, Tirol..."
+                  className="border-2 border-black h-10 font-bold text-sm bg-white"
+                />
+              </div>
+            </div>
             <div>
               <textarea
                 value={newContent}
@@ -648,12 +703,25 @@ export function FeedListClient({ initialPosts }: FeedListClientProps) {
                     </button>
                   </div>
                   
-                  <button
-                    onClick={() => setSelectedPostDetails(post)}
-                    className="px-3 py-1.5 text-xs border-2 border-black font-black uppercase bg-white hover:bg-gray-100 cursor-pointer shadow-[2px_2px_0_0_#000] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all"
-                  >
-                    Ver Detalhes
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleToggleNotifications(post.id, post.authorName)}
+                      className={`px-3 py-1.5 text-xs border-2 border-black font-black uppercase flex items-center gap-1.5 transition-all cursor-pointer ${
+                        notifiedPosts[post.id] 
+                          ? 'bg-primary text-black' 
+                          : 'bg-white text-gray-700 hover:bg-gray-100 shadow-[2px_2px_0_0_#000] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none'
+                      }`}
+                    >
+                      <Bell className={`w-3.5 h-3.5 ${notifiedPosts[post.id] ? 'fill-black' : ''}`} />
+                      {notifiedPosts[post.id] ? "Notificações Ativas ✓" : "Ativar Notificações"}
+                    </button>
+                    <button
+                      onClick={() => setSelectedPostDetails(post)}
+                      className="px-3 py-1.5 text-xs border-2 border-black font-black uppercase bg-white hover:bg-gray-100 cursor-pointer shadow-[2px_2px_0_0_#000] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all"
+                    >
+                      Ver Detalhes
+                    </button>
+                  </div>
                 </div>
 
                 {/* Collapsible Comments Section */}

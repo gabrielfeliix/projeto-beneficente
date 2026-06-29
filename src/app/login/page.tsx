@@ -219,7 +219,7 @@ function AuthForm() {
         saveStoredProfile({ id: found.id, profileType: found.profileType as any, role: found.role as any, name: found.name, email: found.email });
       }
       setSuccess("Login efetuado! Redirecionando...");
-      const redirect = searchParams.get("redirect") || "/dashboard";
+      const redirect = searchParams.get("redirect") || "/feed";
       setTimeout(() => { window.location.href = redirect; }, 800);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Erro ao efetuar login.");
@@ -341,7 +341,7 @@ function AuthForm() {
         }
         saveStoredProfile({ id: userId, profileType: profileType as any, role: profileType as any, name: signupName, email: signupEmail });
         setSuccess("Conta criada com sucesso! Bem-vindo(a) à PROVE!");
-        setTimeout(() => { window.location.href = "/dashboard"; }, 1000);
+        setTimeout(() => { window.location.href = "/feed"; }, 1000);
 
       } else {
         // Institution or Company
@@ -403,7 +403,7 @@ function AuthForm() {
         } else {
           setSuccess("Empresa cadastrada com sucesso! Assinatura de impacto Ouro ativada com sucesso.");
         }
-        setTimeout(() => { window.location.href = "/dashboard"; }, 1500);
+        setTimeout(() => { window.location.href = "/feed"; }, 1500);
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Erro ao salvar perfil.");

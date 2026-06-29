@@ -51,7 +51,7 @@ export function ApplyButton({ jobId, jobTitle }: ApplyButtonProps) {
             variant="outline"
             className="w-full font-black uppercase border-2 border-black"
             onClick={() => router.push(`/login?mode=signup&redirect=/vagas/${jobId}`)}>
-            Criar Conta Grátis
+            Criar Conta
           </Button>
         </div>
         <p className="text-xs font-bold text-center text-gray-500">

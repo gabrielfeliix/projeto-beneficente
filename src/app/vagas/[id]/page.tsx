@@ -21,6 +21,7 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
       <div className="mb-8">
         <div className="flex flex-wrap items-center gap-3 mb-4">
           <Badge className="bg-accent text-white border-2 border-black font-black uppercase">Vaga Aberta</Badge>
+          <Badge variant="outline" className="border-2 border-black font-bold font-mono bg-gray-50">ID: #{job.id}</Badge>
           <Badge variant="outline" className="border-2 border-black font-bold">{job.category}</Badge>
           <Badge variant="outline" className="border-2 border-black font-bold">{job.modality}</Badge>
         </div>

@@ -55,17 +55,18 @@ export default async function CertificatePage({
             {/* Texto de Homologação */}
             <div className="max-w-2xl text-center space-y-4">
               <p className="text-gray-500 font-bold uppercase text-sm tracking-widest">
-                Lumiar - Rede de Conexão Cidadã
+                Lumiar - Rede de Conexão Cidadã (PROVI)
               </p>
               <p className="text-gray-800 font-medium text-lg sm:text-xl leading-relaxed">
-                Certificamos para os devidos fins de impacto social e acadêmico que o(a) voluntário(a)
+                Certificamos para os devidos fins de impacto social e acadêmico que o(a) usuário(a) voluntário(a)
               </p>
-              <h2 className="font-display text-2xl sm:text-4xl font-black uppercase text-black my-4">
+              <h2 className="font-display text-2xl sm:text-4xl font-black uppercase text-black my-2">
                 {cert.volunteerName}
               </h2>
+              <div className="text-xs font-mono font-bold text-gray-500 mb-2">ID do Usuário: #{cert.volunteerId || "vol-1"}</div>
               <p className="text-gray-800 font-medium text-lg sm:text-xl leading-relaxed">
-                realizou com dedicação as atividades de voluntariado na causa de{" "}
-                <strong className="font-black text-black">{cert.jobTitle}</strong>, atuando junto à instituição{" "}
+                participou e concluiu com dedicação as atividades de voluntariado na causa de{" "}
+                <strong className="font-black text-black">{cert.jobTitle}</strong>, atuando como voluntário(a) ativo(a) junto à instituição{" "}
                 <strong className="font-black text-black">{cert.institutionName}</strong>, doando um total homologado de:
               </p>
             </div>
@@ -79,20 +80,26 @@ export default async function CertificatePage({
             </div>
 
             {/* Assinatura e Código */}
-            <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-end pt-8 border-t border-gray-200">
+            <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-8 items-end pt-8 border-t border-gray-200">
               <div className="space-y-1 text-left">
                 <div className="text-xs font-bold text-gray-400 uppercase tracking-widest">Instituição Emitente</div>
                 <div className="font-display font-black text-lg uppercase text-black">{cert.institutionName}</div>
-                <div className="text-xs font-bold text-gray-500">Validação sob CNPJ Oficial da Organização</div>
+                <div className="text-[10px] font-bold text-gray-500">Validação sob CNPJ Oficial</div>
               </div>
+
+              <div className="space-y-2 text-center flex flex-col items-center">
+                <div className="font-serif italic text-2xl font-semibold border-b border-black w-48 text-gray-700 pb-1" style={{ fontFamily: "Georgia, serif" }}>
+                  PROVI Social
+                </div>
+                <div className="text-xs font-black uppercase text-gray-500">Assinatura Digital PROVI</div>
+              </div>
+
               <div className="space-y-1 md:text-right">
                 <div className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center md:justify-end gap-1">
                   <Bookmark className="w-3.5 h-3.5" /> Código de Autenticidade
                 </div>
-                <div className="font-mono font-bold text-lg text-primary">{cert.verificationCode}</div>
-                <div className="text-xs font-bold text-gray-500 flex items-center md:justify-end gap-1">
-                  <Calendar className="w-3.5 h-3.5" /> Emissão: {new Date(cert.issuedAt).toLocaleDateString("pt-BR")}
-                </div>
+                <div className="font-mono font-bold text-sm text-primary">{cert.verificationCode}</div>
+                <div className="text-[10px] font-bold text-gray-500">Validação Pública Homologada</div>
               </div>
             </div>
           </CardContent>

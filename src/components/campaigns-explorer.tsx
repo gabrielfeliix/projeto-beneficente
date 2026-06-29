@@ -142,6 +142,9 @@ export function CampaignsExplorer({ initialCampaigns }: CampaignsExplorerProps) 
                       <span className="w-2.5 h-2.5 rounded-full bg-green-500 inline-block shrink-0 shadow-sm border border-green-700"></span>
                       <span className="text-sm font-bold text-green-600">Ativa</span>
                     </div>
+                    <span className="text-[10px] font-mono font-bold text-gray-500 bg-gray-100 border border-gray-300 px-2 py-0.5 uppercase">
+                      ID: #{campaign.id}
+                    </span>
                     <span className="text-[10px] font-bold text-gray-400 bg-gray-50 border border-gray-200 px-2 py-0.5 rounded flex items-center gap-1 uppercase select-none">
                       🤖 Classificado por IA (Seguro)
                     </span>

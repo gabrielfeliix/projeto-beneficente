@@ -105,13 +105,20 @@ export function JobBoard({ initialJobs }: JobBoardProps) {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
-      <div className="mb-10">
-        <h1 className="font-display text-4xl sm:text-5xl font-black uppercase tracking-tighter">
-          Conexão Voluntária de Impacto
-        </h1>
-        <p className="text-gray-600 font-bold mt-3 max-w-3xl">
-          Filtre por suas causas favoritas, habilidades e disponibilidade de horas para encontrar a oportunidade perfeita de voluntariado (estilo Atados).
-        </p>
+      <div className="mb-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="font-display text-4xl sm:text-5xl font-black uppercase tracking-tighter">
+            Conexão Voluntária de Impacto
+          </h1>
+          <p className="text-gray-600 font-bold mt-3 max-w-3xl">
+            Filtre por suas causas favoritas, habilidades e disponibilidade de horas para encontrar a oportunidade perfeita de voluntariado.
+          </p>
+        </div>
+        <Link href="/vagas/new" className="shrink-0">
+          <Button size="lg" className="font-black uppercase border-2 border-black bg-primary text-black hover:bg-black hover:text-white shadow-[4px_4px_0_0_#000] hover:-translate-y-1 transition-all">
+            Criar Nova Vaga
+          </Button>
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[290px_1fr] gap-8 items-start">
@@ -243,6 +250,9 @@ export function JobBoard({ initialJobs }: JobBoardProps) {
                   <CardContent className="p-6 grid gap-6 md:grid-cols-[1fr_auto] items-start">
                     <div className="space-y-3">
                       <div className="flex items-center gap-3 flex-wrap">
+                        <span className="text-xs font-mono font-bold bg-gray-100 border border-gray-300 px-2 py-0.5 text-gray-600">
+                          ID: #{job.id}
+                        </span>
                         <h2 className="font-display text-2xl font-black uppercase tracking-tight">
                           {job.title}
                         </h2>

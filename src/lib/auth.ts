@@ -11,6 +11,9 @@ export type StoredProfile = {
   approvalStatus?: "pending_approval" | "approved" | "rejected";
   subscriptionPlan?: string;
   subscriptionStatus?: string;
+  city?: string;
+  neighborhood?: string;
+  phone?: string;
 };
 
 const STORAGE_KEY = "prove_user_profile";
