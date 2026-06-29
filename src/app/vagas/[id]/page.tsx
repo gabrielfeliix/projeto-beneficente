@@ -1,5 +1,3 @@
-"use server";
-
 import { getJobById } from "@/actions/platform";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
