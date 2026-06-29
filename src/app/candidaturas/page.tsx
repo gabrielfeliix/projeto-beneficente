@@ -7,12 +7,11 @@ import { loadStoredProfile } from "@/lib/auth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { MessageSquare, Send, ArrowLeft } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 
 export default function CandidaturasPage() {
-  const [profile, setProfile] = useState<any>(null);
   const [applications, setApplications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
@@ -21,7 +20,6 @@ export default function CandidaturasPage() {
 
   useEffect(() => {
     const loaded = loadStoredProfile();
-    setProfile(loaded);
     const volunteerId = loaded?.id || "vol-1";
 
     getApplicationsForVolunteer(volunteerId).then((list) => {
