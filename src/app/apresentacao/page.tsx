@@ -379,37 +379,37 @@ export default function PresentationPage() {
           <div
             key={slide.type}
             ref={el => { slideElements.current[index] = el; }}
-            className="w-full h-screen flex flex-row shrink-0 border-b-8 border-black relative"
+            className="w-full h-screen flex flex-col md:flex-row shrink-0 border-b-8 border-black relative"
             style={{ backgroundColor: slide.type === 'home' ? '#ffe17c' : '#fdfdfd' }}
           >
             {/* LEFT PANEL: PITCH SCRIPTS AND VALUE PROPOSITION */}
-            <div className="w-[32%] px-8 py-14 flex flex-col justify-between border-r-4 border-black bg-[#ffe17c]/15 text-black select-text shrink-0 z-10">
-              <div className="space-y-6">
+            <div className="w-full md:w-[32%] h-[38vh] md:h-full p-4 md:px-8 md:py-14 flex flex-col justify-between border-b-4 md:border-b-0 md:border-r-4 border-black bg-[#ffe17c]/15 text-black select-text shrink-0 z-10">
+              <div className="space-y-2 md:space-y-6">
                 <div className="flex items-center justify-between">
-                  <span className="font-display font-black text-lg tracking-widest text-black">
+                  <span className="font-display font-black text-sm md:text-lg tracking-widest text-black">
                     PROVI PITCH
                   </span>
-                  <Badge className="bg-black text-[#ffe17c] border border-black font-black uppercase text-[10px] rounded-none px-2 py-0.5">
+                  <Badge className="bg-black text-[#ffe17c] border border-black font-black uppercase text-[9px] md:text-[10px] rounded-none px-2 py-0.5">
                     {String(index + 1).padStart(2, '0')} / {String(SLIDES.length).padStart(2, '0')}
                   </Badge>
                 </div>
 
-                <div className="h-[2px] w-full bg-black/10" />
+                <div className="hidden md:block h-[2px] w-full bg-black/10" />
 
-                <div className="space-y-3">
-                  <h2 className="font-display text-4xl sm:text-5xl font-black uppercase tracking-tight leading-none text-black">
+                <div className="space-y-1 md:space-y-3">
+                  <h2 className="font-display text-2xl md:text-4xl lg:text-5xl font-black uppercase tracking-tight leading-none text-black">
                     {slide.title}
                   </h2>
-                  <p className="text-base font-black text-gray-500 uppercase tracking-wide">
+                  <p className="text-xs md:text-base font-black text-gray-500 uppercase tracking-wide">
                     {slide.subtitle}
                   </p>
                 </div>
 
-                <p className="text-sm font-bold text-gray-700 leading-relaxed pt-2">
+                <p className="text-xs md:text-sm font-bold text-gray-700 leading-relaxed line-clamp-2 md:line-clamp-none">
                   {slide.description}
                 </p>
 
-                <div className="space-y-2 pt-4">
+                <div className="hidden md:block space-y-2 pt-4">
                   {slide.highlights.map((highlight, hIndex) => (
                     <div key={hIndex} className="flex items-start gap-2.5">
                       <span className="w-5 h-5 rounded-none bg-black text-primary flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
@@ -424,26 +424,28 @@ export default function PresentationPage() {
               </div>
 
               {/* Navigation tip */}
-              <div className="flex items-center justify-between text-[11px] font-black uppercase text-gray-400">
-                <span>Clique na esquerda para voltar</span>
-                <ChevronRight className="w-4 h-4 text-black animate-pulse" />
-                <span>Clique na direita para avançar</span>
+              <div className="flex items-center justify-between text-[9px] md:text-[11px] font-black uppercase text-gray-400">
+                <span className="hidden md:inline">Clique na esquerda para voltar</span>
+                <span className="md:hidden">Toque na esquerda para voltar</span>
+                <ChevronRight className="w-4 h-4 text-black animate-pulse shrink-0" />
+                <span className="hidden md:inline">Clique na direita para avançar</span>
+                <span className="md:hidden">Toque na direita para avançar</span>
               </div>
             </div>
 
             {/* RIGHT PANEL: BROWSER CHROME WORKINGS */}
-            <div className="flex-1 p-8 bg-[#fafafa] flex items-center justify-center relative overflow-hidden">
-              <div className="w-[95%] h-[90%] border-4 border-black shadow-[12px_12px_0_0_#000] bg-white rounded-none flex flex-col overflow-hidden relative">
+            <div className="flex-1 h-[62vh] md:h-full p-4 md:p-8 bg-[#fafafa] flex items-center justify-center relative overflow-hidden">
+              <div className="w-full md:w-[95%] h-full md:h-[90%] border-4 border-black shadow-[6px_6px_0_0_#000] md:shadow-[12px_12px_0_0_#000] bg-white rounded-none flex flex-col overflow-hidden relative">
                 
                 {/* Browser chrome header bar */}
-                <div className="h-10 bg-gray-100 border-b-4 border-black px-4 flex items-center justify-between shrink-0 select-none">
+                <div className="h-8 md:h-10 bg-gray-100 border-b-4 border-black px-2 md:px-4 flex items-center justify-between shrink-0 select-none">
                   <div className="flex gap-2">
-                    <span className="w-3.5 h-3.5 rounded-full bg-red-400 border border-black/20" />
-                    <span className="w-3.5 h-3.5 rounded-full bg-yellow-400 border border-black/20" />
-                    <span className="w-3.5 h-3.5 rounded-full bg-green-400 border border-black/20" />
+                    <span className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 rounded-full bg-red-400 border border-black/20" />
+                    <span className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 rounded-full bg-yellow-400 border border-black/20" />
+                    <span className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 rounded-full bg-green-400 border border-black/20" />
                   </div>
-                  <div className="w-96 h-6 border-2 border-black bg-white rounded-none px-3 flex items-center text-[10px] font-bold text-gray-400">
-                    🔒 https://provi.org/{slide.type !== 'home' ? slide.type : ''}
+                  <div className="w-48 md:w-96 h-5 md:h-6 border-2 border-black bg-white rounded-none px-2 flex items-center text-[9px] md:text-[10px] font-bold text-gray-400 overflow-hidden truncate">
+                    🔒 provi.org/{slide.type !== 'home' ? slide.type : ''}
                   </div>
                   <div className="flex gap-1">
                     <ChevronLeft className="w-4 h-4 text-gray-400" />
