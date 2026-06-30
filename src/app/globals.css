@@ -201,3 +201,28 @@ body {
   }
 }
 
+/* Fix for hover jitter/shaking on elements that translate on hover */
+[class*="hover:-translate-y"]:hover,
+[class*="hover:translate-y"]:hover,
+[class*="group-hover:-translate-y"],
+[class*="group-hover:translate-y"] {
+  position: relative;
+}
+
+[class*="hover:-translate-y"]:hover::after,
+[class*="hover:translate-y"]:hover::after,
+.group:hover [class*="group-hover:-translate-y"]::after,
+.group:hover [class*="group-hover:translate-y"]::after,
+.brutalist-button:hover::after,
+.brutalist-card:hover::after,
+button:hover::after {
+  content: "";
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  right: -8px;
+  bottom: -16px;
+  pointer-events: auto;
+  z-index: 10;
+}
+
