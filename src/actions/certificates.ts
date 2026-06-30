@@ -97,6 +97,22 @@ export async function issueCertificate(
 export async function getCertificateByCode(code: string): Promise<CertificateData | null> {
   const cleanCode = code.trim().toUpperCase();
 
+  // Fallback offline demo
+  if (cleanCode === "LUM-DEMO123") {
+    return {
+      id: "cert-demo",
+      volunteerId: "vol-demo",
+      institutionId: "inst-demo",
+      jobId: null,
+      volunteerName: "Ana Beatriz",
+      institutionName: "Associação Água Viva",
+      jobTitle: "Desenvolvedora Voluntária",
+      hoursDonated: 12,
+      issuedAt: new Date().toISOString(),
+      verificationCode: "LUM-DEMO123",
+    };
+  }
+
   if (isSupabaseConfigured && supabase) {
     const { data: cert, error } = await supabase
       .from("certificates")
@@ -120,21 +136,6 @@ export async function getCertificateByCode(code: string): Promise<CertificateDat
     };
   }
 
-  // Fallback offline
-  if (cleanCode === "LUM-DEMO123") {
-    return {
-      id: "cert-demo",
-      volunteerId: "vol-demo",
-      institutionId: "inst-demo",
-      jobId: null,
-      volunteerName: "Ana Beatriz",
-      institutionName: "Associação Água Viva",
-      jobTitle: "Desenvolvedora Voluntária",
-      hoursDonated: 12,
-      issuedAt: new Date().toISOString(),
-      verificationCode: "LUM-DEMO123",
-    };
-  }
   return null;
 }
 
