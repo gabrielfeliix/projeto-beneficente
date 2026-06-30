@@ -40,7 +40,7 @@ export default async function Home() {
               <h1 className="font-display text-5xl sm:text-7xl lg:text-8xl font-black uppercase leading-[0.9] tracking-tighter">
                 Eles lutam <br />
                 <span className="bg-white px-2 inline-block -rotate-2 border-2 border-black mt-2">
-                  todos os dias.
+                  todos os dias
                 </span>
                 <br />
                 <span className="text-3xl sm:text-4xl lg:text-5xl text-black/80 mt-3 block">

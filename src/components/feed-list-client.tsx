@@ -32,6 +32,7 @@ export function FeedListClient({ initialPosts }: FeedListClientProps) {
   const [showCreator, setShowCreator] = useState(false);
 
   const loaderRef = useRef<HTMLDivElement>(null);
+  const isLoadingRef = useRef(false);
 
   // New Filters and interactions state
   const [hashtagFilter, setHashtagFilter] = useState<string | null>(null);
@@ -148,7 +149,8 @@ export function FeedListClient({ initialPosts }: FeedListClientProps) {
 
   // Load more posts (Infinite scroll mock simulation)
   const loadMore = () => {
-    if (loading || !hasMore) return;
+    if (isLoadingRef.current || loading || !hasMore) return;
+    isLoadingRef.current = true;
     setLoading(true);
 
     setTimeout(() => {
@@ -199,12 +201,17 @@ export function FeedListClient({ initialPosts }: FeedListClientProps) {
 
       const nextBatch = filtered.slice(page * 4, (page + 1) * 4);
       if (nextBatch.length > 0) {
-        setDisplayedPosts(prev => [...prev, ...nextBatch]);
+        setDisplayedPosts(prev => {
+          const existingIds = new Set(prev.map(p => p.id));
+          const uniqueBatch = nextBatch.filter(p => !existingIds.has(p.id));
+          return [...prev, ...uniqueBatch];
+        });
         setPage(prev => prev + 1);
         setHasMore(filtered.length > (page + 1) * 4);
       } else {
         setHasMore(false);
       }
+      isLoadingRef.current = false;
       setLoading(false);
     }, 800);
   };
