@@ -35,23 +35,22 @@ export default async function Home() {
         <div className="absolute left-4 sm:left-10 bottom-4 sm:bottom-10 bg-accent w-24 sm:w-48 h-24 sm:h-48 border-4 border-black rotate-12 opacity-80" />
 
         <div className="max-w-7xl mx-auto relative z-10 flex flex-col lg:flex-row items-center gap-10 lg:gap-16 text-center lg:text-left">
-          <div className="flex-1 space-y-6 sm:space-y-8">
+          <div className="flex-1 space-y-6">
             <div>
               <Badge className="mb-4 bg-black text-primary border-2 border-black font-black uppercase text-xs sm:text-sm">
                 🌟 Plataforma de Voluntariado no RN
               </Badge>
-              <h1 className="font-display text-5xl sm:text-7xl lg:text-8xl font-black uppercase leading-[0.9] tracking-tighter">
+              <h1 className="font-display text-4xl sm:text-6xl lg:text-7xl font-black uppercase leading-[0.9] tracking-tighter">
                 Eles lutam <br />
                 <span className="bg-white px-2 inline-block -rotate-2 border-2 border-black mt-2">
                   todos os dias
                 </span>
-                <br />
-                <span className="text-3xl sm:text-4xl lg:text-5xl text-black/80 mt-3 block">
-                  Você é a força que falta
-                </span>
               </h1>
+              <p className="font-display text-xl sm:text-2xl lg:text-3xl font-black uppercase text-black/80 mt-4 leading-normal">
+                Você é a força que falta
+              </p>
             </div>
-            <p className="font-bold text-base sm:text-xl max-w-2xl bg-white/60 inline-block p-3 border-2 border-black mx-auto lg:mx-0">
+            <p className="font-bold text-sm sm:text-base max-w-2xl bg-white/60 inline-block p-3 border-2 border-black mx-auto lg:mx-0 mt-4">
               Conectamos voluntários a ONGs e projetos sociais reais no Rio Grande do Norte. Veja o impacto da sua ajuda transformando vidas.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
@@ -111,7 +110,7 @@ export default async function Home() {
 
       {/* ACTIVE CAMPAIGNS MARQUEE */}
       {campaigns.length > 0 && (
-        <Marquee speed={40} className="border-b-4 border-black bg-black text-primary py-3 select-none">
+        <Marquee speed={120} className="border-b-4 border-black bg-black text-primary py-3 select-none">
           {campaigns.map((campaign) => (
             <div key={campaign.id} className="flex items-center gap-4 font-bold text-sm sm:text-base px-8 border-r-4 border-primary/20 last:border-0 whitespace-nowrap">
               <span className="w-2.5 h-2.5 rounded-full bg-green-500 shrink-0 border border-green-700 shadow-sm animate-pulse"></span>
