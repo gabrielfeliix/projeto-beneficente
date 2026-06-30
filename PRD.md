@@ -57,6 +57,7 @@ Abaixo estão relacionadas todas as rotas e arquivos de interface implementados 
   * Barra de busca por palavras-chave em títulos e descrições.
   * Filtros de seleção por Município (RN) e Categorias Sociais (Alimentação, Educação, Animais, Saúde, etc.).
   * Lista de resultados disposta em cards neobrutalistas com badges inteligentes e identificador único de auditoria.
+  * **Classificação de Segurança por IA (Ordenação Decrescente)**: O sistema ordena a listagem padrão de campanhas de forma decrescente com base no nível de confiança do Termômetro de Risco por IA, priorizando a exibição dos projetos mais seguros no topo para proteção dos doadores.
 
 ### 2.5. Nova Campanha (Portal do Organizador)
 * **Rota:** `/campaigns/new`
@@ -72,7 +73,7 @@ Abaixo estão relacionadas todas as rotas e arquivos de interface implementados 
 * **Código-Fonte:** [page.tsx](file:///c:/Users/FelixFamily/Developer/hackathon/src/app/campaigns/%5Bid%5D/page.tsx)
 * **Componente de Apoio:** [campaign-page-client.tsx](file:///c:/Users/FelixFamily/Developer/hackathon/src/components/campaign-page-client.tsx)
 * **Funcionalidades Fundamentais:**
-  * **Termômetro de Risco por IA**: Classifica e avalia o nível de segurança fiscal da ONG, indicando a procedência e auditoria de suas notas.
+  * **Termômetro de Risco por IA (Detector de Possível Golpe)**: Widget visual e dinâmico que avalia a coerência da campanha cruzando o montante total arrecadado (`financial_raised`) com as notas fiscais e recibos de saídas de caixa (`expenses`) declaradas na prestação de contas. Exibe o nível de segurança do projeto (Baixo Risco, Risco Moderado, Alto Risco/Possível Golpe) para alertar doadores.
   * **Painel de Prestação de Contas (Transparência)**:
     * Seção de arrecadação financeira exibindo a meta, o progresso em percentual e a lista pública de transações recebidas.
     * **Lançamento de Despesas (Visão da ONG)**: Permite ao organizador declarar um gasto, definir sua categoria (Alimentação, Combustível, Logística, Serviços, etc.), escrever a descrição e anexar o link do comprovante/nota fiscal tributária.
@@ -211,6 +212,7 @@ Para facilitar a organização das tarefas da sua equipe no Trello, Jira ou GitH
 
 ### 📝 A FAZER (Na Fila para Desenvolvimento)
 - [ ] **Otimização do Termômetro de Risco IA**: Refinar algoritmo de classificação fiscal de notas tributárias anexadas pelas ONGs.
+- [ ] **Ordenação por Score de IA**: Implementar a listagem decrescente das campanhas no explorador com base no valor do termômetro de confiança.
 - [ ] **Filtros Avançados de Busca de ONGs**: Pesquisas e filtros por tamanho, número de voluntários e status regulatório.
 - [ ] **Módulo de Relatórios de Impacto**: Exportação de dados das campanhas em planilhas CSV/PDF para auditorias externas.
 
@@ -219,6 +221,7 @@ Para facilitar a organização das tarefas da sua equipe no Trello, Jira ou GitH
 - [ ] **Painel Estatístico Governamental**: Polimento dos gráficos e distribuição percentual de doações por município.
 
 ### 🧪 PARA TESTAR / VALIDAÇÃO (QA / Homologação)
+- [ ] **Algoritmo do Detector de Golpes**: Validar o cálculo e faixas de risco (Baixo, Médio, Alto) cruzando doações e despesas no termômetro da campanha.
 - [ ] **Emissão de Certificados Criptográficos**: Testar geração de código alfanumérico e validação cruzada no banco de dados.
 - [ ] **Scroll Infinito no Feed**: Validar prevenção de chaves duplicadas (`isLoadingRef` guard) sob alta carga de requisições.
 - [ ] **Redirecionamento de Perfis**: Validar se novos cadastros chegam à aba correta com base no parâmetro `role` da URL.
