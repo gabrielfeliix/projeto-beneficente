@@ -4,13 +4,32 @@ import Link from "next/link";
 import { NavBar } from "@/components/nav-bar";
 
 export const metadata: Metadata = {
-  title: "PROVI — Voluntariado e Impacto Social",
-  description: "A maior plataforma de conexão entre voluntários e ONGs do Rio Grande do Norte. Encontre vagas, apoie campanhas e faça a diferença.",
-  keywords: ["voluntariado", "ONG", "impacto social", "Rio Grande do Norte", "Natal", "doação"],
+  title: "PROVI — Transparência Social, Voluntariado e Impacto no RN",
+  description: "A maior plataforma de conexão voluntária, auditoria de ONGs e rastreabilidade de impacto social do Rio Grande do Norte. Acompanhe a prestação de contas, fiscalização de projetos e doações em tempo real.",
+  keywords: [
+    "voluntariado",
+    "ONG",
+    "transparência social",
+    "auditoria de ONGs",
+    "Rio Grande do Norte",
+    "prestação de contas",
+    "doações rastreáveis",
+    "impacto social",
+    "Natal RN",
+    "portal da transparência"
+  ],
   openGraph: {
-    title: "PROVI — Voluntariado e Impacto Social",
-    description: "Conectando voluntários com organizações sociais no RN.",
+    title: "PROVI — Transparência Social, Voluntariado e Impacto no RN",
+    description: "Conectando voluntários e ONGs com total transparência, rastreabilidade de doações e auditoria fiscal no Rio Grande do Norte.",
     type: "website",
+    images: [
+      {
+        url: "/logo-provi.png",
+        width: 800,
+        height: 600,
+        alt: "PROVI Logo",
+      }
+    ],
   },
 };
 
