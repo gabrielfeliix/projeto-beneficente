@@ -21,7 +21,51 @@ export default async function CertificatePage({
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6 print:bg-white print:p-0">
-      <div className="max-w-4xl w-full space-y-6 print:space-y-0">
+      <style dangerouslySetInnerHTML={{ __html: `
+        @media print {
+          @page {
+            size: A4 landscape;
+            margin: 0;
+          }
+          body {
+            margin: 0;
+            padding: 0;
+            background-color: white;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          .print-certificate-card {
+            width: 297mm !important;
+            height: 210mm !important;
+            margin: 0 !important;
+            padding: 12mm !important;
+            box-sizing: border-box !important;
+            border: 8px solid black !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            background: white !important;
+            page-break-inside: avoid !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+          }
+          .print-certificate-content {
+            border: 4px dashed #cbd5e1 !important;
+            padding: 10mm 15mm !important;
+            height: 100% !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            box-sizing: border-box !important;
+            min-height: auto !important;
+          }
+        }
+      `}} />
+      <div className="max-w-4xl w-full space-y-6 print:space-y-0 print:max-w-none print:w-auto">
         
         {/* NAVEGAÇÃO DE VOLTA (OCULTA NA IMPRESSÃO) */}
         <div className="flex justify-between items-center print:hidden">
@@ -36,14 +80,14 @@ export default async function CertificatePage({
         </div>
 
         {/* MOLDURA PRINCIPAL DO CERTIFICADO (ESTILO DIPLOMA NEO-BRUTALISTA) */}
-        <Card className="border-8 border-black rounded-none bg-white p-4 sm:p-10 shadow-[12px_12px_0px_0px_#000000] relative overflow-hidden print:border-4 print:shadow-none">
+        <Card className="border-8 border-black rounded-none bg-white p-4 sm:p-10 shadow-[12px_12px_0px_0px_#000000] relative overflow-hidden print-certificate-card">
           {/* Detalhes Estéticos nos Cantos */}
           <div className="absolute top-0 left-0 w-8 h-8 border-t-8 border-l-8 border-primary print:hidden" />
           <div className="absolute top-0 right-0 w-8 h-8 border-t-8 border-r-8 border-primary print:hidden" />
           <div className="absolute bottom-0 left-0 w-8 h-8 border-b-8 border-l-8 border-primary print:hidden" />
           <div className="absolute bottom-0 right-0 w-8 h-8 border-b-8 border-r-8 border-primary print:hidden" />
 
-          <CardContent className="border-4 border-dashed border-gray-300 p-6 sm:p-12 text-center space-y-8 flex flex-col items-center justify-between min-h-[500px]">
+          <CardContent className="border-4 border-dashed border-gray-300 p-6 sm:p-12 text-center space-y-8 flex flex-col items-center justify-between min-h-[500px] print-certificate-content">
             {/* Cabeçalho */}
             <div className="space-y-3 flex flex-col items-center">
               <Award className="w-16 h-16 text-yellow-500 stroke-[2] drop-shadow-sm" />
