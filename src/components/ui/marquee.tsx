@@ -14,7 +14,7 @@ export function Marquee({ children, className, speed = 20 }: MarqueeProps) {
   return (
     <div className={cn("flex w-full overflow-hidden whitespace-nowrap bg-secondary border-y-2 border-border py-3", className)}>
       <motion.div
-        className="flex min-w-full items-center justify-around gap-8 pr-8"
+        className="flex min-w-full shrink-0 items-center justify-around gap-8 pr-8"
         animate={{ x: ["0%", "-100%"] }}
         transition={{
           repeat: Infinity,
@@ -25,7 +25,7 @@ export function Marquee({ children, className, speed = 20 }: MarqueeProps) {
         {children}
       </motion.div>
       <motion.div
-        className="flex min-w-full items-center justify-around gap-8 pr-8"
+        className="flex min-w-full shrink-0 items-center justify-around gap-8 pr-8"
         animate={{ x: ["0%", "-100%"] }}
         transition={{
           repeat: Infinity,

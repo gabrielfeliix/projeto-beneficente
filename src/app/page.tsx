@@ -17,6 +17,9 @@ export default async function Home() {
     getInstitutions(),
   ]);
 
+  const activeCampaigns = campaigns.filter(c => c.status === "active");
+  const heroCampaign = activeCampaigns[0] || campaigns[0];
+
   const stats = [
     { value: `${volunteers.length + 847}+`, label: "Voluntários Ativos", icon: <Users className="w-6 h-6" />, color: "bg-primary" },
     { value: `${institutions.length + 32}+`, label: "ONGs Parceiras", icon: <Building2 className="w-6 h-6" />, color: "bg-secondary" },
@@ -71,24 +74,30 @@ export default async function Home() {
             </div>
           </div>
 
-          <div className="flex-1 w-full max-w-md lg:max-w-none hidden sm:block">
-            <div className="border-4 border-black p-4 bg-secondary shadow-[8px_8px_0_0_#000] rotate-2 hover:rotate-0 transition-transform duration-300">
-              <img
-                src="/images/hero_community.png"
-                alt="Comunidade voluntária do RN"
-                className="border-2 border-black w-full h-auto object-cover aspect-video"
-              />
-              <div className="mt-4 flex items-center justify-between font-bold">
-                <span className="font-display text-xl font-black uppercase">Ação Viva — Natal, RN</span>
-                <Badge className="border-2 border-black bg-accent text-white font-black">Em Andamento ✓</Badge>
-              </div>
+          {heroCampaign && (
+            <div className="flex-1 w-full max-w-md lg:max-w-none hidden sm:block">
+              <Link href={`/campaigns/${heroCampaign.id}`} className="block">
+                <div className="border-4 border-black p-4 bg-secondary shadow-[8px_8px_0_0_#000] rotate-2 hover:rotate-0 transition-transform duration-300 cursor-pointer">
+                  <img
+                    src={heroCampaign.coverImage}
+                    alt={heroCampaign.title}
+                    className="border-2 border-black w-full h-auto object-cover aspect-video"
+                  />
+                  <div className="mt-4 flex items-center justify-between font-bold gap-3">
+                    <span className="font-display text-lg sm:text-xl font-black uppercase truncate max-w-[60%] sm:max-w-[70%]" title={`${heroCampaign.title} — ${heroCampaign.city}, RN`}>
+                      {heroCampaign.title} — {heroCampaign.city}, RN
+                    </span>
+                    <Badge className="border-2 border-black bg-accent text-white font-black shrink-0">Em Andamento ✓</Badge>
+                  </div>
+                </div>
+              </Link>
             </div>
-          </div>
+          )}
         </div>
       </section>
 
       {/* STATS BAR */}
-      <section className="border-b-4 border-black bg-white">
+      <section className="border-b-4 border-black relative overflow-hidden" style={{ background: 'linear-gradient(to right, var(--primary) 50%, #000000 50%)' }}>
         <div className="max-w-7xl mx-auto grid grid-cols-2 lg:grid-cols-4">
           {stats.map((stat, i) => (
             <div key={i} className={`${stat.color} border-r-4 last:border-r-0 border-black p-6 sm:p-8 text-center hover:-translate-y-1 transition-transform`}>
