@@ -7,7 +7,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { 
   MapPin, Heart, ShieldCheck, Megaphone, Check, Search, 
   Filter, Award, User, LogOut, LayoutDashboard, Calendar, Share2,
-  FileText, CheckCircle, Sparkles, MessageSquare, AlertCircle, ArrowLeft
+  FileText, CheckCircle, Sparkles, MessageSquare, AlertCircle, ArrowLeft,
+  Clock, Bookmark, ChevronRight, ChevronLeft
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -18,6 +19,7 @@ import { getProfile, getJobs, getApplicationsForVolunteer } from '@/actions/plat
 import { getCampaigns, getCampaignById, getCampaignUpdates } from '@/actions/campaigns';
 import { getCampaignExpenses } from '@/actions/accountability';
 import { getVolunteerCertificates } from '@/actions/certificates';
+import { PrintButton } from '@/components/print-button';
 
 const MOCK_CAMPAIGNS = [
   {
@@ -26,7 +28,7 @@ const MOCK_CAMPAIGNS = [
     category: 'Alimentação',
     city: 'Natal',
     neighborhood: 'Filipe Camarão',
-    coverImage: '/images/hero_community.png',
+    coverImage: 'https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&q=80&w=800',
     financialGoal: 5000,
     financialRaised: 3450,
     mainNeed: 'Arroz, feijão e carne para preparo',
@@ -38,7 +40,7 @@ const MOCK_CAMPAIGNS = [
     category: 'Alimentação',
     city: 'Caicó',
     neighborhood: 'Centro',
-    coverImage: '/images/hero_community.png',
+    coverImage: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&q=80&w=800',
     financialGoal: 3000,
     financialRaised: 3000,
     mainNeed: 'Ingredientes para sopa e embalagens descartáveis',
@@ -69,7 +71,7 @@ const MOCK_UPDATES = [
   {
     id: 'u1',
     content: '🍲 Preparativos a todo vapor para o sopão deste sábado! Graças ao apoio de vocês, compramos todos os legumes e ingredientes fresquinhos no mercado local. Nossa cozinha comunitária em Caicó já está pronta para receber os voluntários.',
-    imageUrl: '/images/hero_community.png',
+    imageUrl: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&q=80&w=800',
     likes: 24,
     shares: 5,
     date: 'Hoje'
@@ -77,7 +79,7 @@ const MOCK_UPDATES = [
   {
     id: 'u2',
     content: '❤️ Meta de arrecadação financeira atingida em 100%! Estamos imensamente gratos a cada doador que tornou isso possível. Com esse valor de R$ 3.000,00 garantiremos a manutenção do refeitório social e o sopão por mais 3 meses.',
-    imageUrl: '/images/hero_community.png',
+    imageUrl: 'https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&q=80&w=800',
     likes: 48,
     shares: 12,
     date: 'Ontem'
@@ -91,34 +93,70 @@ const MOCK_EXPENSES = [
 
 const SLIDES = [
   {
-    title: 'Portal de Conexão PROVI',
-    subtitle: 'Uma vitrine viva e dinâmica para impulsionar o engajamento social no RN.',
     type: 'home',
+    title: 'PROVI',
+    subtitle: 'Conexão Cidadã e Transparência Radical',
+    description: 'O canal definitivo de comunicação e auditoria que une Instituições, Governo, Voluntários e Doadores em um único ecossistema transparente no Rio Grande do Norte.',
+    highlights: [
+      'Conexão direta de ponta a ponta',
+      'Auditoria de conformidade e segurança com IA',
+      'Certificados de impacto rastreáveis para ESG'
+    ]
   },
   {
-    title: 'Explorar Causas Verificadas',
-    subtitle: 'Filtragem simplificada e identificação de campanhas seguras classificadas por IA.',
     type: 'explorer',
+    title: 'Vitrine de Impacto',
+    subtitle: 'Conexão Segura e Descentralizada',
+    description: 'Campanhas e projetos verificados e auditados em tempo real. Nossa IA classifica o risco de cada causa, gerando segurança absoluta para doações e voluntariado.',
+    highlights: [
+      'Busca inteligente de causas no RN',
+      'Categorização automática por tema',
+      'Selo de Verificação de Segurança IA contra golpes'
+    ]
   },
   {
-    title: 'Prestação de Contas em Tempo Real',
-    subtitle: 'Transparência financeira de despesas e notas fiscais com termômetro IA.',
     type: 'campaign_detail',
+    title: 'Transparência Radical',
+    subtitle: 'Rastreabilidade Total de Recursos',
+    description: 'Doar sem sombra de dúvidas. Prestação de contas integrada que rastreia cada centavo de despesa, com upload de notas fiscais auditadas pelo painel de transparência.',
+    highlights: [
+      'Termômetro de Risco IA (Anti-Fraude)',
+      'Notas fiscais validadas pelo Governo',
+      'Histórico aberto de receitas e despesas'
+    ]
   },
   {
-    title: 'Vagas de Voluntariado Qualificadas',
-    subtitle: 'Engajamento direto e flexível com organizações locais estilo Atados.',
     type: 'jobs',
+    title: 'Cidadania Ativa',
+    subtitle: 'Força de Trabalho para ONGs',
+    description: 'Banco de vagas de voluntariado que supre as demandas reais das instituições sociais. Facilidade para se candidatar em projetos presenciais ou remotos.',
+    highlights: [
+      'Alinhamento com competências individuais',
+      'Apoio direto às necessidades operacionais das ONGs',
+      'Triagem automatizada de perfis sociais'
+    ]
   },
   {
-    title: 'Gestão e Certificação de Impacto',
-    subtitle: 'Painel completo do voluntário mostrando candidaturas e certificados ESG.',
     type: 'dashboard',
+    title: 'Certificação ESG',
+    subtitle: 'Validação de Horas de Impacto',
+    description: 'Unimos voluntários a empresas e universidades. Homologação digital e emissão de certificados A4 rastreáveis com código de autenticidade criptográfica.',
+    highlights: [
+      'Controle integrado de horas de impacto',
+      'Visualização e download do certificado de forma oficial',
+      'Validação pública via código no portal'
+    ]
   },
   {
-    title: 'Experimente a Plataforma',
-    subtitle: 'Acesse o portal ao vivo e conecte-se com causas do RN.',
     type: 'qrcode',
+    title: 'Invista no Futuro',
+    subtitle: 'Conecte-se Agora Mesmo',
+    description: 'A plataforma está pronta, online e operando em produção. Escaneie o QR Code e teste a experiência em tempo real no seu dispositivo móvel.',
+    highlights: [
+      'Acesso imediato via celular',
+      'Pronto para parcerias governamentais e empresariais',
+      'Tecnologia de ponta e alto impacto socioeconômico'
+    ]
   }
 ];
 
@@ -135,23 +173,22 @@ export default function PresentationPage() {
   const [applications, setApplications] = useState<any[]>([]);
   const [certificates, setCertificates] = useState<any[]>([]);
   
-  const scrollInterval = useRef<NodeJS.Timeout | null>(null);
-  const slideContainers = useRef<(HTMLDivElement | null)[]>([]);
+  const scrollIntervals = useRef<(NodeJS.Timeout | null)[]>([]);
+  const slideElements = useRef<(HTMLDivElement | null)[]>([]);
+  const scrollContainers = useRef<(HTMLDivElement | null)[]>([]);
+  const mainContainerRef = useRef<HTMLDivElement>(null);
 
   // 1. Programmatic Login and DB Fetching in Background
   useEffect(() => {
     const loadRealData = async () => {
       try {
         if (isSupabaseConfigured && supabase) {
-          // Sign in
           const { data, error } = await supabase.auth.signInWithPassword({
             email: 'teste@gmail.com',
             password: '12345678',
           });
 
-          if (error) throw error;
-
-          if (data.user) {
+          if (!error && data.user) {
             const profile = await getProfile(data.user.id);
             if (profile) {
               const typeVal = profile.profileType as 'donor' | 'volunteer' | 'institution' | 'fiscal' | 'admin' | 'company';
@@ -163,7 +200,6 @@ export default function PresentationPage() {
                 email: profile.email || 'teste@gmail.com',
               });
 
-              // Load volunteer specific details
               const apps = await getApplicationsForVolunteer(profile.id);
               setApplications(apps);
 
@@ -173,14 +209,12 @@ export default function PresentationPage() {
           }
         }
 
-        // Load generic platform data
         const dbCampaigns = await getCampaigns();
         setCampaigns(dbCampaigns);
 
         const dbJobs = await getJobs();
         setJobs(dbJobs);
 
-        // Load specific Marmitas campaign (10000000-0000-0000-0000-000000000001) details
         const targetCampId = '10000000-0000-0000-0000-000000000001';
         const detailCamp = await getCampaignById(targetCampId);
         if (detailCamp) {
@@ -194,7 +228,7 @@ export default function PresentationPage() {
         setIsLoaded(true);
       } catch (err) {
         console.error('Erro ao carregar dados reais do banco:', err);
-        setIsLoaded(true); // Fallback to local mocks if DB fails
+        setIsLoaded(true);
       }
     };
 
@@ -235,43 +269,51 @@ export default function PresentationPage() {
     }
   };
 
-  // Reset scroll and start smooth auto-scroll on slide change
+  // Scroll active slide into view smoothly
   useEffect(() => {
-    // Reset all scroll positions
-    slideContainers.current.forEach((container, index) => {
+    const targetSlideEl = slideElements.current[currentSlide];
+    if (targetSlideEl) {
+      targetSlideEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // Reset all scroll heights of browser previews
+    scrollContainers.current.forEach((container, index) => {
       if (index !== currentSlide && container) {
         container.scrollTop = 0;
       }
     });
 
-    if (scrollInterval.current) {
-      clearInterval(scrollInterval.current);
-    }
+    // Clear old scrolling intervals
+    scrollIntervals.current.forEach(interval => {
+      if (interval) clearInterval(interval);
+    });
 
-    const activeContainer = slideContainers.current[currentSlide];
+    const activeContainer = scrollContainers.current[currentSlide];
     if (!activeContainer) return;
 
-    // Delay auto-scrolling slightly to let transition finish
+    // Start a cinematic auto-scroll inside the browser preview of the current slide
     const timer = setTimeout(() => {
       let scrollPos = 0;
-      scrollInterval.current = setInterval(() => {
-        scrollPos += 1; // Smooth cinematic scroll
+      scrollIntervals.current[currentSlide] = setInterval(() => {
+        scrollPos += 1;
         if (activeContainer) {
           activeContainer.scrollTop = scrollPos;
           if (scrollPos >= activeContainer.scrollHeight - activeContainer.clientHeight) {
-            if (scrollInterval.current) clearInterval(scrollInterval.current);
+            if (scrollIntervals.current[currentSlide]) clearInterval(scrollIntervals.current[currentSlide]!);
           }
         }
       }, 30);
-    }, 2000);
+    }, 2500);
 
     return () => {
       clearTimeout(timer);
-      if (scrollInterval.current) clearInterval(scrollInterval.current);
+      scrollIntervals.current.forEach(interval => {
+        if (interval) clearInterval(interval);
+      });
     };
   }, [currentSlide]);
 
-  // Fallbacks if DB is empty or loading
+  // Fallbacks
   const displayCampaigns = campaigns.length > 0 ? campaigns : MOCK_CAMPAIGNS;
   const displayJobs = jobs.length > 0 ? jobs : MOCK_JOBS;
   const displayUpdates = campaignUpdates.length > 0 ? campaignUpdates : MOCK_UPDATES;
@@ -316,7 +358,7 @@ export default function PresentationPage() {
   return (
     <div 
       onClick={handleScreenClick}
-      className="fixed inset-0 z-[9999] bg-[#fdfdfd] text-black select-none flex flex-col items-center justify-center py-6 px-4 font-sans cursor-pointer overflow-hidden"
+      className="fixed inset-0 z-[9999] bg-[#fdfdfd] text-black select-none font-sans cursor-pointer overflow-hidden flex flex-col"
     >
       <style dangerouslySetInnerHTML={{__html: `
         .no-scrollbar::-webkit-scrollbar {
@@ -328,495 +370,389 @@ export default function PresentationPage() {
         }
       `}} />
 
-      {/* TEXT OVERLAY AREA — hidden for qrcode and home slides */}
-      {SLIDES[currentSlide].type !== 'qrcode' && SLIDES[currentSlide].type !== 'home' && (
-        <div className="text-center max-w-3xl mx-auto px-4 h-20 flex flex-col justify-center shrink-0">
-          <h2 className="font-display text-3xl sm:text-4xl font-black uppercase tracking-tight leading-none text-black">
-            {SLIDES[currentSlide].title}
-          </h2>
-          <p className="text-sm sm:text-base font-bold text-gray-500 mt-1.5">
-            {SLIDES[currentSlide].subtitle}
-          </p>
-        </div>
-      )}
-
-      {/* MAIN CONTAINER: LARGE SLIDE VIEWPORT */}
-      <div className="w-full max-w-6xl h-[80vh] bg-[#fdfdfd] border-4 border-black shadow-[12px_12px_0_0_#000] flex flex-col relative transition-all duration-300 overflow-hidden">
+      {/* Main scrolling wrapper */}
+      <div 
+        ref={mainContainerRef}
+        className="flex-1 overflow-hidden no-scrollbar scroll-smooth"
+      >
         {SLIDES.map((slide, index) => (
           <div
             key={slide.type}
-            ref={el => { slideContainers.current[index] = el; }}
-            className="absolute inset-0 w-full h-full overflow-y-auto overflow-x-hidden no-scrollbar transition-opacity duration-500"
-            style={{
-              opacity: index === currentSlide ? 1 : 0,
-              pointerEvents: index === currentSlide ? 'auto' : 'none',
-              scrollBehavior: 'auto',
-              backgroundColor: slide.type === 'home' ? '#ffe17c' : '#fdfdfd'
-            }}
+            ref={el => { slideElements.current[index] = el; }}
+            className="w-full h-screen flex flex-row shrink-0 border-b-8 border-black relative"
+            style={{ backgroundColor: slide.type === 'home' ? '#ffe17c' : '#fdfdfd' }}
           >
-            {/* STICKY NAVBAR AS REQUESTED */}
-            {slide.type !== 'qrcode' && slide.type !== 'home' && (
-              <header className="sticky top-0 z-50 w-full border-b-4 border-black bg-[#ffe17c] shadow-[0_4px_0_0_#000] shrink-0">
-                <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
-                  <div className="flex items-center gap-2">
-                    <img src="/logo-provi.png" alt="PROVI" className="w-10 h-10 object-contain" />
-                    <span className="font-display text-2xl font-black uppercase tracking-tighter">PROVI</span>
-                  </div>
-                  <nav className="hidden md:flex items-center gap-6 font-black uppercase text-xs tracking-wider">
-                    <span className="hover:underline">Explorar</span>
-                    <span className="hover:underline">Vagas</span>
-                    <span className="hover:underline">Feed</span>
-                    <span className="hover:underline">Painel</span>
-                    <span className="hover:underline">Notificações</span>
-                  </nav>
-                  <div className="flex items-center gap-3">
-                    <div className="text-right">
-                      <div className="font-black text-sm uppercase text-black leading-none">TESTE TESTE</div>
-                      <div className="text-[10px] font-bold text-gray-500 uppercase mt-0.5">Voluntário</div>
-                    </div>
-                    <Button className="h-8 px-3 border-2 border-black bg-white hover:bg-black hover:text-white text-xs font-black uppercase shadow-brutalist-sm flex items-center gap-1.5">
-                      <User className="w-3.5 h-3.5" /> Perfil
-                    </Button>
-                    <Button className="h-8 w-8 p-0 border-2 border-black bg-white text-black hover:bg-black hover:text-white text-xs font-black shadow-brutalist-sm flex items-center justify-center">
-                      <LogOut className="w-4 h-4" />
-                    </Button>
-                  </div>
+            {/* LEFT PANEL: PITCH SCRIPTS AND VALUE PROPOSITION */}
+            <div className="w-[32%] px-8 py-14 flex flex-col justify-between border-r-4 border-black bg-[#ffe17c]/15 text-black select-text shrink-0 z-10">
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <span className="font-display font-black text-lg tracking-widest text-black">
+                    PROVI PITCH
+                  </span>
+                  <Badge className="bg-black text-[#ffe17c] border border-black font-black uppercase text-[10px] rounded-none px-2 py-0.5">
+                    {String(index + 1).padStart(2, '0')} / {String(SLIDES.length).padStart(2, '0')}
+                  </Badge>
                 </div>
-              </header>
-            )}
 
-            {/* --- SLIDE 1: HOME PAGE CONTENT (BRAND ONLY) --- */}
-            {slide.type === 'home' && (
-              <div className="flex flex-col items-center justify-center h-full min-h-[60vh] text-center space-y-6">
-                <img 
-                  src="/logo-provi.png" 
-                  alt="PROVI Logo" 
-                  className="w-48 h-48 object-contain"
-                />
-                <h1 className="font-display text-6xl sm:text-7xl font-black uppercase tracking-tighter text-black leading-none mt-2">
-                  PROVI
-                </h1>
-              </div>
-            )}
+                <div className="h-[2px] w-full bg-black/10" />
 
-            {/* --- SLIDE 2: EXPLORAR CAUSAS CONTENT (EXACTLY AS SCREENSHOT) --- */}
-            {slide.type === 'explorer' && (
-              <div className="p-6 space-y-8 bg-white text-black">
-                <div className="space-y-4">
-                  <Badge className="bg-[#ffe17c] text-black border border-black font-black uppercase text-xs rounded-none">Rio Grande do Norte</Badge>
-                  <h3 className="font-display text-4xl sm:text-5xl font-black uppercase tracking-tight">Explore as Causas</h3>
-                  <p className="text-sm font-bold text-gray-500 leading-relaxed max-w-2xl">
-                    Encontre os projetos que mais tocam seu coração. Filtre por cidade, categoria ou busque por palavras-chave.
+                <div className="space-y-3">
+                  <h2 className="font-display text-4xl sm:text-5xl font-black uppercase tracking-tight leading-none text-black">
+                    {slide.title}
+                  </h2>
+                  <p className="text-base font-black text-gray-500 uppercase tracking-wide">
+                    {slide.subtitle}
                   </p>
-                  
-                  {/* Search Bar matching screenshot */}
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
-                    <div className="md:col-span-6 border-4 border-black p-2 bg-white flex items-center gap-2">
-                      <Search className="w-5 h-5 text-gray-400" />
-                      <input placeholder="Buscar campanhas, ONGs, causas..." className="w-full text-sm font-bold bg-transparent border-none outline-none" disabled />
+                </div>
+
+                <p className="text-sm font-bold text-gray-700 leading-relaxed pt-2">
+                  {slide.description}
+                </p>
+
+                <div className="space-y-2 pt-4">
+                  {slide.highlights.map((highlight, hIndex) => (
+                    <div key={hIndex} className="flex items-start gap-2.5">
+                      <span className="w-5 h-5 rounded-none bg-black text-primary flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                        ✓
+                      </span>
+                      <span className="text-xs font-black uppercase text-black">
+                        {highlight}
+                      </span>
                     </div>
-                    <div className="md:col-span-3 border-4 border-black bg-white p-2 flex items-center justify-between text-sm font-bold">
-                      <span>Todo o RN</span>
-                      <span>▼</span>
-                    </div>
-                    <div className="md:col-span-3 border-4 border-black bg-white p-2 flex items-center justify-between text-sm font-bold">
-                      <span>Todas as Categorias</span>
-                      <span>▼</span>
-                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Navigation tip */}
+              <div className="flex items-center justify-between text-[11px] font-black uppercase text-gray-400">
+                <span>Clique na esquerda para voltar</span>
+                <ChevronRight className="w-4 h-4 text-black animate-pulse" />
+                <span>Clique na direita para avançar</span>
+              </div>
+            </div>
+
+            {/* RIGHT PANEL: BROWSER CHROME WORKINGS */}
+            <div className="flex-1 p-8 bg-[#fafafa] flex items-center justify-center relative overflow-hidden">
+              <div className="w-[95%] h-[90%] border-4 border-black shadow-[12px_12px_0_0_#000] bg-white rounded-none flex flex-col overflow-hidden relative">
+                
+                {/* Browser chrome header bar */}
+                <div className="h-10 bg-gray-100 border-b-4 border-black px-4 flex items-center justify-between shrink-0 select-none">
+                  <div className="flex gap-2">
+                    <span className="w-3.5 h-3.5 rounded-full bg-red-400 border border-black/20" />
+                    <span className="w-3.5 h-3.5 rounded-full bg-yellow-400 border border-black/20" />
+                    <span className="w-3.5 h-3.5 rounded-full bg-green-400 border border-black/20" />
+                  </div>
+                  <div className="w-96 h-6 border-2 border-black bg-white rounded-none px-3 flex items-center text-[10px] font-bold text-gray-400">
+                    🔒 https://provi.org/{slide.type !== 'home' ? slide.type : ''}
+                  </div>
+                  <div className="flex gap-1">
+                    <ChevronLeft className="w-4 h-4 text-gray-400" />
+                    <ChevronRight className="w-4 h-4 text-gray-400" />
                   </div>
                 </div>
 
-                {/* Card list layout matching screenshot exactly */}
-                <div className="space-y-6">
-                  {displayCampaigns.map(camp => (
-                    <div key={camp.id} className="border-4 border-black p-6 bg-white shadow-brutalist flex flex-col md:flex-row gap-6">
-                      <div className="w-full md:w-80 shrink-0 aspect-video relative overflow-hidden border-2 border-black">
-                        <img src={camp.coverImage} alt={camp.title} className="object-cover w-full h-full" />
-                        <span className="absolute top-2 left-2 border-2 border-black bg-[#ffe17c] text-black font-black uppercase text-[10px] px-2 py-0.5">
-                          {camp.category}
-                        </span>
-                      </div>
-                      <div className="flex-1 flex flex-col justify-between">
-                        <div className="space-y-2">
-                          <h4 className="font-display text-2xl font-black uppercase leading-none">{camp.title}</h4>
-                          <div className="font-display font-black text-xl text-black">
-                            R$ {camp.financialGoal?.toLocaleString('pt-BR') || '0'}
-                          </div>
-                          <div className="flex items-center gap-3 text-xs font-bold text-gray-500 flex-wrap mt-2">
-                            <span className="flex items-center gap-1.5 font-bold">
-                              <span className="w-2.5 h-2.5 rounded-full bg-green-500" /> Ativa
-                            </span>
-                            <Badge className="bg-gray-100 text-gray-500 border border-gray-300 font-bold uppercase text-[9px] px-2 py-0.5">
-                              🤖 Classificado por IA (Seguro)
-                            </Badge>
-                          </div>
-                          <p className="text-xs text-gray-400 font-bold mt-2">
-                            <MapPin className="w-3.5 h-3.5 inline mr-1" /> {camp.city}, {camp.neighborhood} | Hoje, 11:58
-                          </p>
+                {/* Sub-container containing the actual platform rendering */}
+                <div 
+                  ref={el => { scrollContainers.current[index] = el; }}
+                  className="flex-1 overflow-y-auto no-scrollbar relative"
+                  style={{ backgroundColor: slide.type === 'home' ? '#ffe17c' : '#ffffff' }}
+                >
+                  
+                  {/* APP NAVBAR (PRE-RENDERED IN PREVIEWS) */}
+                  {slide.type !== 'home' && slide.type !== 'qrcode' && (
+                    <header className="sticky top-0 z-50 w-full border-b-4 border-black bg-[#ffe17c] shadow-[0_4px_0_0_#000] shrink-0">
+                      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
+                        <div className="flex items-center gap-2">
+                          <img src="/logo-provi.png" alt="PROVI" className="w-10 h-10 object-contain" />
+                          <span className="font-display text-2xl font-black uppercase tracking-tighter">PROVI</span>
                         </div>
-                        <div className="flex justify-end mt-4 md:mt-0">
-                          <Button className="h-9 border-2 border-black bg-white hover:bg-black hover:text-white text-xs font-black uppercase shadow-brutalist-sm flex items-center gap-1.5 text-orange-600">
-                            <MessageSquare className="w-4 h-4" /> Entrar na Causa
+                        <nav className="hidden md:flex items-center gap-6 font-black uppercase text-xs tracking-wider">
+                          <span className="hover:underline">Explorar</span>
+                          <span className="hover:underline">Vagas</span>
+                          <span className="hover:underline">Feed</span>
+                          <span className="hover:underline">Painel</span>
+                          <span className="hover:underline">Notificações</span>
+                        </nav>
+                        <div className="flex items-center gap-3">
+                          <div className="text-right">
+                            <div className="font-black text-sm uppercase text-black leading-none">TESTE TESTE</div>
+                            <div className="text-[10px] font-bold text-gray-500 uppercase mt-0.5">Voluntário</div>
+                          </div>
+                          <Button className="h-8 px-3 border-2 border-black bg-white hover:bg-black hover:text-white text-xs font-black uppercase shadow-brutalist-sm flex items-center gap-1.5">
+                            <User className="w-3.5 h-3.5" /> Perfil
                           </Button>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+                    </header>
+                  )}
 
-            {/* --- SLIDE 3: CAMPAIGN DETAIL (MATCHING SCREENSHOT) --- */}
-            {slide.type === 'campaign_detail' && (
-              <div className="p-6 space-y-8 bg-white text-black">
-                {/* Header Tag and IA */}
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Badge className="bg-[#ffe17c] text-black border-2 border-black font-black uppercase text-xs rounded-none">{activeCamp.category}</Badge>
-                  <span className="text-xs font-black text-gray-400 flex items-center gap-1">
-                    <ShieldCheck className="w-4 h-4 text-green-600" /> Analisado por IA
-                  </span>
-                </div>
-
-                {/* Campaign Title */}
-                <h3 className="font-display text-3xl sm:text-4xl font-black uppercase tracking-tight leading-none text-black">
-                  {activeCamp.title}
-                </h3>
-
-                {/* Rating Likes and IA Thermometer bar */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="border-4 border-black p-3 bg-white flex items-center justify-around font-black text-sm shadow-brutalist-sm">
-                    <span className="text-yellow-600">⭐ 4.8 <span className="text-[10px] text-gray-400 font-bold">(124 avaliações)</span></span>
-                    <span className="text-red-500">❤️ 342 curtidas</span>
-                  </div>
-
-                  <div className="md:col-span-2 bg-green-50 border-4 border-green-500 p-3 shadow-brutalist-sm flex items-center gap-3">
-                    <ShieldCheck className="w-8 h-8 text-green-600 shrink-0" />
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between text-[9px] font-black text-green-800">
-                        <span>TERMÔMETRO DE SEGURANÇA IA</span>
-                        <span>Risco de Golpe: Muito Baixo (2%)</span>
-                      </div>
-                      <div className="w-full bg-gray-200 h-1.5 rounded-full overflow-hidden mt-1 border border-green-300">
-                        <div className="bg-green-500 h-full w-[2%]"></div>
+                  {/* 1. HOME PREVIEW */}
+                  {slide.type === 'home' && (
+                    <div className="flex flex-col items-center justify-center h-full min-h-[60vh] text-center space-y-6">
+                      <img 
+                        src="/logo-provi.png" 
+                        alt="PROVI Logo" 
+                        className="w-40 h-40 object-contain animate-bounce"
+                      />
+                      <h1 className="font-display text-7xl font-black uppercase tracking-tighter text-black leading-none">
+                        PROVI
+                      </h1>
+                      <div className="border-4 border-black bg-white p-3 font-display font-black text-sm uppercase tracking-widest shadow-brutalist">
+                        CONEXÃO, TRANSPARÊNCIA E CRÉDITO SOCIAL
                       </div>
                     </div>
-                  </div>
-                </div>
+                  )}
 
-                <div className="text-xs font-bold text-gray-500 mt-2">
-                  <MapPin className="w-3.5 h-3.5 inline mr-1" /> {activeCamp.neighborhood}, {activeCamp.city} | Criada em 27/06/2026
-                </div>
-
-                {/* Main cover image */}
-                <div className="border-4 border-black overflow-hidden aspect-video max-h-96 relative">
-                  <img src={activeCamp.coverImage} alt={activeCamp.title} className="w-full h-full object-cover" />
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8">
-                  {/* Left Column content */}
-                  <div className="space-y-8">
-                    {/* Nossa Luta */}
-                    <div className="border-4 border-black p-6 bg-white shadow-brutalist">
-                      <h4 className="font-display text-2xl font-black uppercase mb-4">Nossa Luta</h4>
-                      <p className="text-sm font-bold text-gray-700 leading-relaxed">
-                        {activeCamp.description}
-                      </p>
-                    </div>
-
-                    {/* Vitrina Publica */}
-                    <div className="space-y-4">
-                      <h4 className="font-display text-2xl font-black uppercase border-b-4 border-black pb-1">Vitrine Pública</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="border-4 border-black p-6 bg-white shadow-brutalist flex flex-col justify-between">
-                          <div>
-                            <span className="text-[10px] font-black text-gray-400 uppercase">Progresso da Meta</span>
-                            <div className="font-display text-3xl font-black text-black mt-2">
-                              R$ {activeCamp.financialRaised?.toLocaleString('pt-BR') || '0'}
-                            </div>
-                            <span className="text-xs font-bold text-gray-400">de R$ {activeCamp.financialGoal?.toLocaleString('pt-BR') || '0'} arrecadados</span>
+                  {/* 2. EXPLORER PREVIEW */}
+                  {slide.type === 'explorer' && (
+                    <div className="p-6 space-y-8 bg-white text-black">
+                      <div className="space-y-4">
+                        <Badge className="bg-[#ffe17c] text-black border border-black font-black uppercase text-xs rounded-none">Rio Grande do Norte</Badge>
+                        <h3 className="font-display text-4xl font-black uppercase tracking-tight">Explore as Causas</h3>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
+                          <div className="md:col-span-6 border-4 border-black p-2 bg-white flex items-center gap-2">
+                            <Search className="w-5 h-5 text-gray-400" />
+                            <input placeholder="Buscar campanhas, ONGs, causas..." className="w-full text-sm font-bold bg-transparent border-none outline-none" disabled />
                           </div>
-                          <div className="w-full bg-gray-200 border-2 border-black h-4 overflow-hidden mt-4">
-                            <div className="bg-primary h-full" style={{ width: `${(activeCamp.financialRaised / activeCamp.financialGoal) * 100}%` }}></div>
+                          <div className="md:col-span-3 border-4 border-black bg-white p-2 flex items-center justify-between text-sm font-bold">
+                            <span>Todo o RN</span>
+                            <span>▼</span>
                           </div>
-                        </div>
-
-                        <div className="border-4 border-black p-4 bg-white shadow-brutalist space-y-2">
-                          <span className="text-[10px] font-black text-gray-400 uppercase">Galeria</span>
-                          <div className="aspect-video relative border-2 border-black overflow-hidden">
-                            <img src={activeCamp.coverImage} alt="Galeria" className="w-full h-full object-cover" />
+                          <div className="md:col-span-3 border-4 border-black bg-white p-2 flex items-center justify-between text-sm font-bold">
+                            <span>Todas as Categorias</span>
+                            <span>▼</span>
                           </div>
                         </div>
                       </div>
-                    </div>
 
-                    {/* Prestacao de contas */}
-                    <div className="space-y-4">
-                      <h4 className="font-display text-2xl font-black uppercase border-b-4 border-black pb-1">Prestação de Contas (Transparência)</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Categories distribution list */}
-                        <div className="border-4 border-black p-6 bg-white shadow-brutalist space-y-4">
-                          <span className="text-[10px] font-black text-gray-400 uppercase">Distribuição dos Gastos</span>
-                          <div className="space-y-3">
-                            <div className="text-xs font-bold flex justify-between"><span>Alimentação</span><span>R$ 450,00 (71%)</span></div>
-                            <div className="w-full bg-gray-200 h-2 rounded"><div className="bg-secondary h-full" style={{ width: '71%' }}></div></div>
-                            <div className="text-xs font-bold flex justify-between"><span>Logística</span><span>R$ 180,00 (29%)</span></div>
-                            <div className="w-full bg-gray-200 h-2 rounded"><div className="bg-accent h-full" style={{ width: '29%' }}></div></div>
-                          </div>
-                        </div>
-
-                        {/* Receipts grid */}
-                        <div className="border-4 border-black p-6 bg-white shadow-brutalist space-y-4">
-                          <span className="text-[10px] font-black text-gray-400 uppercase">Comprovantes e Despesas</span>
-                          <div className="space-y-3 max-h-60 overflow-y-auto no-scrollbar">
-                            {displayExpenses.map(exp => (
-                              <div key={exp.id} className="p-3 border-2 border-black bg-gray-50 text-xs">
-                                <div className="flex justify-between font-black">
-                                  <span className="uppercase text-gray-500">{exp.category}</span>
-                                  <span>R$ {exp.amount.toFixed(2)}</span>
-                                </div>
-                                <p className="text-[11px] font-bold text-gray-700 mt-1">{exp.description}</p>
-                                <div className="mt-2 text-[9px] font-black text-green-600 flex items-center gap-1">
-                                  <Check className="w-3 h-3" /> Nota Fiscal Validada
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Feed de atualizações */}
-                    <div className="space-y-4">
-                      <h4 className="font-display text-2xl font-black uppercase border-b-4 border-black pb-1">Feed de Atualizações</h4>
                       <div className="space-y-6">
-                        {displayUpdates.map(up => (
-                          <div key={up.id} className="border-4 border-black p-4 bg-white shadow-brutalist">
-                            <div className="flex items-center gap-3 mb-3">
-                              <div className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center font-display font-black text-sm">IA</div>
+                        {displayCampaigns.map(camp => (
+                          <div key={camp.id} className="border-4 border-black p-6 bg-white shadow-brutalist flex flex-col md:flex-row gap-6">
+                            <div className="w-full md:w-80 shrink-0 aspect-video relative overflow-hidden border-2 border-black">
+                              <img src={camp.coverImage} alt={camp.title} className="object-cover w-full h-full" />
+                              <span className="absolute top-2 left-2 border-2 border-black bg-[#ffe17c] text-black font-black uppercase text-[10px] px-2 py-0.5">
+                                {camp.category}
+                              </span>
+                            </div>
+                            <div className="flex-1 flex flex-col justify-between">
+                              <div className="space-y-2">
+                                <h4 className="font-display text-2xl font-black uppercase leading-none">{camp.title}</h4>
+                                <div className="font-display font-black text-xl text-black">
+                                  R$ {camp.financialGoal?.toLocaleString('pt-BR') || '0'}
+                                </div>
+                                <div className="flex items-center gap-3 text-xs font-bold text-gray-500 flex-wrap mt-2">
+                                  <span className="flex items-center gap-1.5 font-bold">
+                                    <span className="w-2.5 h-2.5 rounded-full bg-green-500" /> Ativa
+                                  </span>
+                                  <Badge className="bg-green-50 text-green-700 border border-green-300 font-bold uppercase text-[9px] px-2 py-0.5">
+                                    🤖 Classificado por IA (Seguro)
+                                  </Badge>
+                                </div>
+                                <p className="text-xs text-gray-400 font-bold mt-2">
+                                  <MapPin className="w-3.5 h-3.5 inline mr-1" /> {camp.city}, {camp.neighborhood}
+                                </p>
+                              </div>
+                              <div className="flex justify-end mt-4">
+                                <Button className="h-8 border-2 border-black bg-white hover:bg-black hover:text-white text-[10px] font-black uppercase shadow-brutalist-sm">
+                                  Ver Detalhes
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 3. CAMPAIGN ACCOUNTABILITY PREVIEW */}
+                  {slide.type === 'campaign_detail' && (
+                    <div className="p-6 space-y-8 bg-white text-black">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Badge className="bg-[#ffe17c] text-black border-2 border-black font-black uppercase text-xs rounded-none">{activeCamp.category}</Badge>
+                        <span className="text-xs font-black text-gray-400 flex items-center gap-1">
+                          <ShieldCheck className="w-4 h-4 text-green-600" /> Analisado por IA
+                        </span>
+                      </div>
+
+                      <h3 className="font-display text-3xl font-black uppercase tracking-tight leading-none text-black">
+                        {activeCamp.title}
+                      </h3>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="border-4 border-black p-3 bg-white flex items-center justify-around font-black text-xs shadow-brutalist-sm">
+                          <span className="text-yellow-600">⭐ 4.8 <span className="text-[9px] text-gray-400 font-bold">(124 avaliações)</span></span>
+                          <span className="text-red-500">❤️ 342 curtidas</span>
+                        </div>
+
+                        <div className="md:col-span-2 bg-green-50 border-4 border-green-500 p-3 shadow-brutalist-sm flex items-center gap-3">
+                          <ShieldCheck className="w-8 h-8 text-green-600 shrink-0" />
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between text-[9px] font-black text-green-800">
+                              <span>TERMÔMETRO DE SEGURANÇA IA</span>
+                              <span>Risco de Golpe: Muito Baixo (2%)</span>
+                            </div>
+                            <div className="w-full bg-gray-200 h-1.5 mt-1 border border-green-300">
+                              <div className="bg-green-500 h-full w-[2%]"></div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
+                        <div className="space-y-6">
+                          <div className="border-4 border-black p-4 bg-white shadow-brutalist">
+                            <h4 className="font-display text-xl font-black uppercase mb-2">Finalidade dos Insumos</h4>
+                            <p className="text-xs font-semibold text-gray-700 leading-relaxed">
+                              {activeCamp.description}
+                            </p>
+                          </div>
+
+                          <div className="space-y-4">
+                            <h4 className="font-display text-xl font-black uppercase border-b-2 border-black pb-1">Despesas em Tempo Real</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="border-4 border-black p-4 bg-white shadow-brutalist space-y-4">
+                                <span className="text-[9px] font-black text-gray-400 uppercase">Gastos por Categoria</span>
+                                <div className="space-y-2">
+                                  <div className="text-[10px] font-bold flex justify-between"><span>Alimentação</span><span>R$ 450,00</span></div>
+                                  <div className="w-full bg-gray-200 h-1.5"><div className="bg-secondary h-full" style={{ width: '71%' }}></div></div>
+                                  <div className="text-[10px] font-bold flex justify-between"><span>Logística</span><span>R$ 180,00</span></div>
+                                  <div className="w-full bg-gray-200 h-1.5"><div className="bg-accent h-full" style={{ width: '29%' }}></div></div>
+                                </div>
+                              </div>
+
+                              <div className="border-4 border-black p-4 bg-white shadow-brutalist space-y-4">
+                                <span className="text-[9px] font-black text-gray-400 uppercase">Comprovantes e Notas Fiscais</span>
+                                <div className="space-y-2">
+                                  {displayExpenses.map(exp => (
+                                    <div key={exp.id} className="p-2 border border-black bg-gray-50 text-[10px]">
+                                      <div className="flex justify-between font-black">
+                                        <span className="uppercase text-gray-500">{exp.category}</span>
+                                        <span>R$ {exp.amount.toFixed(2)}</span>
+                                      </div>
+                                      <p className="text-[9px] font-bold text-gray-700 mt-1">{exp.description}</p>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="space-y-4">
+                          <div className="border-4 border-black p-4 bg-white shadow-brutalist space-y-3">
+                            <span className="text-[9px] font-black text-gray-400 uppercase">Prestador de Contas</span>
+                            <div className="flex items-center gap-2">
+                              <div className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center font-display font-black text-xs">IN</div>
                               <div>
-                                <div className="font-bold text-sm">Instituto Água Viva</div>
-                                <span className="text-[10px] text-gray-400 font-bold">{up.date}</span>
+                                <h5 className="font-display font-black text-sm uppercase leading-none">Instituto Água Viva</h5>
+                                <span className="text-[9px] text-gray-400 font-bold uppercase mt-0.5">Caicó</span>
                               </div>
                             </div>
-                            <p className="text-xs font-semibold leading-relaxed mb-3">{up.content}</p>
-                            {up.imageUrl && (
-                              <img src={up.imageUrl} alt="Update" className="border-2 border-black w-full h-40 object-cover" />
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Right Column content (Goal Card) */}
-                  <div className="space-y-6">
-                    <div className="border-4 border-black p-6 bg-white shadow-brutalist space-y-4">
-                      <div className="flex justify-between font-black text-sm">
-                        <span>Arrecadado</span>
-                        <span className="text-green-600">R$ {activeCamp.financialRaised}</span>
-                      </div>
-                      <div className="w-full bg-gray-200 border-2 border-black h-4 overflow-hidden">
-                        <div className="bg-secondary h-full" style={{ width: `${(activeCamp.financialRaised / activeCamp.financialGoal) * 100}%` }}></div>
-                      </div>
-                      <div className="text-[10px] font-bold text-gray-400 uppercase text-center">de meta de R$ {activeCamp.financialGoal}</div>
-                      
-                      <div className="border-2 border-dashed border-gray-200 p-3 bg-gray-50 rounded">
-                        <span className="text-[10px] font-black text-gray-400 uppercase block">Necessidade Principal</span>
-                        <p className="text-xs font-black uppercase text-black mt-1">{activeCamp.mainNeed}</p>
-                      </div>
-
-                      <Button className="w-full h-12 bg-black text-[#ffe17c] hover:bg-gray-800 border-2 border-black font-black uppercase shadow-brutalist text-sm">
-                        ❤️ Doar na Vakinha
-                      </Button>
-                      <Button className="w-full h-10 bg-white text-black hover:bg-gray-50 border-2 border-black font-black uppercase shadow-brutalist-sm text-xs">
-                        🔗 Multiplicar essa Causa
-                      </Button>
-                      <Button className="w-full h-10 bg-white text-black hover:bg-gray-50 border-2 border-black font-black uppercase shadow-brutalist-sm text-xs">
-                        ◀ Voltar ao Painel
-                      </Button>
-                    </div>
-
-                    {/* Organizador */}
-                    <div className="border-4 border-black p-6 bg-white shadow-brutalist space-y-3">
-                      <span className="text-[10px] font-black text-gray-400 uppercase">Organizador / ONG</span>
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center font-display font-black text-sm">IN</div>
-                        <div>
-                          <h5 className="font-display font-black text-base uppercase leading-none">Instituto Água Viva</h5>
-                          <span className="text-[10px] text-gray-400 font-bold uppercase mt-0.5">Natal</span>
-                        </div>
-                      </div>
-                      <p className="text-[11px] font-bold text-gray-500 leading-relaxed">
-                        ONG voltada à preservação ambiental e acesso a recursos básicos.
-                      </p>
-                      <div className="pt-2 border-t border-gray-100 text-[10px] font-bold text-gray-400">
-                        Contato Público: (84) 99888-1111
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* --- SLIDE 4: JOB POSTINGS CONTENT --- */}
-            {slide.type === 'jobs' && (
-              <div className="p-6 space-y-8 bg-white text-black">
-                <div className="space-y-4">
-                  <h3 className="font-display text-4xl font-black uppercase">Vagas de Voluntariado</h3>
-                  <div className="flex gap-2">
-                    <Badge className="bg-[#ffe17c] text-black border-2 border-black font-black text-xs uppercase rounded-none">Natal, RN</Badge>
-                    <Badge className="bg-secondary text-black border-2 border-black font-black text-xs uppercase rounded-none">Presencial</Badge>
-                  </div>
-                </div>
-
-                <div className="grid gap-6">
-                  {displayJobs.map(job => (
-                    <div key={job.id} className="border-4 border-black p-5 bg-white shadow-brutalist flex flex-col md:flex-row justify-between gap-4 items-start md:items-center">
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h4 className="font-display text-xl font-black uppercase text-black">{job.title}</h4>
-                          <Badge className="bg-[#ffe17c] text-black border-2 border-black text-xs font-black uppercase rounded-none">{job.category}</Badge>
-                        </div>
-                        <p className="text-xs text-gray-600 font-bold max-w-2xl leading-relaxed">{job.description}</p>
-                      </div>
-                      <div className="flex flex-col items-start md:items-end gap-2 shrink-0">
-                        <span className="text-[10px] font-black bg-black text-primary px-2 py-0.5 border border-black uppercase">{job.modality}</span>
-                        <Button className="h-8 border-2 border-black bg-black text-white hover:bg-white hover:text-black font-black uppercase text-xs shadow-brutalist-sm">Candidatar-se</Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* --- SLIDE 5: VOLUNTEER DASHBOARD (MATCHING CODE RENDER) --- */}
-            {slide.type === 'dashboard' && (
-              <div className="p-6 space-y-8 bg-white text-black">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <div>
-                    <h3 className="font-display text-4xl sm:text-5xl font-black uppercase tracking-tighter">Olá, TESTE TESTE</h3>
-                    <p className="text-xs text-gray-500 font-black uppercase mt-1">Área do Voluntário — Veja seu impacto e candidaturas</p>
-                  </div>
-                  <Button className="border-4 border-black bg-[#ffe17c] font-black text-xs uppercase py-3 shadow-brutalist-sm">
-                    🔍 Buscar Vagas
-                  </Button>
-                </div>
-
-                {/* Stats cards for Volunteer */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  <div className="border-4 border-black p-6 bg-primary shadow-brutalist flex items-center justify-between">
-                    <div>
-                      <p className="font-black text-xs uppercase text-gray-600">Candidaturas Realizadas</p>
-                      <h2 className="font-display text-4xl font-black mt-2">{displayApps.length}</h2>
-                    </div>
-                    <FileText className="w-12 h-12 opacity-50 shrink-0" />
-                  </div>
-
-                  <div className="border-4 border-black p-6 bg-secondary shadow-brutalist flex items-center justify-between">
-                    <div>
-                      <p className="font-black text-xs uppercase text-gray-600">Status da Conta</p>
-                      <h2 className="font-display text-3xl font-black mt-2">Ativo</h2>
-                    </div>
-                    <CheckCircle className="w-12 h-12 opacity-50 shrink-0" />
-                  </div>
-
-                  <div className="border-4 border-black p-6 bg-accent text-white shadow-brutalist flex items-center justify-between">
-                    <div>
-                      <p className="font-black text-xs uppercase text-white/70">Perfil Concluído</p>
-                      <h2 className="font-display text-4xl font-black mt-2">100%</h2>
-                    </div>
-                    <User className="w-12 h-12 opacity-50 shrink-0" />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8">
-                  {/* Left Column: Applications & Certificates */}
-                  <div className="space-y-8">
-                    {/* Applications */}
-                    <div className="space-y-4">
-                      <h4 className="font-display text-2xl font-black uppercase">Minhas Candidaturas</h4>
-                      <div className="space-y-4">
-                        {displayApps.map((app, index) => (
-                          <div key={index} className="border-4 border-black bg-white p-6 shadow-brutalist flex flex-col sm:flex-row justify-between gap-4">
-                            <div className="space-y-1">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <h5 className="font-display text-xl font-black uppercase">{app.jobTitle}</h5>
-                                <Badge className="bg-[#ffe17c] text-black border border-black font-black uppercase text-[9px]">
-                                  {app.status === 'selected' ? 'Selecionado' : 'Pendente'}
-                                </Badge>
-                              </div>
-                              <p className="text-xs font-bold text-gray-500">Instituição: {app.institutionName}</p>
-                              <p className="text-xs font-medium text-gray-400 mt-2">Sua mensagem: &quot;{app.message}&quot;</p>
-                            </div>
-                            <div className="flex flex-col items-start sm:items-end justify-between shrink-0">
-                              <span className="text-[10px] font-bold text-gray-400">Enviada em {new Date(app.submittedAt).toLocaleDateString()}</span>
-                              <Button className="h-7 px-3 border border-black bg-white hover:bg-black hover:text-white text-[10px] font-black uppercase mt-2">Ver Vaga</Button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Certificates */}
-                    <div className="space-y-4">
-                      <h4 className="font-display text-2xl font-black uppercase">Meus Certificados de Horas</h4>
-                      <div className="space-y-4">
-                        {displayCerts.map((cert, index) => (
-                          <div key={index} className="border-4 border-black bg-white p-6 shadow-brutalist flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                            <div>
-                              <h5 className="font-display text-lg font-black uppercase">{cert.jobTitle}</h5>
-                              <p className="text-xs font-bold text-gray-500">Emitido por: {cert.institutionName}</p>
-                              <p className="text-xs font-black uppercase text-green-600 mt-1">✓ {cert.hoursDonated} horas homologadas</p>
-                            </div>
-                            <Button className="border-2 border-black font-black uppercase text-[10px] h-8 bg-black text-white hover:bg-white hover:text-black">
-                              Visualizar Certificado
+                            <Button className="w-full h-8 bg-black text-[#ffe17c] hover:bg-gray-800 border border-black font-black uppercase text-[10px]">
+                              Realizar Doação
                             </Button>
                           </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 4. VOLUNTEER JOBS PREVIEW */}
+                  {slide.type === 'jobs' && (
+                    <div className="p-6 space-y-6 bg-white text-black">
+                      <h3 className="font-display text-3xl font-black uppercase">Vagas de Voluntariado</h3>
+                      <div className="grid gap-4">
+                        {displayJobs.map(job => (
+                          <div key={job.id} className="border-4 border-black p-4 bg-white shadow-brutalist flex flex-col md:flex-row justify-between gap-4 items-start md:items-center">
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2">
+                                <h4 className="font-display text-lg font-black uppercase text-black">{job.title}</h4>
+                                <Badge className="bg-[#ffe17c] text-black border border-black text-[10px] font-black uppercase rounded-none">{job.category}</Badge>
+                              </div>
+                              <p className="text-[11px] text-gray-600 font-bold max-w-2xl">{job.description}</p>
+                            </div>
+                            <div className="shrink-0 flex items-center gap-2">
+                              <span className="text-[9px] font-black bg-black text-primary px-2 py-0.5 uppercase">{job.modality}</span>
+                              <Button className="h-8 border border-black bg-white hover:bg-black hover:text-white font-black uppercase text-[10px]">Candidatar-se</Button>
+                            </div>
+                          </div>
                         ))}
                       </div>
                     </div>
-                  </div>
+                  )}
 
-                  {/* Right Column: Shortcuts */}
-                  <div className="space-y-6">
-                    <div className="border-4 border-black bg-white p-6 shadow-brutalist space-y-4">
-                      <h4 className="font-display text-xl font-black uppercase flex items-center gap-2">
-                        <Sparkles className="w-5 h-5 text-yellow-500 fill-yellow-500" /> Atalhos
-                      </h4>
-                      <div className="flex flex-col gap-3">
-                        <Button className="w-full text-left justify-start font-black uppercase text-xs h-10 border border-black" variant="outline">🔍 Explorar Vagas</Button>
-                        <Button className="w-full text-left justify-start font-black uppercase text-xs h-10 border border-black" variant="outline">📰 Feed de Notícias</Button>
-                        <Button className="w-full text-left justify-start font-black uppercase text-xs h-10 border border-black" variant="outline">👤 Meu Perfil Público</Button>
+                  {/* 5. VOLUNTEER CERTIFICATES DASHBOARD */}
+                  {slide.type === 'dashboard' && (
+                    <div className="p-6 space-y-6 bg-white text-black">
+                      <div>
+                        <h3 className="font-display text-3xl font-black uppercase leading-none">Área do Voluntário</h3>
+                        <p className="text-[10px] text-gray-500 font-black uppercase mt-1">TESTE TESTE | Conquistas e Certificações ESG</p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="border-4 border-black p-4 bg-[#ffe17c]/20 shadow-brutalist flex items-center justify-between">
+                          <div>
+                            <p className="font-black text-[9px] uppercase text-gray-600">Candidaturas Ativas</p>
+                            <h2 className="font-display text-3xl font-black mt-1">{displayApps.length}</h2>
+                          </div>
+                          <FileText className="w-8 h-8 opacity-50" />
+                        </div>
+
+                        <div className="border-4 border-black p-4 bg-accent/20 shadow-brutalist flex items-center justify-between">
+                          <div>
+                            <p className="font-black text-[9px] uppercase text-gray-600">Horas Homologadas</p>
+                            <h2 className="font-display text-3xl font-black mt-1">12h</h2>
+                          </div>
+                          <Award className="w-8 h-8 opacity-50" />
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <h4 className="font-display text-xl font-black uppercase border-b-2 border-black pb-1">Certificado em Acesso Rápido</h4>
+                        
+                        {/* Premium A4 layout card rendered dynamically */}
+                        <div className="border-4 border-black p-4 bg-white relative overflow-hidden shadow-brutalist flex flex-col items-center justify-center">
+                          <div className="border-2 border-dashed border-gray-300 p-6 text-center w-full max-w-xl space-y-4 flex flex-col items-center">
+                            <Award className="w-10 h-10 text-yellow-500 stroke-[2]" />
+                            <h5 className="font-display text-xl font-black uppercase text-black leading-none">
+                              Certificado de Impacto Social
+                            </h5>
+                            <p className="text-[11px] text-gray-600 font-semibold leading-relaxed max-w-sm">
+                              Certificamos que o voluntário <strong>Ana Beatriz</strong> concluiu 12 horas voluntárias na causa de <strong>Desenvolvedora Voluntária</strong>.
+                            </p>
+                            
+                            {/* Standard print button component inline */}
+                            <PrintButton size="sm" className="font-black uppercase border-2 border-black bg-black text-white hover:bg-white hover:text-black text-[10px] h-8 shadow-brutalist-sm" />
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              </div>
-            )}
+                  )}
 
-            {/* --- SLIDE 6: QR CODE / CONCLUSION --- */}
-            {slide.type === 'qrcode' && (
-              <div className="p-6 flex flex-col items-center justify-center min-h-[60vh] text-center space-y-8 bg-white text-black">
-                <div className="space-y-3">
-                  <Badge className="bg-[#ffe17c] text-black border-2 border-black font-black uppercase text-xs rounded-none">Acesse Agora</Badge>
-                  <h3 className="font-display text-4xl sm:text-5xl font-black uppercase tracking-tight">Experimente a Plataforma</h3>
-                  <p className="text-sm font-bold text-gray-500 max-w-md mx-auto leading-relaxed">
-                    Escaneie com a câmera do seu celular para testar a experiência real da PROVI em produção na Vercel!
-                  </p>
-                </div>
-                
-                <div className="border-8 border-black p-6 bg-white shadow-brutalist flex flex-col items-center rotate-1 hover:rotate-0 transition-transform duration-300">
-                  <img 
-                    src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https://projeto-beneficente-five.vercel.app/" 
-                    alt="QR Code PROVI" 
-                    className="w-64 h-64 border-4 border-black object-contain"
-                  />
-                  <div className="font-display font-black text-lg uppercase mt-4 bg-[#ffe17c] px-4 py-1.5 border-2 border-black">
-                    projeto-beneficente-five.vercel.app
-                  </div>
+                  {/* 6. QR CODE CONCLUSION PREVIEW */}
+                  {slide.type === 'qrcode' && (
+                    <div className="p-6 flex flex-col items-center justify-center min-h-[50vh] text-center space-y-6 bg-white text-black">
+                      <div className="space-y-2">
+                        <Badge className="bg-[#ffe17c] text-black border border-black font-black uppercase text-xs rounded-none">Acesse Agora</Badge>
+                        <h3 className="font-display text-3xl font-black uppercase tracking-tight leading-none">Experimente a PROVI</h3>
+                      </div>
+                      
+                      <div className="border-4 border-black p-4 bg-white shadow-brutalist flex flex-col items-center">
+                        <img 
+                          src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://projeto-beneficente-five.vercel.app/" 
+                          alt="QR Code PROVI" 
+                          className="w-40 h-40 border-2 border-black object-contain"
+                        />
+                        <div className="font-display font-black text-xs uppercase mt-3 bg-[#ffe17c] px-3 py-1 border border-black">
+                          projeto-beneficente-five.vercel.app
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
-            )}
+            </div>
           </div>
         ))}
       </div>
