@@ -27,12 +27,19 @@ export default async function CertificatePage({
             size: A4 landscape;
             margin: 0;
           }
-          body {
-            margin: 0;
-            padding: 0;
-            background-color: white;
+          html, body, main {
+            height: 210mm !important;
+            width: 297mm !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            position: relative !important;
+            overflow: hidden !important;
+            background-color: white !important;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
+          }
+          header, footer {
+            display: none !important;
           }
           .print-certificate-card {
             width: 297mm !important;
