@@ -21,60 +21,6 @@ export default async function CertificatePage({
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6 print:bg-white print:p-0">
-      <style dangerouslySetInnerHTML={{ __html: `
-        @media print {
-          @page {
-            size: A4 landscape;
-            margin: 0;
-          }
-          html, body, main {
-            height: 100% !important;
-            width: 100% !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            background-color: white !important;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-            overflow: hidden !important;
-          }
-          header, footer, nav, aside, .print-hidden, [class*="print-hidden"] {
-            display: none !important;
-            visibility: hidden !important;
-            height: 0 !important;
-            overflow: hidden !important;
-          }
-          .print-certificate-card {
-            width: 297mm !important;
-            height: 210mm !important;
-            margin: 0 !important;
-            padding: 12mm !important;
-            box-sizing: border-box !important;
-            border: 8px solid black !important;
-            border-radius: 0 !important;
-            box-shadow: none !important;
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            background: white !important;
-            page-break-inside: avoid !important;
-            display: flex !important;
-            flex-direction: column !important;
-            justify-content: center !important;
-            z-index: 99999 !important;
-          }
-          .print-certificate-content {
-            border: 4px dashed #cbd5e1 !important;
-            padding: 10mm 15mm !important;
-            height: 100% !important;
-            display: flex !important;
-            flex-direction: column !important;
-            justify-content: space-between !important;
-            align-items: center !important;
-            box-sizing: border-box !important;
-            min-height: auto !important;
-          }
-        }
-      `}} />
       <div className="max-w-4xl w-full space-y-6 print:space-y-0 print:max-w-none print:w-auto">
         
         {/* NAVEGAÇÃO DE VOLTA (OCULTA NA IMPRESSÃO) */}
