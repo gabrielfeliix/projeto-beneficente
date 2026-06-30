@@ -164,6 +164,11 @@ function AuthForm() {
   useEffect(() => {
     const mode = searchParams.get("mode");
     if (mode === "signup") setTab("signup");
+
+    const role = searchParams.get("role");
+    if (role === "institution" || role === "donor" || role === "volunteer" || role === "company") {
+      setProfileType(role);
+    }
   }, [searchParams]);
 
   /* ── CNPJ autofill ── */

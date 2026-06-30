@@ -245,7 +245,7 @@ export default async function Home() {
                 Quero Ser Voluntário
               </Button>
             </Link>
-            <Link href="/campaigns/new" className="w-full sm:w-auto">
+            <Link href="/login?mode=signup&role=institution" className="w-full sm:w-auto">
               <Button size="lg" variant="outline" className="w-full sm:w-auto h-14 text-lg font-black uppercase border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,0.3)] hover:-translate-y-1 transition-all bg-white">
                 Sou uma ONG / Instituição
               </Button>
