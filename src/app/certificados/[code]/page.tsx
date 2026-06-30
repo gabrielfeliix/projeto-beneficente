@@ -28,18 +28,20 @@ export default async function CertificatePage({
             margin: 0;
           }
           html, body, main {
-            height: 210mm !important;
-            width: 297mm !important;
+            height: 100% !important;
+            width: 100% !important;
             margin: 0 !important;
             padding: 0 !important;
-            position: relative !important;
-            overflow: hidden !important;
             background-color: white !important;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
+            overflow: hidden !important;
           }
-          header, footer {
+          header, footer, nav, aside, .print-hidden, [class*="print-hidden"] {
             display: none !important;
+            visibility: hidden !important;
+            height: 0 !important;
+            overflow: hidden !important;
           }
           .print-certificate-card {
             width: 297mm !important;
@@ -50,7 +52,7 @@ export default async function CertificatePage({
             border: 8px solid black !important;
             border-radius: 0 !important;
             box-shadow: none !important;
-            position: absolute !important;
+            position: fixed !important;
             top: 0 !important;
             left: 0 !important;
             background: white !important;
@@ -58,6 +60,7 @@ export default async function CertificatePage({
             display: flex !important;
             flex-direction: column !important;
             justify-content: center !important;
+            z-index: 99999 !important;
           }
           .print-certificate-content {
             border: 4px dashed #cbd5e1 !important;
@@ -75,7 +78,7 @@ export default async function CertificatePage({
       <div className="max-w-4xl w-full space-y-6 print:space-y-0 print:max-w-none print:w-auto">
         
         {/* NAVEGAÇÃO DE VOLTA (OCULTA NA IMPRESSÃO) */}
-        <div className="flex justify-between items-center print:hidden">
+        <div className="flex justify-between items-center print:hidden print-hidden">
           <Link href="/dashboard">
             <Button variant="ghost" className="font-bold uppercase text-xs flex items-center gap-2">
               <ArrowLeft className="w-4 h-4" /> Painel de Controle
@@ -158,7 +161,7 @@ export default async function CertificatePage({
         </Card>
 
         {/* AÇÕES DE IMPRESSÃO (OCULTAS NA IMPRESSÃO) */}
-        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between print:hidden">
+        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between print:hidden print-hidden">
           <p className="text-xs font-bold text-gray-500 leading-relaxed max-w-md">
             Este certificado é público e validado criptograficamente pela rede Lumiar. Instituições de ensino ou empresas podem consultar a validade deste documento usando o código <strong>{cert.verificationCode}</strong> em nosso portal.
           </p>
