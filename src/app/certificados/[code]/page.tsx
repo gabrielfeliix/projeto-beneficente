@@ -1,6 +1,7 @@
 import { getCertificateByCode } from "@/actions/certificates";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PrintButton } from "@/components/print-button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ShieldCheck, Award, Calendar, Clock, Bookmark, ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -111,13 +112,7 @@ export default async function CertificatePage({
             Este certificado é público e validado criptograficamente pela rede Lumiar. Instituições de ensino ou empresas podem consultar a validade deste documento usando o código <strong>{cert.verificationCode}</strong> em nosso portal.
           </p>
           <div className="flex gap-3 w-full sm:w-auto shrink-0">
-            <Button
-              onClick={() => typeof window !== "undefined" && window.print()}
-              size="lg"
-              className="w-full sm:w-auto font-black uppercase border-2 border-black bg-black text-white hover:bg-white hover:text-black transition-all"
-            >
-              🖨️ Imprimir Certificado
-            </Button>
+            <PrintButton className="w-full sm:w-auto font-black uppercase border-2 border-black bg-black text-white hover:bg-white hover:text-black transition-all" />
           </div>
         </div>
 
