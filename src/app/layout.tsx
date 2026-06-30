@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Link from "next/link";
 import { NavBar } from "@/components/nav-bar";
+import { Mail, MapPin, Clock } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "PROVI — Transparência Social, Voluntariado e Impacto no RN",
+  title: "PROVI",
   description: "A maior plataforma de conexão voluntária, auditoria de ONGs e rastreabilidade de impacto social do Rio Grande do Norte. Acompanhe a prestação de contas, fiscalização de projetos e doações em tempo real.",
   keywords: [
     "voluntariado",
@@ -19,7 +20,7 @@ export const metadata: Metadata = {
     "portal da transparência"
   ],
   openGraph: {
-    title: "PROVI — Transparência Social, Voluntariado e Impacto no RN",
+    title: "PROVI",
     description: "Conectando voluntários e ONGs com total transparência, rastreabilidade de doações e auditoria fiscal no Rio Grande do Norte.",
     type: "website",
     images: [
@@ -50,8 +51,8 @@ export default function RootLayout({
         <footer className="border-t-4 border-black bg-black text-white py-12 px-6 mt-20">
           <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10">
             <div>
-              <div className="flex items-center gap-2 mb-4">
-                <img src="/logo-provi.png" alt="PROVI Logo" className="w-12 h-12 object-contain shrink-0" />
+              <div className="flex items-center gap-3 mb-4">
+                <img src="/logo white.png" alt="PROVI Logo" className="w-[58px] h-[58px] object-contain shrink-0" />
                 <span className="font-display text-2xl font-black uppercase tracking-tighter">PROVI</span>
               </div>
               <p className="text-gray-400 font-bold text-sm leading-relaxed">
@@ -69,19 +70,25 @@ export default function RootLayout({
             </div>
             <div>
               <h3 className="font-black uppercase text-sm mb-4 tracking-widest text-primary">Informações</h3>
-              <ul className="space-y-2 text-sm font-bold text-gray-400">
-                <li><span className="text-gray-500">📧</span> contato@mutirao.org.br</li>
-                <li><span className="text-gray-500">📍</span> Natal — Rio Grande do Norte</li>
-                <li><span className="text-gray-500">🕐</span> Respondemos em até 24h</li>
+              <ul className="space-y-4 text-sm font-bold text-gray-400 mt-2">
+                <li className="flex items-center gap-3 hover:text-white transition-colors">
+                  <Mail className="w-5 h-5 text-primary shrink-0" />
+                  <span>contato@mutirao.org.br</span>
+                </li>
+                <li className="flex items-center gap-3 hover:text-white transition-colors">
+                  <MapPin className="w-5 h-5 text-primary shrink-0" />
+                  <span>Natal — Rio Grande do Norte</span>
+                </li>
+                <li className="flex items-center gap-3 hover:text-white transition-colors">
+                  <Clock className="w-5 h-5 text-primary shrink-0" />
+                  <span>Respondemos em até 24h</span>
+                </li>
               </ul>
             </div>
           </div>
           <div className="max-w-7xl mx-auto border-t border-gray-800 mt-10 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-xs font-bold text-gray-600 uppercase tracking-widest">
               © 2026 PROVI Plataforma. Todos os direitos reservados.
-            </p>
-            <p className="text-xs font-bold text-gray-600">
-              Feito com 💛 para o RN
             </p>
           </div>
         </footer>
