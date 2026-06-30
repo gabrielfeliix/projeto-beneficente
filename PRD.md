@@ -198,4 +198,38 @@ graph TD
 ```
 
 ---
+
+## 5. Planejamento de Desenvolvimento (Estrutura Kanban)
+
+Para facilitar a organização das tarefas da sua equipe no Trello, Jira ou GitHub Projects, aqui está a estruturação das funcionalidades mapeadas organizadas em formato Kanban:
+
+### 📋 BACKLOG (Ideias e Próximas Melhorias)
+- [ ] **SMS Gateway**: Implementação de envio de alertas por SMS/WhatsApp real para inscrições de vagas.
+- [ ] **Gateway de Pagamento Real**: Substituição do Pix/Cartão simulado por API real (ex: Asaas, Pagar.me, Mercado Pago).
+- [ ] **MFA / Autenticação de Dois Fatores**: Login de alta segurança com código de confirmação no e-mail/celular.
+- [ ] **Aplicativo Mobile Nativo**: Construção de aplicativo em React Native para facilitar notificações push e acesso direto.
+
+### 📝 A FAZER (Na Fila para Desenvolvimento)
+- [ ] **Otimização do Termômetro de Risco IA**: Refinar algoritmo de classificação fiscal de notas tributárias anexadas pelas ONGs.
+- [ ] **Filtros Avançados de Busca de ONGs**: Pesquisas e filtros por tamanho, número de voluntários e status regulatório.
+- [ ] **Módulo de Relatórios de Impacto**: Exportação de dados das campanhas em planilhas CSV/PDF para auditorias externas.
+
+### 🛠️ EM DESENVOLVIMENTO (Tasks Ativas / Refatoração)
+- [ ] **Autopreenenchimento de CNPJ/CEP**: Otimização do tempo de carregamento da chamada de API externa no cadastro unificado.
+- [ ] **Painel Estatístico Governamental**: Polimento dos gráficos e distribuição percentual de doações por município.
+
+### 🧪 PARA TESTAR / VALIDAÇÃO (QA / Homologação)
+- [ ] **Emissão de Certificados Criptográficos**: Testar geração de código alfanumérico e validação cruzada no banco de dados.
+- [ ] **Scroll Infinito no Feed**: Validar prevenção de chaves duplicadas (`isLoadingRef` guard) sob alta carga de requisições.
+- [ ] **Redirecionamento de Perfis**: Validar se novos cadastros chegam à aba correta com base no parâmetro `role` da URL.
+
+### ✅ CONCLUÍDO (Entregues e Validados)
+- [x] **Configuração do Next.js App Router**: Estrutura base de rotas e carregamento assíncrono.
+- [x] **Banco de Dados Supabase**: Definição de schemas em `schema.sql` e controle de segurança RLS por perfis.
+- [x] **Correção de Bordas do Stats Bar**: Gradiente brutalista estendido eliminando espaços em branco laterais.
+- [x] **Correção de Sobreposição no Marquee**: Uso de `shrink-0` nas divs animadas para leitura fluida das campanhas.
+- [x] **Ajuste de Tremor (Jitter) nos Botões**: Aplicação de pseudo-elemento `::after` dinâmico para estabilizar hover nos botões com translate.
+- [x] **Metadados e Identidade Visual (Favicon)**: Redimensionamento e crop do ícone principal do site para carregamento limpo em abas.
+
+---
 *Este documento reflete a modelagem técnica ativa do PROVI e serve como especificação viva de requisitos.*
